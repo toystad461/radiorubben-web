@@ -1,0 +1,16 @@
+{
+  "name": "radiorubben-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Radio Rubben-nettsiden og tilhørende tjenester.",
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes serve dist",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "npm run check"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
