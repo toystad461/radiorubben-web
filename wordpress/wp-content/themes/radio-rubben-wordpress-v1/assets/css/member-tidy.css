@@ -1,0 +1,75 @@
+/* Min Rubben: a compact overview with progressively disclosed tools. */
+.page-id-736 .rr-account-actions{margin:28px 0 0;padding-top:24px;border-top:1px solid #403640}
+.page-id-736 .rr-account-actions h2{font-size:22px;margin:0 0 16px}
+.page-id-736 .rr-account-button-row{position:relative;min-height:44px}
+.page-id-736 .rr-account-button-row>.rr-member-logout{position:absolute;left:0;top:0;margin:0}
+.page-id-736 .rr-account-button-row>.rr-delete-profile{margin:0;padding:0;border:0;background:transparent}
+.page-id-736 .rr-account-button-row>.rr-delete-profile>summary{display:flex;align-items:center;justify-content:center;width:max-content;max-width:calc(100% - 110px);margin:0 0 0 auto;min-height:44px;padding:9px 18px;border:1px solid #ff9299;border-radius:8px;color:#fff;background:transparent;font-size:14px;font-weight:700;line-height:inherit;list-style:none}
+.page-id-736 .rr-account-button-row>.rr-delete-profile>summary::-webkit-details-marker{display:none}
+.page-id-736 .rr-account-button-row>.rr-delete-profile>summary:hover{background:#6b2430}
+.page-id-736 .rr-account-button-row>.rr-delete-profile>.rr-delete-body{padding:20px;margin-top:16px;border:1px solid #3c3943;border-radius:12px;background:#15181f}
+.page-id-736 .rr-delete-body{padding:0 20px 20px;font-size:14px}
+.page-id-736 .rr-delete-check{display:flex;align-items:flex-start;gap:12px;margin:20px 0}
+.page-id-736 .rr-delete-check input{flex:none;width:20px;height:20px;margin:3px 0;accent-color:#e43843}
+.page-id-736 #rr-delete-word{display:block;width:100%;max-width:220px;min-height:44px;padding:10px;background:#0b0d11;border:1px solid #88757e;border-radius:7px;color:#fff;margin:8px 0 16px}
+.page-id-736 .rr-delete-submit{display:block;min-height:44px;background:#b52536;color:#fff;padding:12px 18px;border:0;border-radius:8px;font:inherit;font-weight:700;cursor:pointer}
+
+.page-id-736 .rr-subhero{padding:25px 0 20px;background:#0b0d11}
+.page-id-736 .rr-subhero .rr-eyebrow{display:none}
+.page-id-736 .rr-subhero h1{font-size:clamp(28px,5vw,42px);margin:0;line-height:1.2}
+.page-id-736 .rr-section{padding:24px 0 36px}
+.page-id-736 .rr-page-content{max-width:960px;margin-inline:auto;font-size:16px}
+.page-id-736 .rr-member-dashboard{padding:24px;background:#15181f;border-color:#34333d;margin-bottom:24px}
+.page-id-736 .rr-member-dashboard h2{font-size:clamp(24px,4vw,32px)}
+.page-id-736 .rr-member-dashboard>p{font-size:15px;margin:8px 0 18px}
+.page-id-736 .rr-member-account-bar .rr-eyebrow{font-size:10px;letter-spacing:.1em}
+.page-id-736 .rr-member-shortcuts{margin:20px 0;display:grid;grid-template-columns:repeat(3,1fr)}
+.page-id-736 .rr-member-shortcuts a{justify-content:center;background:#1b1d25;border-color:#49404a;font-size:14px;padding:12px}
+.page-id-736 .rr-member-shortcuts a:hover{background:#362029;border-color:#e43843}
+.page-id-736 .rr-member-grid{grid-template-columns:1fr;gap:14px;margin-top:18px}
+.page-id-736 .rr-member-grid article{padding:20px}
+.page-id-736 .rr-member-quiz{border-left:3px solid #e43843}
+.page-id-736 .rr-member-quiz .rr-member-score{font-size:48px}
+.page-id-736 .rr-member-columns{display:grid!important;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;margin:0 0 24px}
+.page-id-736 .rr-member-columns>.wp-block-column{margin:0!important;min-width:0}
+.page-id-736 .rr-member-columns .rrm{margin:0}
+.rr-member-tidy-ready.logged-in .rr-member-tools>.rrm-kicker,
+.rr-member-tidy-ready.logged-in .rr-member-tools>h2,
+.rr-member-tidy-ready.logged-in .rr-member-tools>h2+p,
+.rr-member-tidy-ready.logged-in .rr-member-tools>h2+p+p{display:none}
+.page-id-736 .rr-member-tools{padding:0;background:transparent;border:0}
+.page-id-736 .rr-member-fold,
+.page-id-736 .rr-member-profile,
+.page-id-736 .rr-member-edit-name{display:block;border:1px solid #3c3943;border-radius:12px;background:#15181f;padding:0;margin:0 0 12px;scroll-margin-top:110px}
+.page-id-736 .rr-member-fold>summary,
+.page-id-736 .rr-member-profile>summary,
+.page-id-736 .rr-member-edit-name>summary{padding:18px 20px;min-height:54px;cursor:pointer;font-size:16px;font-weight:700;color:#f5f5f7;list-style-position:inside}
+.page-id-736 .rr-member-fold>summary::marker,
+.page-id-736 .rr-member-profile>summary::marker{color:#ff9299}
+.page-id-736 .rr-member-fold>summary:focus-visible{outline:3px solid #fff;outline-offset:3px;border-radius:10px}
+.page-id-736 .rr-member-fold>section,
+.page-id-736 .rr-member-fold>article{border:0;background:transparent;margin:0;padding:0 20px 20px;border-radius:0}
+.page-id-736 .rr-member-fold[open]>summary{border-bottom:1px solid #34333d;margin-bottom:18px}
+.page-id-736 .rr-member-fold [hidden]{display:none!important}
+.page-id-736 .rr-member-profile>p,.page-id-736 .rr-member-profile>dl{margin:16px 20px}
+.page-id-736 .rr-member-edit-name>form{padding:0 20px 20px}
+.page-id-736 .rr-member-badges>p{margin-top:0}
+.page-id-736 .rrm-duel{border:1px solid #3c3943;border-radius:12px;padding:22px;background:#15181f}
+.page-id-736 .rr-member-columns .rrm-duel h2{font-size:23px;margin:8px 0}
+.page-id-736 .rrm-duel p{font-size:14px}
+.page-id-736 .rr-member-support{margin-top:24px;background:#1e171c;border-color:#50303a;padding:24px}
+.page-id-736 .rr-member-support h2{font-size:24px}
+.page-id-736 .rr-member-support .rr-eyebrow{display:none}
+.page-id-736 .rr-member-support .rr-member-grid{margin:0}
+.page-id-736 .rr-member-support article{border:0;padding:0;background:transparent}
+.page-id-736 .rr-member-support article>h3{display:none}
+.page-id-736 .rr-member-support .rr-member-score{font-size:26px!important;margin:10px 0}
+.page-id-736 .rr-member-support>p:last-child{margin-bottom:0;font-size:13px}
+.page-id-736 .rrm-form input,.page-id-736 .rrm-form select,.page-id-736 .rrm-form textarea{font-size:16px}
+@media(max-width:700px){
+.page-id-736 .rr-member-columns{grid-template-columns:1fr}
+.page-id-736 .rr-member-dashboard{padding:18px}
+.page-id-736 .rr-member-shortcuts{grid-template-columns:1fr;gap:8px}
+.page-id-736 .rr-member-shortcuts a{justify-content:space-between;min-height:46px}
+.page-id-736 .rr-member-support .rr-btn,.page-id-736 .rr-member-support .rr-btn-outline{width:100%;justify-content:center}
+}

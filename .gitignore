@@ -4,3 +4,16 @@ node_modules/
 .env.*
 !.env.example
 npm-debug.log*
+
+# Private runtime configuration and backups
+.env
+.env.*
+!.env.example
+wp-config.php
+*.sql
+*.sql.gz
+*.tar.gz
+*.pem
+*.key
+wordpress/wp-content/uploads/
+wordpress/wp-content/cache/

@@ -1,0 +1,1 @@
+<form role="search" method="get" class="rr-search-form" action="<?php echo esc_url(home_url('/')); ?>"><label class="screen-reader-text" for="rr-search-field">Søk</label><input id="rr-search-field" type="search" name="s" value="<?php echo esc_attr(get_search_query()); ?>" placeholder="Søk på Radio Rubben"><button type="submit">Søk</button></form>

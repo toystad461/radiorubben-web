@@ -1,0 +1,27 @@
+MIN RUBBEN 1.1.0 – TESTSTATUS
+
+45 kontroller bestått i isolert WordPress 6.8.3 med PHP/WASM og SQLite.
+Kontrollert: aktivering, registrering, abonnentrolle, e-postbasert passordlenke,
+blokkert innlogging før passordoppsett, innlogging etterpå, nonce-kontroller,
+privat innboks, adskilte leserkontoer, administratorrettigheter, tillatelse til
+opplesing, profilendring uten rolleendring, førstegangskommentar til godkjenning,
+bevaring av strengere moderering, kommentarrapportering, avvisning av manglende
+Turnstile-token, personverneksport/sletting og innloggingsbegrensning.
+Kommentarmalen ble rendret gjennom Radio Rubben One-temaets innholdsfilter.
+PHP-syntaks kontrollert for utvidelsen og kommentarmalen.
+
+Dette er funksjonelle integrasjonstester, ikke en uavhengig sikkerhetsrevisjon.
+E-post ble fanget i testmiljøet; ingen reell e-postlevering ble testet.
+Ekstern Turnstile-tjeneste, webhotellets cache, nettleserutseende og samspill
+med andre installerte utvidelser er ikke testet. Test først på en kopi av ditt
+nettsted, og følg LES-MEG.txt før du åpner offentlig registrering.
+
+LÅTDUELLEN: 26 nye integrasjonskontroller bestått i samme testmiljø.
+Dekker opprettelse av tabell/duell, administratorrettigheter, ugyldig nonce,
+innlogging, ubekreftet konto, ugyldig/stale valg, lagring av stemme,
+dobbeltstemming mot unik databasenøkkel, visning av egen stemme/resultat,
+manuell avslutning, uavgjort, avsluttet frist, ny duell med null stemmer,
+personverneksport/sletting, lenker fra forsideseksjon og forhåndsvalgt hilsen.
+Ingen parallell lasttest eller MySQL/MariaDB-test er utført. Lokal database
+var SQLite. Mobilutseende og samspill med live nettsted er ikke verifisert.
+Skjemalogikken er testet i PHP; ingen ekstern tjeneste sender radiosending.

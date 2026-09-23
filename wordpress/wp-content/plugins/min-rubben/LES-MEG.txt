@@ -1,0 +1,157 @@
+MIN RUBBEN 1.1.0 — Radio Rubben
+
+NYTT I 1.1 – LÅTDUELLEN OG FORSIDESEKSJON
+Oppdater Min Rubben ved å laste opp denne ZIP-filen og velge å erstatte den
+installerte utvidelsen. Ikke slett brukere eller innhold. Ta vanlig backup først.
+Kontoinnstillinger og tidligere innsendinger beholdes.
+
+1. Legg en Kortkode-blokk på forsiden med: [rubben_engasjement]
+   Den viser «Du er med på Rubben», tre knapper og Låtduellen.
+   Ønsker du bare duellen, bruk [rubben_duell] i stedet. Bruk én av dem per side.
+2. Under Lytterinnboks > Låtduellen velger du to låter og en sluttdato.
+   Tiden følger tidssonen under WordPress > Innstillinger > Generelt.
+3. Trykk «Start ny duell». Du kan også avslutte den manuelt.
+4. Unnta siden med duellen fra webhotellets/CDN-ens sidecache, og tøm gammel
+   cache. Gjør dette også for forsiden dersom du bruker kortkoden der.
+5. Test med to leserkontoer. Kontroller også mobilvisningen i ditt tema.
+
+Låtene låses når duellen opprettes. Ved feil oppretter du en ny duell.
+En ny duell erstatter den som vises; tidligere stemmer telles ikke med.
+Ingen demolåter eller fiktive stemmer følger med.
+Én stemme per innlogget konto, håndhevet med unik databasenøkkel.
+Dette garanterer ikke én stemme per person dersom noen oppretter flere kontoer.
+Resultater vises etter egen stemme, eller til alle etter avslutning. Ingen
+stemmer og uavgjort håndteres særskilt. Ingen automatisk radioavspilling.
+Lytterinnboks > Låtduellen viser alltid antall stemmer til administrator.
+Ingen stemmelister eller navn publiseres. Konto-ID, duell-ID, valg og låtnavn
+lagres i en egen stemmetabell. Disse følger personverneksport og sletting av
+brukerdata. Sletting av stemmer endrer også resultatet; resultatet er ikke låst.
+Tidligere duellers stemmer beholdes uten automatisk frist og slettes ved
+personvernsletting/kontosletting mens pluginen er aktiv. Deaktivering sletter
+ikke tabellen. Det finnes foreløpig ikke et eget offentlig duellarkiv.
+
+Knappene for hilsener/ønskelåter bruker siden du valgte under Oppsett.
+«Send en hilsen» forhåndsvelger Hilsen for innloggede brukere. Gjester logger
+inn/oppretter konto først og velger deretter type innsending i skjemaet.
+
+INSTALLASJON
+1. Last opp min-rubben-v1.1.0.zip i WordPress under Utvidelser > Legg til ny >
+   Last opp utvidelse. Aktiver Min Rubben.
+2. Opprett en vanlig side med tittelen «Min Rubben» og adressen /min-rubben/.
+   Sett inn en Kortkode-blokk med: [min_rubben]
+3. Publiser siden. Under Lytterinnboks > Oppsett velger du denne siden.
+4. Legg siden i menyen. Nettstedet må bruke HTTPS.
+5. Test registrering med din egen testadresse: åpne registrering i oppsettet,
+   opprett testkonto, følg e-postlenken, sett passord og logg inn.
+   Lukk registrering igjen hvis e-posten ikke kommer frem.
+6. Åpne registrering for publikum når testen fungerer. Kontroller at vanlig
+   WordPress-registrering («Alle kan registrere seg» under Innstillinger >
+   Generelt) er AV, slik at man bruker Min Rubben-skjemaet.
+
+Registrering er AV som standard. Eksisterende brukere kan logge inn med sin
+vanlige WordPress-konto. Pluginen oppretter ikke demo-/falske brukere, sender
+ikke invitasjoner og endrer ikke eksisterende roller.
+
+HVA LYTTEREN FÅR
+- Leserkonto med offentlig visningsnavn, privat e-post og rolle Abonnent.
+- E-postlenke for å sette passord. Nye Min Rubben-kontoer kan ikke logge inn
+  før passordet er satt via e-postlenken. Ingen selvvalgt passord lagres fra
+  registreringsskjemaet, og ingen passord sendes i klartekst.
+- Innlogging med e-post/WordPress-brukernavn og vanlig passordgjenoppretting.
+- Ønskelåter med artist og låttittel; hilsener på maks. 1500 tegn.
+- Egen, valgfri tillatelse til opplesing av hilsen og visningsnavn.
+- Oversikt over de siste ti egne innsendingene og deres behandlingsstatus.
+- Mulighet til å endre visningsnavn for nye kommentarer/innsendinger.
+
+DIN INNBOKS
+WordPress > Lytterinnboks. Bare administratorer med manage_options kan
+behandle innhold. Åpne en innsending, velg Ny / Godkjent / Brukt / Avvist og
+lagre. En hilsen uten opplesingstillatelse kan ikke settes til Godkjent/Brukt.
+En ønskelåt kan spilles uten å lese opp den private beskjeden eller navnet.
+Ingen handling her publiserer noe, spiller lyd eller kobler seg til radio.co.
+Dette er en redaksjonell innboks for Thomas, ikke automatisk radioavvikling.
+Det sendes ikke e-postvarsler til administrator for hver innsending.
+
+KOMMENTARER
+Mens utvidelsen er aktiv kreves innlogging for å kommentere. Første kommentar
+fra en bruker uten tidligere godkjente kommentarer holdes tilbake.
+Strengere eksisterende WordPress-/spamfilterbeslutninger beholdes.
+Godkjenn under Kommentarer i WordPress.
+
+For Radio Rubben One 1.2.0 og 1.3.0 i temamappen radio-rubben-wordpress-v1
+legger pluginen kommentarfeltet etter innleggets hovedtekst, fordi disse
+malene ikke har kommentarfelt fra før. Temaet trenger ikke erstattes.
+Slå på «Tillat kommentarer» i Diskusjon for hvert innlegg som skal ha det.
+Ingen eksisterende innlegg åpnes automatisk for kommentarer.
+Andre temaer må ha vanlig WordPress-kommentarvisning selv.
+
+Innloggede lesere kan melde fra om godkjente kommentarer. Rapportene vises
+under Lytterinnboks > Rapporterte kommentarer. En rapport skjuler ikke en
+kommentar automatisk. Listen viser de siste 100 merkede kommentarene.
+
+BESKYTTELSE I DENNE VERSJONEN
+- Kun abonnentrolle ved registrering; ingen rolle velges fra skjemaet.
+- WordPress-passord, passordlenker og innlogging; ingen separat passorddatabase.
+- Innlogging + nonce-kontroll for innsending, profilendring og rapportering.
+- Administratorrettighet + nonce for innstillinger og statusendringer.
+- Private innsendinger; ingen offentlig visning eller REST-rute for innboksen.
+- Validering av felter og HTML-escaping ved visning.
+- 5 registreringsforsøk per IP/time; 5 passordforespørsler per IP/time;
+  midlertidig innloggingsbrems etter 12 feil per IP på 15 minutter;
+  5 innsendinger og 10 kommentarer/rapporter per konto/time.
+- Skjult spamfelle i registrering og innsending.
+- Valgfri Cloudflare Turnstile med kontroll på serveren av token, handling
+  og hostname. Begge nøkler settes under Lytterinnboks > Oppsett.
+
+GRENSER OG OPPSETT SOM GJENSTÅR
+Dette er ikke en komplett sikkerhetspakke eller en uavhengig sikkerhetsrevisjon.
+Tofaktor for administratorer, sikkerhetskopiering, oppdateringer, nettbrannmur,
+SMTP/e-postlevering og innholdsspamfilter må håndteres separat.
+Applikasjonens hastighetsgrenser er ikke DDoS-beskyttelse, og parallelle
+forespørsler kan passere samme transientbaserte teller.
+Den bruker REMOTE_ADDR og stoler ikke på innsendte proxy-headere. Ved proxy/
+Cloudflare må webhotellet eksponere klient-IP korrekt; ellers kan lyttere
+dele kvote. Aktivering/deaktivering påvirker ikke WordPress sitt innhold.
+Turnstile beskytter bare Min Rubben-registrering/innsending; det dekker ikke
+wp-login, passordgjenoppretting eller standard kommentarskjema.
+WordPress multisite støttes ikke i denne førsteversjonen.
+
+CACHE
+Unnta Min Rubben-siden fra sidecache hos webhotell/CDN/cache-plugin.
+Utvidelsen sender no-cache-headere og DONOTCACHEPAGE, men ekstern cache kan
+ignorere disse. Ikke cache innloggede sider eller admin-post.php.
+Dette er nødvendig både for privat visning og gyldige skjemaer.
+
+PERSONOPPLYSNINGER OG RYDDING
+Kontodata ligger i vanlige WordPress-brukere. Meldinger, artist/låt,
+visningsnavn ved innsending, status og valgt opplesingstillatelse med tidspunkt
+lagres i private innlegg. Kommentarer bruker WordPress sin vanlige lagring.
+IP brukes som saltet hash i tidsbegrensede tellere; rå IP kopieres ikke inn
+i lytterinnboksen av denne pluginen. WordPress/serverlogger kan lagre IP.
+Med Turnstile aktivert brukes en ekstern Cloudflare-tjeneste på skjemaene.
+Oppdater nettstedets personvernside med tjenester og faktisk lagringspraksis.
+
+Verktøy > Eksporter/Slett personopplysninger inkluderer Min Rubben-innsendinger.
+Sletting av en bruker sletter deres private innsendinger mens pluginen er aktiv,
+i stedet for å overføre dem til en annen bruker. WordPress håndterer kommentarer
+og øvrige kontodata. Avklar eventuelle opplesinger/arkiver separat ved henvendelser.
+Ingen automatisk oppryddingsfrist er satt; rydd regelmessig i gamle innsendinger
+og ubekreftede kontoer. Deaktivering/avinstallering sletter ikke data.
+
+INSTALLASJONSTEST
+Bruk helst en testkopi av nettstedet før offentlig aktivering:
+- Ny testkonto får e-post og må sette passord før innlogging.
+- Ny bruker har bare Abonnent-rolle.
+- Første kommentar ligger til godkjenning.
+- To testbrukere ser bare egne innsendinger.
+- Hilsen uten samtykke kan ikke godkjennes som opplesing.
+- Administrator kan behandle innsending; leser kan ikke åpne innboksen.
+- Logg ut og test siden i privat nettleservindu for å kontrollere cache.
+- Bekreft Turnstile på ditt faktiske domene dersom du aktiverer dette.
+
+KILDER TIL IMPLEMENTASJONEN
+https://developer.wordpress.org/reference/functions/wp_insert_user/
+https://developer.wordpress.org/reference/functions/wp_new_user_notification/
+https://developer.wordpress.org/reference/hooks/after_password_reset/
+https://developer.wordpress.org/reference/hooks/pre_comment_approved/
+https://developers.cloudflare.com/turnstile/get-started/server-side-validation/

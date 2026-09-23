@@ -1,0 +1,102 @@
+[
+  {
+    "q": "Kven gav ut albumet \"Thriller\"?",
+    "choices": ["Michael Jackson", "Prince", "Madonna", "George Michael"],
+    "a": 0
+  },
+  {
+    "q": "Kven syng \"Like a Prayer\"?",
+    "choices": ["Madonna", "Whitney Houston", "Cyndi Lauper", "Cher"],
+    "a": 0
+  },
+  {
+    "q": "Kva band står bak \"Bohemian Rhapsody\"?",
+    "choices": ["Queen", "The Beatles", "Pink Floyd", "Led Zeppelin"],
+    "a": 0
+  },
+  {
+    "q": "Kven syng \"Rolling in the Deep\"?",
+    "choices": ["Adele", "Beyoncé", "Rihanna", "Sia"],
+    "a": 0
+  },
+  {
+    "q": "Kva instrument har 88 tangentar?",
+    "choices": ["Piano", "Gitar", "Fiolin", "Saksofon"],
+    "a": 0
+  },
+  {
+    "q": "Kven gav ut \"Shape of You\"?",
+    "choices": ["Ed Sheeran", "Justin Bieber", "Shawn Mendes", "The Weeknd"],
+    "a": 0
+  },
+  {
+    "q": "Kva by kjem bandet ABBA frå?",
+    "choices": ["Stockholm", "Oslo", "København", "Helsinki"],
+    "a": 0
+  },
+  {
+    "q": "Kven syng \"Smells Like Teen Spirit\"?",
+    "choices": ["Nirvana", "Pearl Jam", "Soundgarden", "Alice in Chains"],
+    "a": 0
+  },
+  {
+    "q": "Kven er kjent som \"The Boss\"?",
+    "choices": ["Bruce Springsteen", "Bob Dylan", "Elton John", "Billy Joel"],
+    "a": 0
+  },
+  {
+    "q": "Kva band gav ut albumet \"The Dark Side of the Moon\"?",
+    "choices": ["Pink Floyd", "The Rolling Stones", "The Who", "U2"],
+    "a": 0
+  },
+  {
+    "q": "Kven syng \"Uptown Funk\" (feat. Bruno Mars)?",
+    "choices": ["Mark Ronson", "Daft Punk", "Calvin Harris", "Diplo"],
+    "a": 0
+  },
+  {
+    "q": "Kven gav ut albumet \"21\"?",
+    "choices": ["Adele", "Taylor Swift", "Lady Gaga", "Katy Perry"],
+    "a": 0
+  },
+  {
+    "q": "Kva sjanger blir ofte knytt til artisten Bob Marley?",
+    "choices": ["Reggae", "Country", "Disco", "Heavy metal"],
+    "a": 0
+  },
+  {
+    "q": "Kven syng \"Billie Jean\"?",
+    "choices": ["Michael Jackson", "Stevie Wonder", "Lionel Richie", "Marvin Gaye"],
+    "a": 0
+  },
+  {
+    "q": "Kva band står bak \"Wonderwall\"?",
+    "choices": ["Oasis", "Blur", "Radiohead", "The Verve"],
+    "a": 0
+  },
+  {
+    "q": "Kven syng \"Bad Guy\"?",
+    "choices": ["Billie Eilish", "Dua Lipa", "Ariana Grande", "Halsey"],
+    "a": 0
+  },
+  {
+    "q": "Kven gav ut \"Firework\"?",
+    "choices": ["Katy Perry", "Pink", "Kelly Clarkson", "Selena Gomez"],
+    "a": 0
+  },
+  {
+    "q": "Kva land kjem bandet AC/DC frå?",
+    "choices": ["Australia", "USA", "Storbritannia", "Canada"],
+    "a": 0
+  },
+  {
+    "q": "Kven syng \"Take On Me\"?",
+    "choices": ["a-ha", "Duran Duran", "Depeche Mode", "Pet Shop Boys"],
+    "a": 0
+  },
+  {
+    "q": "Kva band gav ut \"Hotel California\"?",
+    "choices": ["Eagles", "Fleetwood Mac", "The Doors", "Lynyrd Skynyrd"],
+    "a": 0
+  }
+]

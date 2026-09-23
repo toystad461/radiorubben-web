@@ -1,0 +1,72 @@
+name: WordPress kontroll og publisering
+on:
+  pull_request:
+    branches: [main]
+    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', '.github/workflows/wordpress.yml']
+  push:
+    branches: [main]
+    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', '.github/workflows/wordpress.yml']
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Prøvekjøring eller publisering
+        type: choice
+        options: [dry-run, apply]
+        default: dry-run
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Kontroller PHP og shell
+        run: |
+          php --version
+          find wordpress -name '*.php' -print0 | xargs -0 -n1 php -l
+          bash -n scripts/deploy-wordpress.sh
+          bash -n scripts/deploy-wordpress-remote.sh
+  deploy:
+    needs: validate
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      github.event_name != 'pull_request' &&
+      vars.WP_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Konfigurer SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Publiser eller vis planlagte endringer
+        env:
+          EVENT: ${{ github.event_name }}
+          REQUESTED_MODE: ${{ inputs.mode }}
+          AUTO_APPLY: ${{ vars.WP_DEPLOY_AUTO_APPLY }}
+        run: |
+          mode=dry-run
+          if [[ "$EVENT" == workflow_dispatch ]]; then
+            mode="$REQUESTED_MODE"
+          elif [[ "$AUTO_APPLY" == true ]]; then
+            mode=apply
+          fi
+          bash scripts/deploy-wordpress.sh "$mode"
+      - name: Fjern SSH-nøkkel fra runner
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
