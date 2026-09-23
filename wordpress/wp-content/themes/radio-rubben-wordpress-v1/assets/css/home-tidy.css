@@ -1,0 +1,30 @@
+/* Homepage only: compact hierarchy and a single member entrance. */
+.rr-front .rr-home-intro{padding-block:44px;gap:40px}
+.rr-front .rr-home-copy h1{font-size:clamp(40px,5vw,64px)}
+.rr-front .rr-radio-cover{min-height:100px;margin:18px 0;padding:20px}
+.rr-front .rr-radio-cover img{max-width:240px}
+.rr-front .rr-member-invite{margin-bottom:0}
+.rr-home-member-actions{display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.rr-home-member-actions p{margin:0}
+.rr-home-member-actions a{display:flex;justify-content:center;min-height:44px}
+.rr-front .rr-home-latest{padding-block:44px}
+.rr-front .rr-home-posts{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rr-front .rr-home-posts .rr-post-card{min-width:0}
+.rr-front .rr-home-posts h3{font-size:22px}
+.rr-home-music-brief{display:flex;align-items:center;justify-content:space-between;gap:28px;padding-block:36px;border-top:1px solid var(--line)}
+.rr-home-music-brief h2{font-size:clamp(26px,3vw,36px);line-height:1.2;margin:8px 0}
+.rr-home-music-brief p{color:var(--slate)}
+.rr-home-music-brief nav{display:flex;flex-direction:column;gap:12px;flex-shrink:0}
+.rr-home-music-brief nav a{display:inline-flex;align-items:center;min-height:44px}
+.rr-front .rr-local-section{padding-block:36px}
+.rr-front .rr-personal-grid{gap:36px}
+.rr-front .rr-collab{padding:30px;margin-block:36px}
+@media(max-width:720px){
+.rr-front .rr-home-intro{padding-block:28px;gap:24px}
+.rr-front .rr-home-copy h1{font-size:clamp(38px,10vw,52px);margin:12px 0 16px}
+.rr-front .rr-home-posts{grid-template-columns:1fr}
+.rr-front .rr-home-latest{padding-block:32px}
+.rr-home-member-actions{width:100%}
+.rr-home-music-brief{flex-direction:column;align-items:stretch;gap:12px;padding-block:28px}
+.rr-home-music-brief nav{flex-shrink:1}
+}

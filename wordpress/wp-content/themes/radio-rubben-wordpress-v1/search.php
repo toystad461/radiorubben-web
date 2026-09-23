@@ -1,0 +1,4 @@
+<?php get_header(); ?>
+<section class="rr-subhero"><div class="rr-wrap"><p class="rr-eyebrow">SØK</p><h1>Søkeresultater</h1><p>Resultater for «<?php echo esc_html(get_search_query()); ?>».</p><?php get_search_form(); ?></div></section>
+<section class="rr-section rr-wrap"><?php if(have_posts()): ?><div class="rr-post-grid"><?php while(have_posts()):the_post(); ?><article class="rr-post-card"><?php if(has_post_thumbnail()):?><a class="rr-post-thumb" href="<?php the_permalink(); ?>"><?php the_post_thumbnail('rr-card'); ?></a><?php endif; ?><?php rr_one_post_meta(); ?><h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2><?php the_excerpt(); ?><a class="rr-text-link" href="<?php the_permalink(); ?>">Les videre →</a></article><?php endwhile; ?></div><?php rr_one_pagination(); else:?><div class="rr-empty"><h2>Ingen treff.</h2><p>Prøv et annet søkeord.</p><?php get_search_form(); ?></div><?php endif; ?></section>
+<?php get_footer(); ?>
