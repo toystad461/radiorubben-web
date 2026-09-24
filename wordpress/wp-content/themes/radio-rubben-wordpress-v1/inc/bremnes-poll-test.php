@@ -1,6 +1,6 @@
 <?php
 if (!defined('ABSPATH')) exit;
-/* Isolated, server-backed poll trial. All storage names contain test and match ID. */
+/* Keep the existing match-scoped option namespace so current votes and match states remain accessible. */
 $rr_roster = [
 1=>'Mads Katla Ellingsen',2=>'Niklas Rasmussen',3=>'Jonas Bjelland Håstø',
 4=>'Marius Kvernøy',5=>'Ola Gjerde',7=>'Aron Skippervik Simonsen',8=>'Pavlo Buriak',
@@ -189,11 +189,11 @@ if (isset($_GET['rr_poll_api'])) {
             $player = isset($_POST['player']) ? absint($_POST['player']) : 0;
             if (!isset(rr_poll_allowed_players($rr_match,$rr_state)[$player])) $rr_error('Spilleren har ikke startet eller blitt markert som byttet inn.',409);
             $vote_key = $rr_key.'_vote_'.$rr_state['session'].'_'.$rr_voter;
-            if (!add_option($vote_key, $player, '', false)) $rr_error('Du har allerede stemt i denne testen.',409);
+            if (!add_option($vote_key, $player, '', false)) $rr_error('Du har allerede stemt i denne avstemningen.',409);
             // Store the account ID separately so a randomly chosen voter can be contacted.
             // Admin votes are counted but excluded from the Vipps prize draw.
             if ($rr_vipps_sub !== '') add_option($rr_key.'_entrant_'.$rr_state['session'].'_'.$rr_voter,get_current_user_id(),'',false);
-            wp_send_json(['ok'=>true,'message'=>'Takk! Teststemmen din er registrert.']);
+            wp_send_json(['ok'=>true,'message'=>'Takk! Stemmen din er registrert.']);
         }
         if (!$rr_admin || !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'rr_poll_admin')) $rr_error('Logg inn som redaktør for å styre avstemningen.',403);
         if ($action==='refresh_nff_events') {
@@ -237,7 +237,7 @@ if (isset($_GET['rr_poll_api'])) {
         } elseif (!empty($rr_state['finished'])) {
             $rr_error('Kampen er avsluttet.',409);
         } elseif ($action === 'start' && $rr_state['period']===0) {
-            if ($rr_state['closed']) $rr_error('Avstemningen er stengt. Start en ny test først.',409);
+            if ($rr_state['closed']) $rr_error('Avstemningen er stengt. Start en ny avstemning først.',409);
             if (!rr_poll_lineup_ready($rr_match)) $rr_error('Startoppstillingen mangler eller er ugyldig. Hent kampen på nytt før du åpner avstemningen.',409);
             $rr_state['period']=1; $rr_state['opened']=true; $rr_state['running']=true; $rr_state['started']=time();
             $rr_state['eligible_players']=[];
@@ -403,7 +403,7 @@ get_header();
 .rr-poll .poll-coverage small{font-size:11px;color:#c3cddd;letter-spacing:.04em;text-align:center}
 </style>
 <main class="rr-poll<?php echo $rr_control ? ' rr-speaker' : ''; ?><?php echo ($rr_control && $rr_live_section) ? ' rr-speaker-live' : ''; ?>">
-<p class="tag"><?php echo $rr_control ? 'Dagens Bremnesing · Testmodus' : 'Dagens Kamp'; ?></p>
+<p class="tag"><?php echo $rr_control ? 'Dagens Bremnesing · Kampstyring' : 'Dagens Kamp'; ?></p>
 <h1><?php echo $rr_control ? 'Speakerboard' : 'Velkommen på kamp!'; ?></h1>
 <?php if ($rr_control && $rr_admin && $rr_match_error): ?>
 <p class="card" role="alert">Kampen ble ikke endret: <?php echo esc_html($rr_match_error); ?></p>
@@ -506,7 +506,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <?php endif; ?>
 <?php if (!$rr_control): ?><div class="poll-coverage"><span>Utviklet for lokalfotballen – i samarbeid med Radio Rubben</span><img src="<?php echo esc_url(rr_one_logo_url()); ?>" alt="Radio Rubben" width="120"><small>Digitalt engasjement rundt kampen</small></div><?php endif; ?>
 </section>
-<?php if (!$rr_control): ?><p class="muted">Dette er en testavstemning. Teststemmer teller ikke i en offisiell kåring.</p><?php endif; ?>
+
 <?php if (!$rr_control || ($rr_admin && $rr_live_section)): ?>
 <section class="card<?php echo !$rr_control?' poll-vote-card':''; ?>" id="poll-live">
 <?php if (!$rr_control): ?><header class="poll-vote-heading"><span class="poll-vote-eyebrow">Din stemme teller</span><h2>Dagens Bremnesing</h2><p>Hvem fortjener din stemme i dag?</p></header><?php endif; ?>
@@ -673,7 +673,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <button data-command="correct" disabled>Sett klokke</button>
 </div>
 <?php rr_nff_refresh_form('players',$rr_url,$rr_nff_source,''); ?>
-<button data-command="new" disabled>Ny testavstemning</button>
+<button data-command="new" disabled>Ny avstemning</button>
 </div>
 </details>
 
@@ -1070,9 +1070,9 @@ async function refresh(){
  el('poll-results').replaceChildren();
  const rows=state.results||[];
  for(const row of rows){const li=document.createElement('li');li.textContent=row.player+' — '+row.total+' stemmer';el('poll-results').appendChild(li);}
- el('poll-total').textContent=rows.reduce((sum,r)=>sum+r.total,0)+' teststemmer';
+ el('poll-total').textContent=rows.reduce((sum,r)=>sum+r.total,0)+' stemmer';
  const leaders=rows.length?rows.filter(r=>r.total===rows[0].total):[];
- el('poll-winner').textContent=state.closed?(leaders.length>1?'Delt førsteplass: '+leaders.map(r=>r.player).join(', '):leaders.length?'Flest teststemmer: '+leaders[0].player:'Ingen stemmer registrert.'):'Resultatet oppdateres mens avstemningen er åpen.';
+ el('poll-winner').textContent=state.closed?(leaders.length>1?'Delt førsteplass: '+leaders.map(r=>r.player).join(', '):leaders.length?'Flest stemmer: '+leaders[0].player:'Ingen stemmer registrert.'):'Resultatet oppdateres mens avstemningen er åpen.';
  }
  }catch(e){healthy=false;el('poll-feedback').textContent=e.message;}
  render();
@@ -1139,7 +1139,7 @@ document.querySelectorAll('[data-command]').forEach(b=>b.onclick=()=>{
  const action=b.dataset.command, body={action,nonce};
  if(busy)return;
  if(action==='close'&&!confirm('Stenge avstemningen nå? Den kan ikke åpnes igjen.'))return;
- if(action==='new'&&!confirm('Starte en ny test med separat stemmetelling?'))return;
+ if(action==='new'&&!confirm('Starte en ny avstemning med separat stemmetelling?'))return;
  if(action==='correct'){
   const m=Number(el('poll-min').value),s=Number(el('poll-sec').value);
   if(!Number.isInteger(m)||m<45||m>120||!Number.isInteger(s)||s<0||s>59||m*60+s>7200){el('poll-feedback').textContent='Bruk 45:00 til 120:00.';return;}
