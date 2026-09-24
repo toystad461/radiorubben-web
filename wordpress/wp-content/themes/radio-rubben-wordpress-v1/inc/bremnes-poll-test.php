@@ -259,6 +259,7 @@ if (isset($_GET['rr_poll_api'])) {
             $rr_state['elapsed']=(int)$raw; $rr_state['started']=time();
             if ((int)$raw>=4500) $rr_state['closed']=true;
         } else { $rr_error('Denne handlingen passer ikke til kampens status.'); }
+        if (in_array($action,['new','start','half','second','correct','finish'],true)) $rr_state['clock_revision']=wp_generate_uuid4();
         update_option($rr_key,$rr_state,false);
         wp_send_json(['ok'=>true]);
     }
@@ -267,7 +268,8 @@ if (isset($_GET['rr_poll_api'])) {
         update_option($rr_key,$rr_state,false);
     }
     $rr_api_admin_view=$rr_admin && isset($_GET['rr_admin_view']) && $_GET['rr_admin_view']==='1';
-    $payload = ['ok'=>true,'match_events'=>$rr_api_admin_view?$rr_dashboard_events:$rr_public_events,'elapsed'=>$rr_seconds($rr_state),'period'=>$rr_state['period'],'running'=>$rr_state['running'],
+    $rr_api_now=microtime(true);
+    $payload = ['ok'=>true,'match_events'=>$rr_api_admin_view?$rr_dashboard_events:$rr_public_events,'elapsed'=>$rr_seconds($rr_state,(int)$rr_api_now),'server_now_ms'=>(int)round($rr_api_now*1000),'session'=>$rr_state['session'],'clock_revision'=>$rr_state['clock_revision']??'','started'=>(int)$rr_state['started'],'period'=>$rr_state['period'],'running'=>$rr_state['running'],
         'finished'=>!empty($rr_state['finished']),'opened'=>$rr_state['opened'],'closed'=>(bool)$rr_closed($rr_state),'token'=>$rr_token,
         'event_credit'=>$rr_event_credit,'score'=>$rr_display_score,'eligible'=>$rr_eligible,'roster_ready'=>rr_poll_lineup_ready($rr_match),'candidates'=>rr_poll_allowed_players($rr_match,$rr_state),'entered'=>$rr_state['entered']??[],
         'voted'=>$rr_eligible && get_option($rr_key.'_vote_'.$rr_state['session'].'_'.$rr_voter,false)!==false];
@@ -805,12 +807,31 @@ const endpoint=<?php echo wp_json_encode(add_query_arg($rr_control?['rr_poll_api
 const nonce=<?php echo wp_json_encode($rr_admin ? wp_create_nonce('rr_poll_admin') : ''); ?>;
 const el=id=>document.getElementById(id);
 const kickoff=Date.parse(<?php echo wp_json_encode($rr_match['kickoff']); ?>);
-const serverNow=<?php echo (int)round(microtime(true)*1000); ?>;
-const loadedAt=performance.now();
 const pad=n=>String(n).padStart(2,'0');
 let candidateSignature='';
 let eventSignature='';
-let state=null, received=0, busy=false, healthy=false;
+let state=null, busy=false, healthy=false;
+let clockAnchor=null, countdownAnchor=null, refreshSerial=0, refreshPending=false;
+function syncClock(next,at,force=false){
+ const key=[next.session,next.clock_revision,next.period,next.started,next.running,next.finished].join('|');
+ const serverMs=Number(next.server_now_ms);
+ const reported=(Number(next.elapsed)||0)+(next.running&&Number.isFinite(serverMs)?(serverMs%1000)/1000:0);
+ if(force||!clockAnchor||clockAnchor.key!==key||!next.running){
+  clockAnchor={key,at,elapsed:reported};
+ }else{
+  const predicted=clockAnchor.elapsed+Math.max(0,(at-clockAnchor.at)/1000);
+  // Ignore network and second-boundary jitter; correct only a real discrepancy.
+  if(reported-predicted>2)clockAnchor={key,at,elapsed:reported};
+ }
+ if(Number.isFinite(serverMs)&&serverMs>0){
+  const predicted=countdownAnchor ? countdownAnchor.serverMs+at-countdownAnchor.at : 0;
+  if(!countdownAnchor||Math.abs(serverMs-predicted)>1500)countdownAnchor={serverMs,at};
+ }
+}
+function clockElapsed(){
+ if(!clockAnchor)return Number(state?.elapsed)||0;
+ return clockAnchor.elapsed+(state?.running?Math.max(0,(performance.now()-clockAnchor.at)/1000):0);
+}
 async function request(body){
  const response=await fetch(endpoint,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',...(body?{headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(body)}:{})});
  const data=await response.json();
@@ -986,9 +1007,10 @@ function render(){
  el('poll-score').hidden=!state.opened;
  el('poll-score').parentElement.classList.toggle('is-pregame',!state.opened);
  el('poll-score').textContent=state.opened?state.score.home+' – '+state.score.away:'';
- const elapsed=state.elapsed+(state.running?Math.max(0,Math.floor((Date.now()-received)/1000)):0);
+ const elapsed=Math.floor(clockElapsed());
  const closed=state.closed||(state.period===2&&elapsed>=4500);
- const remaining=Math.max(0,Math.ceil((kickoff-serverNow-(performance.now()-loadedAt))/1000));
+ const nowMs=countdownAnchor ? countdownAnchor.serverMs+performance.now()-countdownAnchor.at : Date.now();
+  const remaining=Math.max(0,Math.ceil((kickoff-nowMs)/1000));
  const waiting=!state.opened;
  if(el('poll-match-events'))el('poll-match-events').hidden=waiting;
  el('poll-clock-label').textContent=waiting?'TIL KAMPSTART':state.finished?'KAMP SLUTT':state.period===1&&!state.running?'PAUSE':state.period===2?'2. OMGANG':'1. OMGANG';
@@ -1044,9 +1066,14 @@ function render(){
   b.disabled=busy||!healthy||(a!=='new'&&state.finished)||(a==='close'&&closed)||(['correct'].includes(a)&&state.period!==2);
  });
 }
-async function refresh(){
+async function refresh(forceClock=false){
+ if(refreshPending&&!forceClock)return;
+ refreshPending=true;
+ const serial=++refreshSerial;
  try{
- state=await request();received=Date.now();healthy=true;
+ const next=await request();
+ if(serial!==refreshSerial)return;
+ state=next;syncClock(next,performance.now(),forceClock);healthy=true;
  updateSpeaker();
  updateMatchEvents(state.match_events);
  updateRecentEvents(state.match_events);
@@ -1081,11 +1108,12 @@ async function refresh(){
  const leaders=rows.length?rows.filter(r=>r.total===rows[0].total):[];
  el('poll-winner').textContent=state.closed?(leaders.length>1?'Delt førsteplass: '+leaders.map(r=>r.player).join(', '):leaders.length?'Flest stemmer: '+leaders[0].player:'Ingen stemmer registrert.'):'Resultatet oppdateres mens avstemningen er åpen.';
  }
- }catch(e){healthy=false;el('poll-feedback').textContent=e.message;}
+ }catch(e){if(serial!==refreshSerial)return;healthy=false;if(el('poll-feedback'))el('poll-feedback').textContent=e.message;}
+ finally{if(serial===refreshSerial)refreshPending=false;}
  render();
 }
 async function command(body){
- busy=true;render();
+ ++refreshSerial;busy=true;render();
  try{
   const data=await request(body);
   if(el('poll-feedback'))el('poll-feedback').textContent=data.message||'Oppdatert.';
@@ -1094,7 +1122,7 @@ async function command(body){
   if(el('poll-feedback'))el('poll-feedback').textContent=e.message;
   return false;
  }finally{
-  await refresh();busy=false;render();
+  await refresh(true);busy=false;render();
  }
 }
 if(el('poll-form'))el('poll-form').onsubmit=e=>{e.preventDefault();if(state&&!busy)command({action:'vote',player:el('poll-player').value,token:state.token});};
@@ -1169,7 +1197,8 @@ async function refreshNffEvents(){
  }catch(e){note.textContent=e.message;}
  finally{nffAutoBusy=false;}
 }
-refresh();setInterval(()=>{if(!busy)refresh();},5000);setInterval(render,1000);
+refresh();setInterval(()=>{if(!busy)refresh();},5000);setInterval(render,500);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)refresh();});
 if(el('nff-auto-status')){
  setInterval(refreshNffEvents,5000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshNffEvents();});
