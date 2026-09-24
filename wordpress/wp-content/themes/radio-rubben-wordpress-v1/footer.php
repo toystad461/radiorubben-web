@@ -10,6 +10,7 @@
       <a href="<?php echo esc_url(rr_one_get_first_existing_url(['nyheter'], '/nyheter/')); ?>">Aktuelt</a>
       <a href="<?php echo esc_url(rr_one_get_first_existing_url(['kontakt','contact-us'], '/kontakt/')); ?>">Kontakt</a>
       <a href="<?php echo esc_url(rr_one_get_first_existing_url(['personvern','privacy-policy'], '/personvern/')); ?>">Personvern</a>
+      <a href="<?php echo esc_url(home_url('/vilkar/')); ?>">Vilkår</a>
       <span>© <?php echo esc_html(date('Y')); ?> Radio Rubben AS</span>
     </div>
   </div>
