@@ -1,0 +1,72 @@
+name: Les publisert innhold fra WordPress-databasen
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Sett opp SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+
+      - name: Hent publiserte sider og innlegg
+        env:
+          WP_HOST: cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+        run: |
+          set -euo pipefail
+          ssh "$WP_HOST" '/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes post list --post_type=page,post --post_status=publish --fields=ID,post_type,post_title,post_name,post_modified,post_content,post_password --format=json' > wordpress-content-raw.json
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          raw = json.loads(Path("wordpress-content-raw.json").read_text(encoding="utf-8"))
+          if not isinstance(raw, list):
+              raise SystemExit("WP-CLI returnerte ikke en liste.")
+          required = {"ID", "post_type", "post_title", "post_name", "post_modified", "post_content"}
+          if raw and not required.issubset(raw[0]):
+              raise SystemExit("WP-CLI mangler forventede felt.")
+
+          # Published password-protected items are excluded from the export.
+          public = [
+              {key: value for key, value in row.items() if key != "post_password"}
+              for row in raw
+              if not row.get("post_password")
+          ]
+          Path("wordpress-content.json").write_text(
+              json.dumps(public, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          Path("wordpress-content-raw.json").unlink()
+          print(f"Eksporterte {len(public)} publiserte sider/innlegg.")
+          PY
+
+      - name: Last opp kortvarig uttrekk
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: wordpress-publisert-innhold
+          path: wordpress-content.json
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 9
+
+      - name: Fjern SSH-nøkkel
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
