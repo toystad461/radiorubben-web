@@ -21,10 +21,10 @@ jobs:
           test -n "$DEPLOY_KEY"
           test -n "$KNOWN_HOSTS"
           install -m 700 -d ~/.ssh
-          printf '%s\\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
-          printf '%s\\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
-          printf 'Host *\\n  BatchMode yes\\n  StrictHostKeyChecking yes\\n  IdentitiesOnly yes\\n  ConnectTimeout 15\\n' > ~/.ssh/config
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
 
       - name: Hent publiserte sider og innlegg
         env:
@@ -51,7 +51,7 @@ jobs:
               if not row.get("post_password")
           ]
           Path("wordpress-content.json").write_text(
-              json.dumps(public, ensure_ascii=False, indent=2) + "\\n",
+              json.dumps(public, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8",
           )
           Path("wordpress-content-raw.json").unlink()
