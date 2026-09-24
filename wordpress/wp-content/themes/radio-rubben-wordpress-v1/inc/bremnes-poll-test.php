@@ -126,14 +126,9 @@ if (!empty($rr_state['opened']) && $rr_seconds($rr_state)>=4800 && empty($rr_sta
                 if ($user) {
                     $first=trim((string)get_user_meta($selected,'first_name',true));
                     $last=trim((string)get_user_meta($selected,'last_name',true));
-                    if ($first==='') {
-                        $parts=preg_split('/\s+/u',trim((string)$user->display_name));
-                        $first=(string)($parts[0]??'');
-                        if ($last==='' && count($parts)>1) $last=(string)$parts[count($parts)-1];
-                    }
-                    $initial=$last!=='' ? mb_substr($last,0,1).'.' : '';
-                    $public_name=sanitize_text_field($first.($initial!==''?' '.$initial:''));
-                    $description.=' · Trukket stemmevinner: '.$public_name;
+                    $full_name=trim($first.' '.$last);
+                    if ($full_name==='') $full_name=trim((string)$user->display_name);
+                    $description.=' · Trukket stemmevinner: '.sanitize_text_field($full_name);
                 }
             } else {
                 $description.=' · Ingen identifiserbare Vipps-stemmer på vinneren';
@@ -168,7 +163,19 @@ if ($rr_nff_source==='nff') {
         }
     }
 }
-if (!empty($rr_state['poll_award']) && is_array($rr_state['poll_award'])) $rr_dashboard_events[]=$rr_state['poll_award'];
+if (!empty($rr_state['poll_award']) && is_array($rr_state['poll_award'])) {
+    $award=$rr_state['poll_award'];
+    // Older awards stored an abbreviated name; resolve the full name from the fixed draw ID.
+    $drawn_id=(int)get_option($rr_key.'_prize_'.($rr_state['session']??''),0);
+    if ($drawn_id && ($drawn_user=get_userdata($drawn_id))) {
+        $first=trim((string)get_user_meta($drawn_id,'first_name',true));
+        $last=trim((string)get_user_meta($drawn_id,'last_name',true));
+        $full_name=trim($first.' '.$last);
+        if ($full_name==='') $full_name=trim((string)$drawn_user->display_name);
+        $award['description']=preg_replace_callback('/( · Trukket stemmevinner: ).*$/u',static function($matches) use ($full_name) { return $matches[1].sanitize_text_field($full_name); },(string)$award['description']);
+    }
+    $rr_dashboard_events[]=$award;
+}
 usort($rr_dashboard_events,static function($a,$b){
     $minute=static function($event){
         if (isset($event['sort'])) return (int)$event['sort'];
@@ -177,7 +184,7 @@ usort($rr_dashboard_events,static function($a,$b){
     };
     return ($minute($b)<=>$minute($a)) ?: ((int)($b['sequence']??0)<=>(int)($a['sequence']??0));
 });
-$rr_match_events=$rr_control ? $rr_dashboard_events : (empty($rr_state['poll_award']) ? $rr_public_events : array_merge([$rr_state['poll_award']],$rr_public_events));
+$rr_match_events=$rr_control ? $rr_dashboard_events : $rr_public_events;
 
 if (isset($_GET['rr_poll_api'])) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -260,7 +267,7 @@ if (isset($_GET['rr_poll_api'])) {
         update_option($rr_key,$rr_state,false);
     }
     $rr_api_admin_view=$rr_admin && isset($_GET['rr_admin_view']) && $_GET['rr_admin_view']==='1';
-    $payload = ['ok'=>true,'match_events'=>$rr_api_admin_view?$rr_dashboard_events:$rr_match_events,'elapsed'=>$rr_seconds($rr_state),'period'=>$rr_state['period'],'running'=>$rr_state['running'],
+    $payload = ['ok'=>true,'match_events'=>$rr_api_admin_view?$rr_dashboard_events:$rr_public_events,'elapsed'=>$rr_seconds($rr_state),'period'=>$rr_state['period'],'running'=>$rr_state['running'],
         'finished'=>!empty($rr_state['finished']),'opened'=>$rr_state['opened'],'closed'=>(bool)$rr_closed($rr_state),'token'=>$rr_token,
         'event_credit'=>$rr_event_credit,'score'=>$rr_display_score,'eligible'=>$rr_eligible,'roster_ready'=>rr_poll_lineup_ready($rr_match),'candidates'=>rr_poll_allowed_players($rr_match,$rr_state),'entered'=>$rr_state['entered']??[],
         'voted'=>$rr_eligible && get_option($rr_key.'_vote_'.$rr_state['session'].'_'.$rr_voter,false)!==false];
@@ -558,7 +565,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <?php foreach(rr_poll_allowed_players($rr_match,$rr_state) as $no=>$name): ?><option value="<?php echo (int)$no; ?>"><?php echo esc_html($no.' · '.$name); ?></option><?php endforeach; ?>
 </select><button id="poll-submit" disabled>Send inn stemmen din</button>
 </form>
-<p class="poll-vote-trust">Gratis å stemme · Én stemme per Vipps-bruker</p><p class="muted poll-vote-privacy">Når én spiller vinner kåringen, trekkes én av Vipps-brukerne som stemte på spilleren. Vinnerens fornavn og første bokstav i etternavnet publiseres ved 80. minutt. <a href="<?php echo esc_url(home_url('/vilkar/')); ?>">Vilkår</a> · <a href="<?php echo esc_url(home_url('/personvern/')); ?>">Personvern</a>.</p>
+<p class="poll-vote-trust">Gratis å stemme · Én stemme per Vipps-bruker</p><p class="muted poll-vote-privacy">Når én spiller vinner kåringen, trekkes én av Vipps-brukerne som stemte på spilleren. Kåringen og navnet på den som trekkes, vises bare for administrator på dashboardet. <a href="<?php echo esc_url(home_url('/vilkar/')); ?>">Vilkår</a> · <a href="<?php echo esc_url(home_url('/personvern/')); ?>">Personvern</a>.</p>
 <?php elseif (!$rr_admin): ?>
 <p><a href="<?php echo esc_url(wp_login_url(rr_poll_dashboard_url($rr_url))); ?>">Logg inn for å styre avstemningen og se resultatet</a></p>
 <?php else: ?>
@@ -778,7 +785,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <p class="muted" id="nff-auto-status" role="status">Med Fotball.no valgt oppdateres hendelser omtrent hvert minutt etter kampstart, mens dashboardet er åpent. Manuelle bytter beholdes.</p>
 <h3>Kontroll og historikk</h3>
 <p class="muted">Kamphendelsene vises i kamprammen over. Bruk denne siden til å kontrollere datakilden og oppdatere Fotball.no manuelt ved behov.</p>
-<p class="muted">Manuelle mål, kort og bytter registreres nå under <a href="<?php echo esc_url(rr_poll_dashboard_url($rr_url,'kampstyring')); ?>">Kampstyring</a>. Dagens Bremnesing og en tilfeldig trukket Vipps-stemmevinner publiseres ved 80:00 når én spiller har flest stemmer.</p>
+<p class="muted">Manuelle mål, kort og bytter registreres nå under <a href="<?php echo esc_url(rr_poll_dashboard_url($rr_url,'kampstyring')); ?>">Kampstyring</a>. Dagens Bremnesing og en tilfeldig trukket Vipps-stemmevinner vises på dashboardet ved 80:00 når én spiller har flest stemmer.</p>
 </section>
 <?php endif; ?>
 <?php if ($rr_control && $rr_admin && $rr_dashboard_section==='oppsett'): ?>
