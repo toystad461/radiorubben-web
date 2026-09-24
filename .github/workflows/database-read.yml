@@ -1,17 +1,28 @@
-name: Les publisert innhold fra WordPress-databasen
+name: Historikk for publisert WordPress-innhold
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * *'
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: wordpress-content-history
+  cancel-in-progress: false
 
 jobs:
   export:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
+      - name: Hent eksportprogrammet og Git-tilgang
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: true
+
       - name: Sett opp SSH
         env:
           DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
@@ -26,43 +37,52 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
           printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
 
-      - name: Hent publiserte sider og innlegg
+      - name: Hent og filtrer publisert innhold
         env:
           WP_HOST: cptk37ymg_w1417156@ssh.cptk37ymg.service.one
         run: |
           set -euo pipefail
-          ssh "$WP_HOST" '/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes post list --post_type=page,post --post_status=publish --fields=ID,post_type,post_title,post_name,post_modified,post_content,post_password --format=json' > wordpress-content-raw.json
+          trap 'rm -f "$RUNNER_TEMP/wordpress-content-raw.json"' EXIT
+          ssh "$WP_HOST" '/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes post list --post_type=page,post --post_status=publish --fields=ID,post_type,post_status,post_title,post_name,post_modified,post_content,post_password --format=json' > "$RUNNER_TEMP/wordpress-content-raw.json"
+          python3 scripts/snapshot-wordpress-content.py \
+            "$RUNNER_TEMP/wordpress-content-raw.json" \
+            "$RUNNER_TEMP/wordpress-snapshot" \
+            "$RUNNER_TEMP/wordpress-content.json"
 
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-
-          raw = json.loads(Path("wordpress-content-raw.json").read_text(encoding="utf-8"))
-          if not isinstance(raw, list):
-              raise SystemExit("WP-CLI returnerte ikke en liste.")
-          required = {"ID", "post_type", "post_title", "post_name", "post_modified", "post_content"}
-          if raw and not required.issubset(raw[0]):
-              raise SystemExit("WP-CLI mangler forventede felt.")
-
-          # Published password-protected items are excluded from the export.
-          public = [
-              {key: value for key, value in row.items() if key != "post_password"}
-              for row in raw
-              if not row.get("post_password")
-          ]
-          Path("wordpress-content.json").write_text(
-              json.dumps(public, ensure_ascii=False, indent=2) + "\n",
-              encoding="utf-8",
-          )
-          Path("wordpress-content-raw.json").unlink()
-          print(f"Eksporterte {len(public)} publiserte sider/innlegg.")
-          PY
+      - name: Lagre endringer i egen historikkgren
+        run: |
+          set -euo pipefail
+          set +e
+          git ls-remote --exit-code --heads origin refs/heads/wordpress-content-history > /dev/null
+          branch_status=$?
+          set -e
+          if [ "$branch_status" -eq 0 ]; then
+            git fetch --no-tags --depth=1 origin wordpress-content-history
+            git switch -C wordpress-content-history FETCH_HEAD
+          elif [ "$branch_status" -eq 2 ]; then
+            git switch --orphan wordpress-content-history
+          else
+            echo "Kunne ikke kontrollere historikkgrenen." >&2
+            exit "$branch_status"
+          fi
+          git rm -rf -q . || true
+          git clean -fdq
+          cp -a "$RUNNER_TEMP/wordpress-snapshot/." .
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Ingen endringer siden forrige lagring."
+            exit 0
+          fi
+          git config user.name 'Radio Rubben innholdshistorikk'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m "Lagre publisert WordPress-innhold $(date -u +%Y-%m-%d)"
+          git push origin HEAD:refs/heads/wordpress-content-history
 
       - name: Last opp kortvarig uttrekk
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: wordpress-publisert-innhold
-          path: wordpress-content.json
+          path: ${{ runner.temp }}/wordpress-content.json
           if-no-files-found: error
           retention-days: 1
           compression-level: 9
