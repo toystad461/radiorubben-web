@@ -46,6 +46,23 @@ if ($weekly_quiz || $live_quiz):
 </style>
 <section class="rr-section rr-alt rr-home-latest"><div class="rr-wrap"><div class="rr-section-head"><div><p class="rr-eyebrow">AKTUELT</p><h2>Siste fra Radio Rubben.</h2><p>Artikler, tanker og lokale saker.</p></div><a class="rr-btn-outline" href="<?php echo esc_url(rr_one_get_first_existing_url(['nyheter'], '/nyheter/')); ?>">Se alt →</a></div><?php $latest=new WP_Query(['post_type'=>'post','posts_per_page'=>6,'post_status'=>'publish','ignore_sticky_posts'=>true]); if($latest->have_posts()): ?><div class="rr-post-grid rr-home-posts"><?php while($latest->have_posts()):$latest->the_post();?><article class="rr-post-card"><?php if(has_post_thumbnail()):?><a class="rr-post-thumb" href="<?php the_permalink();?>"><?php the_post_thumbnail('medium_large', ['style' => 'object-fit:contain;object-position:center;']);?></a><?php endif;?><h3><a href="<?php the_permalink();?>"><?php the_title();?></a></h3><time datetime="<?php echo esc_attr(get_the_date('c')); ?>"><?php echo esc_html(get_the_date()); ?></time></article><?php endwhile;?></div><?php wp_reset_postdata(); else:?><p class="rr-large-copy">Her kommer artikler og oppdateringer fra Radio Rubben.</p><?php endif;?></div></section>
 
+
+<section class="rr-section rr-home-rss" aria-labelledby="rr-home-rss-title">
+  <div class="rr-wrap">
+    <div class="rr-section-head"><div><p class="rr-eyebrow">LOKALT NÅ</p><h2 id="rr-home-rss-title">Siste fra Bømlo kommune.</h2><p>Aktuelle saker hentet fra kommunens RSS-feed.</p></div><a class="rr-btn-outline" href="<?php echo esc_url(home_url('/aktuelt-og-kunngjoringer-fra-bomlo-kommune/')); ?>">Se alle saker →</a></div>
+    <?php if (shortcode_exists('rubben_rss_cards')) echo do_shortcode('[rubben_rss_cards urls="https://www.bomlo.kommune.no/ArtikkelRSS.ashx?NyhetsKategoriId=26&Spraak=Nynorsk" count="3"]'); ?>
+  </div>
+</section>
+<style>
+.rr-home-rss{padding-block:48px;background:#15171e}
+.rr-home-rss .rubben-rss-cards__head{display:none}
+.rr-home-rss .rubben-rss-cards__list{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px!important}
+.rr-home-rss .rubben-rss-cards__item{background:#20232b!important;border:1px solid #393d48!important;padding:20px!important;min-height:130px;color:#eef0f5}
+.rr-home-rss .rubben-rss-cards__item a{color:#fff;text-decoration:none}
+.rr-home-rss .rubben-rss-cards__item a:hover{text-decoration:underline;text-decoration-color:#f5cb45}
+@media(max-width:760px){.rr-home-rss .rubben-rss-cards__list{grid-template-columns:1fr}.rr-home-rss{padding-block:32px}}
+</style>
+
 <?php rr_weather_card(); ?>
 
 <section class="rr-wrap rr-home-music-brief" aria-labelledby="rr-music-title"><div><p class="rr-eyebrow">MUSIKKEN PÅ RUBBEN</p><h2 id="rr-music-title">Kjente låter. Nye opplevelser.</h2><p>Gode favoritter, nye bekjentskaper og kjente låter i nye versjoner.</p></div><nav aria-label="Utforsk radioen"><a class="rr-text-link" href="<?php echo esc_url(rr_one_get_first_existing_url(['reimagined'], '/reimagined/')); ?>">Oppdag Reimagined →</a><a class="rr-text-link" href="<?php echo esc_url(rr_one_get_first_existing_url(['pa-radio-rubben','pages-2'], '/pa-radio-rubben/')); ?>">På Radio Rubben →</a></nav></section>
