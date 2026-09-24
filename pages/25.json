@@ -1,0 +1,8 @@
+{
+  "ID": 25,
+  "post_type": "page",
+  "post_title": "Velkommen til Radio Rubben!",
+  "post_name": "hjem",
+  "post_modified": "2025-12-29 19:34:45",
+  "post_content": "<!-- wp:paragraph -->\n<p>Vi lager radio for deg</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:group {\"layout\":{\"type\":\"constrained\"}} -->\n<div class=\"wp-block-group\"><!-- wp:media-text {\"mediaId\":146,\"mediaLink\":\"https://www.radiorubben.no/index.php/hjem/kopi-av-originalstorrelse-logo-radio-rubben_-black_blue_white/\",\"mediaType\":\"image\",\"verticalAlignment\":\"center\"} -->\n<div class=\"wp-block-media-text is-stacked-on-mobile is-vertically-aligned-center\"><figure class=\"wp-block-media-text__media\"><img src=\"https://www.radiorubben.no/wp-content/uploads/2025/11/Kopi-av-Originalstorrelse-Logo-Radio-Rubben_-Black_Blue_White.png\" alt=\"\" class=\"wp-image-146 size-full\"/></figure><div class=\"wp-block-media-text__content\"><!-- wp:paragraph -->\n<p><em>Fra studio på Bømlo sender vi ekte radio med varme, humor og musikkglede – døgnet rundt.<br>Hør oss live, finn dine favorittprogrammer, og bli en del av det lokale fellesskapet som står bak Radio Rubben.</em></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph {\"placeholder\":\"Innhold...\"} -->\n<p>🎙️ <a href=\"https://s2.radio.co/s48df93692/listen\"><em>Hør oss live</em> </a></p>\n<!-- /wp:paragraph --></div></div>\n<!-- /wp:media-text --></div>\n<!-- /wp:group -->"
+}
