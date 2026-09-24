@@ -47,6 +47,7 @@
         <span class="rr-next-eyebrow"><span class="rr-next-dot" aria-hidden="true"></span> NESTE KAMP</span>
         <strong class="rr-next-countdown" data-kickoff="<?php echo esc_attr($rr_next_match['kickoff']); ?>">--:--:--</strong>
         <?php if ($rr_next_when!==''): ?><span class="rr-next-when"><?php echo esc_html($rr_next_when); ?></span><?php endif; ?>
+        <span class="rr-next-invite">TA TUREN PÅ KAMP <span aria-hidden="true">↗</span></span>
       </div>
       <div class="rr-next-club rr-next-club-away">
         <span class="rr-next-side-label">BORTE</span><strong><?php echo esc_html($rr_next_match['away']); ?></strong>
@@ -56,21 +57,24 @@
   <?php endif; ?>
   <?php if ($rr_active_vote || $rr_next_match): ?>
   <style>
-  .rr-match-vote-bar,.rr-next-match-bar{border-top:1px solid #33323a;border-bottom:1px solid #39323a;background:linear-gradient(105deg,#191b24 0%,#20232e 50%,#191b24 100%)}
-  a.rr-next-match-bar{display:block;color:#f8f8fb;text-decoration:none}
-  a.rr-next-match-bar:hover{background:linear-gradient(105deg,#222734,#292d3b 50%,#222734)}
+  .rr-match-vote-bar{border-top:1px solid #33323a;border-bottom:1px solid #39323a;background:#191b24}
+  .rr-next-match-bar{position:relative;isolation:isolate;border-top:1px solid #6f3039;border-bottom:2px solid #e43843;background:radial-gradient(ellipse at 50% -80%,#bb35445c,transparent 70%),linear-gradient(100deg,#241b24 0%,#2b2027 50%,#241b24 100%)}
+  .rr-next-match-bar::before,.rr-next-match-bar::after{position:absolute;z-index:-1;inset:0 auto 0 0;width:24%;content:"";background:repeating-linear-gradient(120deg,transparent 0 27px,#ffffff06 27px 29px);pointer-events:none}
+  .rr-next-match-bar::after{inset:0 0 0 auto;transform:scaleX(-1)}
+  a.rr-next-match-bar{display:block;color:#fff;text-decoration:none}
+  a.rr-next-match-bar:hover{background:radial-gradient(ellipse at 50% -80%,#d33d4d80,transparent 70%),linear-gradient(100deg,#30212c 0%,#39242b 50%,#30212c 100%)}
   a.rr-next-match-bar:focus-visible,.rr-match-vote-button:focus-visible{outline:3px solid #f5cb45;outline-offset:-3px}
-  .rr-next-match-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,210px) minmax(0,1fr);align-items:center;gap:22px;min-height:88px;padding-block:12px}
-  .rr-next-club{display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:0;line-height:1.1}
-  .rr-next-club strong{color:#fff;font-size:clamp(21px,2.3vw,31px);font-weight:900;letter-spacing:-.035em;overflow-wrap:anywhere}
-  .rr-next-side-label{color:#f5cb45;font-size:10px;font-weight:900;letter-spacing:.16em}
-  .rr-next-club-away{text-align:right}
-  .rr-next-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:58px;border-inline:1px solid #45444e;text-align:center;line-height:1.15}
+  .rr-next-match-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(175px,230px) minmax(0,1fr);align-items:center;gap:14px;min-height:112px;padding-block:13px}
+  .rr-next-club{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;text-align:center;line-height:1.1}
+  .rr-next-club strong{color:#fff;font-size:clamp(22px,2.5vw,34px);font-weight:900;letter-spacing:-.035em;overflow-wrap:anywhere;text-shadow:0 2px 16px #0006}
+  .rr-next-side-label{color:#f5cb45;font-size:10px;font-weight:900;letter-spacing:.17em}
+  .rr-next-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:78px;border-inline:1px solid #ffffff32;text-align:center;line-height:1.15}
   .rr-next-eyebrow{display:inline-flex;align-items:center;gap:6px;color:#f5cb45;font-size:10px;font-weight:900;letter-spacing:.13em;white-space:nowrap}
   .rr-next-dot,.rr-live-dot{width:7px;height:7px;border-radius:50%;background:#f5cb45;flex:none}
   .rr-live-dot{background:#ff5369;box-shadow:0 0 0 4px #ff53691f}
-  .rr-next-countdown{margin-top:3px;color:#fff;font-size:23px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:.025em;white-space:nowrap}
-  .rr-next-when{margin-top:2px;color:#bfc8d7;font-size:11px;font-weight:650;white-space:nowrap}
+  .rr-next-countdown{margin-top:5px;color:#fff;font-size:26px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:.025em;white-space:nowrap}
+  .rr-next-when{margin-top:2px;color:#e8d5d7;font-size:11px;font-weight:650;white-space:nowrap}
+  .rr-next-invite{margin-top:7px;color:#f5cb45;font-size:10px;font-weight:900;letter-spacing:.04em;white-space:nowrap}
   .rr-match-vote-inner{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:20px;min-height:78px;padding-block:10px}
   .rr-match-vote-label{display:inline-flex;align-items:center;gap:8px;color:#ffcf58;font-size:11px;font-weight:900;letter-spacing:.08em;white-space:nowrap}
   .rr-match-vote-fixture{display:flex;align-items:center;justify-content:center;gap:14px;min-width:0;color:#f5f6fa;font-size:15px}
@@ -79,15 +83,15 @@
   .rr-match-vote-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:9px 15px;border-radius:9px;background:#f5cb45;color:#141821!important;text-decoration:none!important;font-size:13px;font-weight:900;white-space:nowrap}
   .rr-match-vote-button:hover{background:#ffdb68}
   @media(max-width:720px){
-    .rr-next-match-inner{grid-template-columns:minmax(0,1fr) minmax(118px,140px) minmax(0,1fr);gap:8px;min-height:82px;padding-block:9px}
-    .rr-next-club{gap:3px}
-    .rr-next-club strong{font-size:clamp(15px,4vw,21px)}
+    .rr-next-match-inner{grid-template-columns:minmax(0,1fr) minmax(130px,150px) minmax(0,1fr);gap:4px;min-height:100px;padding-block:9px}
+    .rr-next-club{gap:5px}
+    .rr-next-club strong{font-size:clamp(14px,4vw,21px);line-height:1.12}
     .rr-next-side-label{font-size:8px}
-    .rr-next-club strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.15}
-    .rr-next-center{min-height:60px}
+    .rr-next-center{min-height:78px}
     .rr-next-eyebrow{font-size:9px;letter-spacing:.08em}
     .rr-next-countdown{font-size:17px}
     .rr-next-when{font-size:10px}
+    .rr-next-invite{font-size:8px;letter-spacing:0}
     .rr-match-vote-inner{grid-template-columns:minmax(0,1fr) auto;gap:7px 10px;min-height:92px}
     .rr-match-vote-label{grid-column:1/-1;font-size:10px}
     .rr-match-vote-fixture{justify-content:flex-start;gap:7px;font-size:12px}
