@@ -129,7 +129,7 @@ if (!empty($rr_state['opened']) && $rr_seconds($rr_state)>=4800 && empty($rr_sta
                     if ($first==='') {
                         $parts=preg_split('/\s+/u',trim((string)$user->display_name));
                         $first=(string)($parts[0]??'');
-                        if ($last==='') $last=(string)($parts[count($parts)-1]??'');
+                        if ($last==='' && count($parts)>1) $last=(string)$parts[count($parts)-1];
                     }
                     $initial=$last!=='' ? mb_substr($last,0,1).'.' : '';
                     $public_name=sanitize_text_field($first.($initial!==''?' '.$initial:''));
