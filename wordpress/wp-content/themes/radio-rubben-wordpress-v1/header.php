@@ -59,8 +59,7 @@
   <style>
   .rr-match-vote-bar{border-top:1px solid #33323a;border-bottom:1px solid #39323a;background:#191b24}
   .rr-next-match-bar{position:relative;isolation:isolate;border-top:1px solid #6f3039;border-bottom:2px solid #e43843;background:radial-gradient(ellipse at 50% -80%,#bb35445c,transparent 70%),linear-gradient(100deg,#241b24 0%,#2b2027 50%,#241b24 100%)}
-  .rr-next-match-bar::before,.rr-next-match-bar::after{position:absolute;z-index:-1;inset:0 auto 0 0;width:24%;content:"";background:repeating-linear-gradient(120deg,transparent 0 27px,#ffffff06 27px 29px);pointer-events:none}
-  .rr-next-match-bar::after{inset:0 0 0 auto;transform:scaleX(-1)}
+  .rr-next-match-bar::before{position:absolute;z-index:-1;inset:0;content:"";background:url("https://www.radiorubben.no/wp-content/uploads/2026/09/Radio-Rubben-%E2%80%93-Fotball.png") center 84% / cover no-repeat;opacity:.2;pointer-events:none}
   a.rr-next-match-bar{display:block;color:#fff;text-decoration:none}
   a.rr-next-match-bar:hover{background:radial-gradient(ellipse at 50% -80%,#d33d4d80,transparent 70%),linear-gradient(100deg,#30212c 0%,#39242b 50%,#30212c 100%)}
   a.rr-next-match-bar:focus-visible,.rr-match-vote-button:focus-visible{outline:3px solid #f5cb45;outline-offset:-3px}
