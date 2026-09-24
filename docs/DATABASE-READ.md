@@ -1,31 +1,31 @@
-# Les publisert innhold fra WordPress-databasen
+# Historikk for publisert WordPress-innhold
 
-Arbeidsflyten `Les publisert innhold fra WordPress-databasen` gir et
-skrivebeskyttet uttrekk av gjeldende, publiserte WordPress-sider og innlegg.
-Den kjøres manuelt fra `main` og laster resultatet opp som en privat GitHub
-Actions-artefakt som slettes etter ett døgn.
+Arbeidsflyten **Historikk for publisert WordPress-innhold** leser gjeldende,
+publiserte sider og innlegg fra RadioRubben.no. Den kjører daglig kl. 03:17 UTC
+og kan også startes manuelt fra `main` i GitHub Actions.
 
-## Slik henter du uttrekket
+Ved endringer oppretter den én commit på grenen
+[`wordpress-content-history`](https://github.com/toystad461/radiorubben-web/tree/wordpress-content-history).
+Innholdet ligger i `pages/<WordPress-ID>.json` og `posts/<WordPress-ID>.json`.
+Filnavnene forblir de samme når tittel eller adresse endres, slik at Git viser
+endringene for hver side eller artikkel. Uendret innhold lager ingen ny commit.
+Slettede eller avpubliserte elementer fjernes fra siste øyeblikksbilde, men
+tidligere versjoner finnes fortsatt i grenens Git-historikk.
 
-1. Åpne repositoryet `toystad461/radiorubben-web` på GitHub.
-2. Gå til **Actions** og velg **Les publisert innhold fra WordPress-databasen**.
-3. Velg **Run workflow** med grenen `main`.
-4. Når kjøringen er fullført, last ned artefakten
-   `wordpress-publisert-innhold`.
+## Bruk
 
-Uttrekket inneholder ID, type, tittel, slug, endret dato og innhold for
-publiserte sider og innlegg. Passordbeskyttede elementer filtreres bort.
-Arbeidsflyten bruker WP-CLI på webhotellet og lar WordPress-installasjonen
-bruke sin lokale databasekobling. Databasepassordet legges ikke i GitHub,
-arbeidsflytloggen eller repositoryet.
+1. Åpne **Actions → Historikk for publisert WordPress-innhold**.
+2. Velg **Run workflow** på `main` for en eksport med én gang.
+3. Se filene og endringene på `wordpress-content-history`.
+4. Et samlet JSON-uttrekk finnes også som artefakten
+   `wordpress-publisert-innhold` på hver kjøring. Artefakten slettes etter ett
+   døgn; Git-historikken blir værende.
 
-## Avgrensning
+Det private repositoryet inneholder nå en varig kopi av *publisert innhold*.
+Kun ubeskyttede sider og innlegg lagres: ID, type, tittel, slug, sist endret
+og WordPress-innhold. Brukere, stemmer, kommentarer, innstillinger, kode-snippets,
+andre databasetabeller og mediefiler inngår ikke. Eksporten leser via WP-CLI på
+webhotellet. Databasepassordet legges ikke i GitHub. Arbeidsflyten skriver
+aldri tilbake til WordPress; gjenoppretting må gjøres kontrollert i WordPress.
 
-Uttrekket er ikke en full databasekopi. Det inneholder ikke brukerkontoer,
-stemmer, kommentarer, innstillinger, kode-snippets, andre databasetabeller
-eller mediefiler. Det skriver ikke tilbake til WordPress og lagrer ikke
-uttrekket som en Git-commit.
-
-En full SQL-eksport kan inneholde personopplysninger, passord-hasher,
-sesjonsdata og plugin-data. Den skal behandles som en privat backup og ikke
-lastes opp til repositoryet eller som en vanlig GitHub Actions-artefakt.
+Dette er historikk for publisert tekstinnhold, ikke en full databasebackup.
