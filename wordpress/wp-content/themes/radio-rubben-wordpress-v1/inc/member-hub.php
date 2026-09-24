@@ -1,6 +1,6 @@
 <?php
 if (!defined('ABSPATH')) exit;
-require_once __DIR__ . '/vipps-birthday.php';
+// Pause birthday collection until an optional choice and deletion routine exist.
 require_once __DIR__ . '/member-delete.php';
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('rr-member-hub', get_template_directory_uri().'/assets/css/member-hub.css', ['rr-one-design'], '1.0.1');
