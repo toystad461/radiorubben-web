@@ -419,15 +419,43 @@ get_header();
 .rr-poll .poll-coverage small{font-size:11px;color:#c3cddd;letter-spacing:.04em;text-align:center}
 </style>
 <style>
-.rr-poll:not(.rr-speaker){max-width:1180px}
-.rr-poll:not(.rr-speaker)>.poll-match{max-width:960px;margin:24px auto 32px}
-.rr-poll .poll-content-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:24px;align-items:start;margin:24px 0}
+.rr-poll:not(.rr-speaker){max-width:1120px}
+.rr-poll .poll-public-layout{margin:22px 0 0;padding:14px 28px 22px;border:1px solid #48566e;border-radius:22px;background:linear-gradient(145deg,#202b3d,#151d2a)}
+.rr-poll .poll-public-layout>.poll-match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,230px);gap:12px 28px;align-items:center;margin:0;padding:14px 0 20px;border:0;border-bottom:1px solid #536078;border-radius:0;background:none;text-align:left}
+.rr-poll .poll-public-layout>.poll-match>h2{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.rr-poll .poll-public-layout .poll-teams{grid-column:1;gap:12px}
+.rr-poll .poll-public-layout .poll-team{flex-direction:row;text-align:left}
+.rr-poll .poll-public-layout .poll-team:last-child{flex-direction:row-reverse;text-align:right}
+.rr-poll .poll-public-layout .poll-team img{width:54px;height:54px;flex-shrink:0}
+.rr-poll .poll-public-layout .poll-team strong{font-size:clamp(18px,2.5vw,25px)}
+.rr-poll .poll-public-layout .poll-timer{grid-column:2;margin:0!important;padding:10px 12px;background:#111927;text-align:center}
+.rr-poll .poll-public-layout #poll-clock{font-size:clamp(23px,3vw,32px)}
+.rr-poll .poll-public-layout #poll-clock-label,.rr-poll .poll-public-layout #poll-clock-note{font-size:11px}
+.rr-poll .poll-public-layout .poll-match .poll-details{grid-column:1/-1;margin:0;padding:0;border:0;font-size:13px;color:#c3cddd;text-align:center}
+.rr-poll .poll-public-layout .poll-events-inline{grid-column:1/-1}
+.rr-poll .poll-content-grid{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(0,.86fr);gap:24px;align-items:start;margin:0;padding:26px 0}
 .rr-poll .poll-content-grid>.poll-intro,.rr-poll .poll-content-grid>.poll-vote-card{margin:0;min-width:0}
-.rr-poll .poll-content-grid .poll-intro{padding:28px}
-.rr-poll .poll-content-grid .poll-intro h2{font-size:clamp(22px,3vw,30px);color:#fff;margin:0 0 20px}
-.rr-poll:not(.rr-speaker)>.poll-partner{margin:32px 0 0;padding:28px;background:#171d29;border:1px solid #515d74;border-radius:18px}
-.rr-poll:not(.rr-speaker)>.poll-partner .poll-partner-logo{width:min(100%,400px)}
-@media(max-width:800px){.rr-poll .poll-content-grid{grid-template-columns:1fr;gap:18px}.rr-poll .poll-content-grid .poll-intro{padding:22px}}
+.rr-poll .poll-content-grid .poll-intro{padding:4px 12px 0 0;border:0;border-radius:0;background:none}
+.rr-poll .poll-content-grid .poll-intro h2{font-size:clamp(24px,3vw,32px);line-height:1.2;color:#fff;margin:0 0 18px}
+.rr-poll .poll-content-grid .poll-intro-lead{font-size:17px;line-height:1.65}
+.rr-poll .poll-content-grid .poll-intro p{margin-bottom:18px}
+.rr-poll .poll-content-grid .poll-vote-card{padding:23px;background:#172131;box-shadow:none;border:1px solid #4b5970;border-radius:16px}
+.rr-poll .poll-public-layout>.poll-partner{margin:0;padding:26px 0;border:0;border-top:1px solid #536078;background:none;text-align:center}
+.rr-poll .poll-public-layout>.poll-partner .poll-partner-logo{width:min(100%,320px);min-height:90px}
+.rr-poll .poll-public-layout>.poll-coverage{margin:0;padding-top:14px}
+@media(max-width:800px){
+.rr-poll .poll-public-layout{padding:12px 18px 20px}
+.rr-poll .poll-public-layout>.poll-match{grid-template-columns:1fr;gap:12px}
+.rr-poll .poll-public-layout .poll-teams,.rr-poll .poll-public-layout .poll-timer{grid-column:1}
+.rr-poll .poll-public-layout .poll-teams{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rr-poll .poll-public-layout .poll-team,.rr-poll .poll-public-layout .poll-team:last-child{display:flex;flex-direction:column;align-items:center;text-align:center}
+.rr-poll .poll-public-layout .poll-team:first-child{grid-column:1}
+.rr-poll .poll-public-layout .poll-team:last-child{grid-column:2}
+.rr-poll .poll-public-layout .poll-team img,.rr-poll .poll-public-layout .poll-team strong{grid-row:auto;grid-column:auto}
+.rr-poll .poll-public-layout .poll-timer{padding:8px}
+.rr-poll .poll-content-grid{grid-template-columns:1fr;gap:18px;padding:22px 0}
+.rr-poll .poll-content-grid .poll-intro{padding:0}
+}
 </style>
 <main class="rr-poll<?php echo $rr_control ? ' rr-speaker' : ''; ?><?php echo ($rr_control && $rr_live_section) ? ' rr-speaker-live' : ''; ?>">
 <p class="tag"><?php echo $rr_control ? 'Dagens Bremnesing · Kampstyring' : 'Dagens Kamp'; ?></p>
@@ -444,8 +472,9 @@ get_header();
 </nav>
 <p id="poll-feedback" role="status" aria-live="polite"></p>
 <?php endif; ?>
+<?php if (!$rr_control): ?><div class="poll-public-layout"><?php endif; ?>
 <section class="poll-match" aria-labelledby="poll-match-heading">
-<h2 id="poll-match-heading"><?php echo $rr_control ? 'Valgt kamp' : 'Du stemmer på denne kampen'; ?></h2>
+<h2 id="poll-match-heading"><?php echo $rr_control ? 'Valgt kamp' : esc_html($rr_match['home'].' mot '.$rr_match['away']); ?></h2>
 <div class="poll-teams<?php echo empty($rr_state['opened'])?' is-pregame':''; ?>">
 <div class="poll-team"><?php if ($rr_match['home_logo']): ?><img src="<?php echo esc_url($rr_match['home_logo']); ?>" alt="<?php echo esc_attr($rr_match['home'].' sin logo'); ?>" width="76" height="76"><?php endif; ?><strong><?php echo esc_html($rr_match['home']); ?></strong></div>
 <span class="poll-versus" id="poll-score"<?php echo empty($rr_state['opened'])?' hidden':''; ?> aria-label="Registrert kampresultat" aria-live="polite"><?php $rr_score=$rr_display_score; echo $rr_state['opened'] ? esc_html($rr_score['home'].' – '.$rr_score['away']) : '–'; ?></span>
@@ -478,7 +507,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <p class="muted" style="font-size:12px"><span id="poll-event-credit"><?php echo esc_html($rr_event_credit); ?></span> · nyeste hendelse øverst.</p>
 </section>
 <?php endif; ?>
-<p class="poll-details"><time datetime="<?php echo esc_attr($rr_match['kickoff']); ?>"><?php echo esc_html($rr_match['date_label']); ?></time><?php if ($rr_control): ?> · <?php echo esc_html($rr_match['venue']); ?><?php else: ?><br><?php echo esc_html($rr_match['venue']); ?><br><?php echo esc_html($rr_match['competition']); ?><?php endif; ?></p>
+<p class="poll-details"><time datetime="<?php echo esc_attr($rr_match['kickoff']); ?>"><?php echo esc_html($rr_match['date_label']); ?></time><?php if ($rr_control): ?> · <?php echo esc_html($rr_match['venue']); ?><?php else: ?> <span aria-hidden="true">·</span> <?php echo esc_html($rr_match['venue']); ?> <span aria-hidden="true">·</span> <?php echo esc_html($rr_match['competition']); ?><?php endif; ?></p>
 <?php if ($rr_control && $rr_admin): ?>
 <p class="speaker-referees"><?php if (!empty($rr_welcome_info['refs'])): ?><strong>Dommere:</strong> <?php $rr_ref_parts=[]; foreach($rr_welcome_info['refs'] as $rr_ref) $rr_ref_parts[]=trim(($rr_ref['role']??'').': '.($rr_ref['name']??''),': '); echo esc_html(implode(' · ',$rr_ref_parts)); ?><?php else: ?><strong>Dommere:</strong> ikke publisert<?php endif; ?></p>
 <?php endif; ?>
@@ -512,12 +541,12 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <?php if (!$rr_control): ?>
 <?php $rr_public_welcome=rr_poll_public_welcome($rr_match); ?>
 <section class="poll-intro" aria-labelledby="poll-article-heading">
-<h2 id="poll-article-heading">Kampartikkel</h2>
+<h2 id="poll-article-heading"><?php echo esc_html($rr_public_welcome['headline']); ?></h2>
 <p class="poll-intro-lead"><?php echo esc_html($rr_public_welcome['lead']); ?></p>
-<p><strong>Plassering på tabellen</strong><br><?php echo esc_html($rr_public_welcome['standing']); ?></p>
-<p><strong>Tidligere oppgjør</strong><br><?php echo esc_html($rr_public_welcome['previous']); ?></p>
+<?php if ($rr_public_welcome['standing'] !== ''): ?><p><?php echo esc_html($rr_public_welcome['standing']); ?></p><?php endif; ?>
+<p><?php echo esc_html($rr_public_welcome['previous']); ?></p>
 <?php if (!empty($rr_public_welcome['scorer']['name']) && !empty($rr_public_welcome['scorer']['goals'])): ?>
-<p><strong>Bremnes sin toppscorer i turneringen</strong><br><?php echo esc_html($rr_public_welcome['scorer']['name'].' har scoret '.$rr_public_welcome['scorer']['goals'].' mål.'); ?> <a href="<?php echo esc_url($rr_public_welcome['scorer_url']); ?>" target="_blank" rel="noopener">Se lagstatistikken hos Fotball.no</a></p>
+<p><?php echo esc_html('Bremnes sin toppscorer i turneringen er '.$rr_public_welcome['scorer']['name'].', med '.$rr_public_welcome['scorer']['goals'].' mål.'); ?> <a href="<?php echo esc_url($rr_public_welcome['scorer_url']); ?>" target="_blank" rel="noopener">Se lagstatistikken hos Fotball.no</a></p>
 <?php endif; ?>
 <p class="poll-intro-invite"><?php echo esc_html($rr_public_welcome['invite']); ?></p>
 <p class="poll-intro-source">Kilder: <a href="<?php echo esc_url(rr_poll_source_url($rr_match_id)); ?>" target="_blank" rel="noopener">Fotball.no</a><?php if ($rr_public_welcome['verified_table']): ?> (tabell sjekket <?php echo esc_html(wp_date('d.m H:i',$rr_public_welcome['fetched'],new DateTimeZone('Europe/Oslo'))); ?>)<?php endif; ?> · Radio Rubbens kontrollerte 2026-resultater.</p>
@@ -802,6 +831,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <?php endif; ?>
 <?php if ($rr_match_sponsor === ''): ?><section class="poll-partner" aria-label="Dagens kampsponsor"><h2>Dagens kampsponsor</h2><p>Ikke registrert for denne kampen ennå.</p></section><?php endif; ?>
 <div class="poll-coverage"><span>Utviklet for lokalfotballen – i samarbeid med Radio Rubben</span><img src="<?php echo esc_url(rr_one_logo_url()); ?>" alt="Radio Rubben" width="120"><small>Digitalt engasjement rundt kampen</small></div>
+</div>
 <?php endif; ?>
 <?php if ($rr_control && $rr_admin && $rr_dashboard_section==='hendelser'): ?>
 <section class="card" id="poll-lineup"><h2>Kamphendelser</h2>
