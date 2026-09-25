@@ -39,17 +39,53 @@ function rr_poll_active_vote() {
         'url'=>add_query_arg('rr_match',(int)$match['id'],home_url('/dagenskamp/')),
     ];
 }
-function rr_poll_next_match_header() {
-    if (rr_poll_active_vote()) return [];
-    $match=rr_poll_selected_match_data();
-    if (!$match) return [];
-    $future=strtotime((string)$match['kickoff'])>time();
-    if (!$future && (!empty($match['state']['finished']) || !empty($match['state']['opened']))) return [];
+function rr_poll_next_match_data() {
+    // Verified 2026 fixture snapshot for both senior teams. Do not show the live selected match as upcoming.
+    $fixtures=require __DIR__.'/bremnes-season-2026.php';
+    $selected=rr_poll_selected_match_data();
+    $started=!empty($selected['state']['opened']) || !empty($selected['state']['finished']);
+    $current_id=(int)($selected['id']??0);
+    $now=time();
+    $upcoming=[];
+    foreach ($fixtures as $id=>$fixture) {
+        $kickoff=strtotime((string)($fixture['kickoff']??''));
+        $waiting_today=!$started && (int)$id===$current_id && wp_date('Y-m-d',$kickoff,new DateTimeZone('Europe/Oslo'))===wp_date('Y-m-d',$now,new DateTimeZone('Europe/Oslo'));
+        if (!$kickoff || ($kickoff <= $now && !$waiting_today) || ($started && (int)$id===$current_id)) continue;
+        $upcoming[]=['id'=>(int)$id,'fixture'=>$fixture,'timestamp'=>$kickoff];
+    }
+    usort($upcoming,static function($a,$b){return $a['timestamp']<=>$b['timestamp'];});
+    if (!$upcoming) return [];
+    $next=$upcoming[0]; $id=$next['id']; $fixture=$next['fixture'];
+    // Use an imported record when available; the verified fixture supplies a safe fallback.
+    $stored=get_option('rr_poll_match_'.$id,[]);
+    if (is_array($stored) && !empty($stored['home']) && !empty($stored['away']) && !empty($stored['kickoff'])) {
+        $match=$stored;
+    } else {
+        $home=($fixture['home']??'')==='yes';
+        $bremnes_logo='https://www.radiorubben.no/wp-content/uploads/2026/09/Bremnes-laglogo.png';
+        $match=[
+            'home'=>$home?'Bremnes':$fixture['opponent'],
+            'away'=>$home?$fixture['opponent']:'Bremnes',
+            'home_id'=>$home?(($fixture['team']??'')==='kvinner'?48835:30365):0,
+            'home_logo'=>$home?$bremnes_logo:$fixture['logo'],
+            'away_logo'=>$home?$fixture['logo']:$bremnes_logo,
+            'kickoff'=>$fixture['kickoff'],
+            'venue'=>$fixture['venue'],
+            'competition'=>($fixture['team']??'')==='kvinner'?'3. div. kvinner Vestland':'5. div. menn avd. 03',
+            'team'=>($fixture['team']??'')==='kvinner'?'Damer A':'Herrer A',
+        ];
+    }
+    $match['id']=$id;
+    $match['fixture_team']=$fixture['team'];
     $match['url']=home_url('/nestekamp/');
     return $match;
 }
+function rr_poll_next_match_header() {
+    if (rr_poll_active_vote()) return [];
+    return rr_poll_next_match_data();
+}
 function rr_poll_next_match_share_data() {
-    $match=rr_poll_selected_match_data();
+    $match=rr_poll_next_match_data();
     if (!$match) return [];
     $tz=new DateTimeZone('Europe/Oslo');
     $ts=strtotime((string)$match['kickoff']);
