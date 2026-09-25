@@ -439,6 +439,9 @@ get_header();
 <p class="poll-intro-lead"><?php echo esc_html($rr_public_welcome['lead']); ?></p>
 <p><strong>Plassering på tabellen</strong><br><?php echo esc_html($rr_public_welcome['standing']); ?></p>
 <p><strong>Tidligere oppgjør</strong><br><?php echo esc_html($rr_public_welcome['previous']); ?></p>
+<?php if (!empty($rr_public_welcome['scorer']['name']) && !empty($rr_public_welcome['scorer']['goals'])): ?>
+<p><strong>Bremnes sin toppscorer i turneringen</strong><br><?php echo esc_html($rr_public_welcome['scorer']['name'].' har scoret '.$rr_public_welcome['scorer']['goals'].' mål.'); ?> <a href="<?php echo esc_url($rr_public_welcome['scorer_url']); ?>" target="_blank" rel="noopener">Se lagstatistikken hos Fotball.no</a></p>
+<?php endif; ?>
 <p class="poll-intro-invite"><?php echo esc_html($rr_public_welcome['invite']); ?></p>
 <p class="poll-intro-source">Kilder: <a href="<?php echo esc_url(rr_poll_source_url($rr_match_id)); ?>" target="_blank" rel="noopener">Fotball.no</a><?php if ($rr_public_welcome['verified_table']): ?> (tabell sjekket <?php echo esc_html(wp_date('d.m H:i',$rr_public_welcome['fetched'],new DateTimeZone('Europe/Oslo'))); ?>)<?php endif; ?> · Radio Rubbens kontrollerte 2026-resultater.</p>
 </section>
