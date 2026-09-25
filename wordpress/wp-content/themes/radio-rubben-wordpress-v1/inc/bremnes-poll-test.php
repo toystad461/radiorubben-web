@@ -461,6 +461,21 @@ get_header();
 .rr-poll .poll-content-grid .poll-intro{padding:0}
 }
 </style>
+<style>
+.rr-poll .poll-match-vote-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;margin:14px auto 0;padding:10px 18px;border-radius:999px;background:#f5cb45;color:#151b24;font-size:14px;font-weight:800;text-decoration:none}
+.rr-poll .poll-public-layout .poll-match-vote-link{grid-column:1/-1;justify-self:center}
+.rr-poll .poll-match-vote-link:hover{background:#ffe079;color:#151b24}
+.rr-speaker .speaker-vote-cue{margin:12px 0 0;padding:14px 16px;border:1px solid #74839a;border-radius:12px;background:#111927;text-align:left}
+.rr-speaker .speaker-vote-cue[hidden]{display:none}
+.rr-speaker .speaker-vote-cue strong{display:block;color:#f5cb45;font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+.rr-speaker .speaker-vote-cue p{margin:7px 0 0;line-height:1.5;font-size:15px}
+.rr-speaker .speaker-vote-cue a{color:#f5cb45;font-weight:800}
+.rr-poll .poll-steps{margin:0 0 18px;padding:12px 14px;border-radius:12px;background:#111927;color:#dce5f0;font-size:13px;line-height:1.5}
+@media(max-width:800px){
+.rr-poll .poll-content-grid>.poll-vote-card{order:1}
+.rr-poll .poll-content-grid>.poll-intro{order:2}
+}
+</style>
 <main class="rr-poll<?php echo $rr_control ? ' rr-speaker' : ''; ?><?php echo ($rr_control && $rr_live_section) ? ' rr-speaker-live' : ''; ?>">
 <p class="tag"><?php echo $rr_control ? 'Dagens Bremnesing · Kampstyring' : 'Dagens Kamp'; ?></p>
 <h1><?php echo $rr_control ? 'Speakerboard' : 'Kampdag med Bremnes'; ?></h1>
@@ -512,6 +527,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 </section>
 <?php endif; ?>
 <p class="poll-details"><time datetime="<?php echo esc_attr($rr_match['kickoff']); ?>"><?php echo esc_html($rr_match['date_label']); ?></time><?php if ($rr_control): ?> · <?php echo esc_html($rr_match['venue']); ?><?php else: ?> <span aria-hidden="true">·</span> <?php echo esc_html($rr_match['venue']); ?> <span aria-hidden="true">·</span> <?php echo esc_html($rr_match['competition']); ?><?php endif; ?></p>
+<?php if (!$rr_control): ?><a class="poll-match-vote-link" href="#poll-live">Gå til avstemningen ↓</a><?php endif; ?>
 <?php if ($rr_control && $rr_admin): ?>
 <p class="speaker-referees"><?php if (!empty($rr_welcome_info['refs'])): ?><strong>Dommere:</strong> <?php $rr_ref_parts=[]; foreach($rr_welcome_info['refs'] as $rr_ref) $rr_ref_parts[]=trim(($rr_ref['role']??'').': '.($rr_ref['name']??''),': '); echo esc_html(implode(' · ',$rr_ref_parts)); ?><?php else: ?><strong>Dommere:</strong> ikke publisert<?php endif; ?></p>
 <?php endif; ?>
@@ -524,6 +540,10 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <div class="speaker-section-head"><strong>Avstemning</strong><span id="speaker-poll-total"></span></div>
 <ol id="speaker-poll-live-results"></ol>
 </div>
+<aside class="speaker-vote-cue" id="speaker-vote-cue" aria-label="Kort oppfordring til publikum"<?php echo empty($rr_state['opened']) || $rr_closed($rr_state) || !empty($rr_state['finished'])?' hidden':''; ?>>
+<strong>Si til publikum</strong>
+<p>«Gå til <a href="<?php echo esc_url(home_url('/kamp/')); ?>" target="_blank" rel="noopener">radiorubben.no/kamp</a>. Logg inn med Vipps, velg spilleren og send stemmen. Det er gratis, og du kan stemme én gang.»</p>
+</aside>
 <?php endif; ?>
 <?php if ($rr_control && $rr_match_sponsor !== '' && !$rr_live_section): ?>
 <section class="poll-partner" aria-label="Dagens kampsponsor">
@@ -555,7 +575,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <?php endif; ?>
 <?php if (!$rr_control || ($rr_admin && $rr_live_section)): ?>
 <section class="card<?php echo !$rr_control?' poll-vote-card':''; ?>" id="poll-live">
-<?php if (!$rr_control): ?><header class="poll-vote-heading"><span class="poll-vote-eyebrow">Din stemme teller</span><h2>Dagens Bremnesing</h2><p>Hvem fortjener din stemme i dag?</p></header><?php endif; ?>
+<?php if (!$rr_control): ?><header class="poll-vote-heading"><span class="poll-vote-eyebrow">Din stemme teller</span><h2>Dagens Bremnesing</h2><p>Hvem fortjener din stemme i dag?</p></header><p class="poll-steps"><?php echo $rr_eligible ? '1. Velg spiller · 2. Send stemmen' : '1. Logg inn med Vipps · 2. Velg spiller · 3. Send stemmen'; ?></p><?php endif; ?>
 <?php if ($rr_control): ?><h2>Kampstyring</h2><?php endif; ?>
 
 <style>
@@ -1062,6 +1082,7 @@ function render(){
  el('poll-score').textContent=state.opened?state.score.home+' – '+state.score.away:'';
  const elapsed=Math.floor(clockElapsed());
  const closed=state.closed||(state.period===2&&elapsed>=4500);
+ if(el('speaker-vote-cue'))el('speaker-vote-cue').hidden=!state.opened||closed||state.finished;
  const nowMs=countdownAnchor ? countdownAnchor.serverMs+performance.now()-countdownAnchor.at : Date.now();
   const remaining=Math.max(0,Math.ceil((kickoff-nowMs)/1000));
  const waiting=!state.opened;
