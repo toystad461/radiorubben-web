@@ -71,8 +71,6 @@ function rr_welcome_top_scorer($info) {
     if (is_wp_error($xp)) return [];
     $top=[]; $goals=0; $tied=false;
     foreach($xp->query('//a[@data-stattype="goal"][@data-teamid="'.$team_id.'"][@data-tournamentid="'.$competition_id.'"]') as $link) {
-        $heading=rr_welcome_text($xp->query('preceding::*['.rr_poll_class_xpath('sectionHeadingContent').'][1]',$link)->item(0));
-        if ($heading!==$info['competition']) continue;
         $count=rr_welcome_text($link);
         $player=$xp->query('ancestor::tr[1]/td[1]/a[contains(@href,"/fotballdata/person/profil/")]',$link)->item(0);
         if (!ctype_digit($count) || !$player || (int)$count<=0) continue;
