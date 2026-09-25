@@ -58,6 +58,8 @@ get_header();
     $rr_ts=strtotime((string)$rr_next['kickoff']);
     $rr_date=wp_date('l d.m.Y',$rr_ts,$rr_tz);
     $rr_time=wp_date('H:i',$rr_ts,$rr_tz);
+    $rr_remaining=max(0,$rr_ts-time());
+    $rr_initial_countdown=$rr_remaining ? (intdiv($rr_remaining,86400)?intdiv($rr_remaining,86400).' d ':'').sprintf('%02d:%02d:%02d',intdiv($rr_remaining%86400,3600),intdiv($rr_remaining%3600,60),$rr_remaining%60) : 'Kampstart nå';
     $rr_venue=sanitize_text_field($rr_next['venue']??'');
     $rr_comp=sanitize_text_field($rr_next['competition']??'');
     $rr_page_url=home_url('/nestekamp/');
@@ -94,7 +96,7 @@ get_header();
       </div>
       <div class="rr-next-countdown-box">
         <p class="rr-next-countdown-label">Kampstart om</p>
-        <div class="rr-next-countdown" data-kickoff="<?php echo esc_attr($rr_next['kickoff']); ?>">--:--:--</div>
+        <div class="rr-next-countdown" data-kickoff="<?php echo esc_attr($rr_next['kickoff']); ?>"><?php echo esc_html($rr_initial_countdown); ?></div>
       </div>
       <div class="rr-next-team">
         <?php if (!empty($rr_next['away_logo'])): ?><img src="<?php echo esc_url($rr_next['away_logo']); ?>" alt="<?php echo esc_attr($rr_next['away'].' sin logo'); ?>" referrerpolicy="no-referrer"><?php endif; ?>
