@@ -547,12 +547,8 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <section class="poll-intro" aria-labelledby="poll-article-heading">
 <h2 id="poll-article-heading"><?php echo esc_html($rr_public_welcome['headline']); ?></h2>
 <p class="poll-intro-lead"><?php echo esc_html($rr_public_welcome['lead']); ?></p>
-<?php if ($rr_public_welcome['standing'] !== ''): ?><p><?php echo esc_html($rr_public_welcome['standing']); ?></p><?php endif; ?>
-<p><?php echo esc_html($rr_public_welcome['previous']); ?></p>
-<?php if (!empty($rr_public_welcome['scorer']['name']) && !empty($rr_public_welcome['scorer']['goals'])): ?>
-<p><?php echo esc_html('Bremnes sin toppscorer i turneringen er '.$rr_public_welcome['scorer']['name'].', med '.$rr_public_welcome['scorer']['goals'].' mål.'); ?> <a href="<?php echo esc_url($rr_public_welcome['scorer_url']); ?>" target="_blank" rel="noopener">Se lagstatistikken hos Fotball.no</a></p>
-<?php endif; ?>
-<p class="poll-intro-invite"><?php echo esc_html($rr_public_welcome['invite']); ?></p>
+<?php if ($rr_public_welcome['context'] !== ''): ?><p><?php echo esc_html($rr_public_welcome['context']); ?></p><?php endif; ?>
+<p class="poll-intro-close"><?php if ($rr_public_welcome['scorer_sentence'] !== ''): ?><?php echo esc_html($rr_public_welcome['scorer_sentence']); ?> <a href="<?php echo esc_url($rr_public_welcome['scorer_url']); ?>" target="_blank" rel="noopener">Se statistikken hos Fotball.no</a> <?php endif; ?><?php echo esc_html($rr_public_welcome['invite']); ?></p>
 <p class="poll-intro-source">Kilder: <a href="<?php echo esc_url(rr_poll_source_url($rr_match_id)); ?>" target="_blank" rel="noopener">Fotball.no</a><?php if ($rr_public_welcome['verified_table']): ?> (tabell sjekket <?php echo esc_html(wp_date('d.m H:i',$rr_public_welcome['fetched'],new DateTimeZone('Europe/Oslo'))); ?>)<?php endif; ?> · Radio Rubbens kontrollerte 2026-resultater.</p>
 </section>
 
