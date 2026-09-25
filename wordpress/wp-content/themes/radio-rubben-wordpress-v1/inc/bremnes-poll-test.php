@@ -421,16 +421,18 @@ get_header();
 <style>
 .rr-poll:not(.rr-speaker){max-width:1120px}
 .rr-poll .poll-public-layout{margin:22px 0 0;padding:14px 28px 22px;border:1px solid #48566e;border-radius:22px;background:linear-gradient(145deg,#202b3d,#151d2a)}
-.rr-poll .poll-public-layout>.poll-match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,230px);gap:12px 28px;align-items:center;margin:0;padding:14px 0 20px;border:0;border-bottom:1px solid #536078;border-radius:0;background:none;text-align:left}
+.rr-poll .poll-public-layout>.poll-match{display:grid;grid-template-columns:minmax(0,1fr) minmax(170px,230px) minmax(0,1fr);gap:12px 20px;align-items:center;margin:0;padding:14px 0 20px;border:0;border-bottom:1px solid #536078;border-radius:0;background:none;text-align:center}
 .rr-poll .poll-public-layout>.poll-match>h2{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-.rr-poll .poll-public-layout .poll-teams{grid-column:1;gap:12px}
-.rr-poll .poll-public-layout .poll-team{flex-direction:row;text-align:left}
-.rr-poll .poll-public-layout .poll-team:last-child{flex-direction:row-reverse;text-align:right}
-.rr-poll .poll-public-layout .poll-team img{width:54px;height:54px;flex-shrink:0}
-.rr-poll .poll-public-layout .poll-team strong{font-size:clamp(18px,2.5vw,25px)}
-.rr-poll .poll-public-layout .poll-timer{grid-column:2;margin:0!important;padding:10px 12px;background:#111927;text-align:center}
+.rr-poll .poll-public-layout .poll-teams{display:contents}
+.rr-poll .poll-public-layout .poll-team,.rr-poll .poll-public-layout .poll-team:last-child{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-width:0;text-align:center}
+.rr-poll .poll-public-layout .poll-team:first-child{grid-column:1;grid-row:1}
+.rr-poll .poll-public-layout .poll-team:last-child{grid-column:3;grid-row:1}
+.rr-poll .poll-public-layout .poll-team img{display:block;width:90px;height:90px;flex-shrink:0;object-fit:contain}
+.rr-poll .poll-public-layout .poll-team strong{font-size:clamp(18px,2.5vw,26px);text-align:center;overflow-wrap:anywhere}
+.rr-poll .poll-public-layout .poll-timer{grid-column:2;grid-row:1;margin:0!important;padding:10px 12px;background:#111927;text-align:center}
 .rr-poll .poll-public-layout #poll-clock{font-size:clamp(23px,3vw,32px)}
 .rr-poll .poll-public-layout #poll-clock-label,.rr-poll .poll-public-layout #poll-clock-note{font-size:11px}
+.rr-poll .poll-public-layout .poll-versus{grid-column:2;grid-row:2}
 .rr-poll .poll-public-layout .poll-match .poll-details{grid-column:1/-1;margin:0;padding:0;border:0;font-size:13px;color:#c3cddd;text-align:center}
 .rr-poll .poll-public-layout .poll-events-inline{grid-column:1/-1}
 .rr-poll .poll-content-grid{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(0,.86fr);gap:24px;align-items:start;margin:0;padding:26px 0}
@@ -444,15 +446,17 @@ get_header();
 .rr-poll .poll-public-layout>.poll-partner .poll-partner-logo{width:min(100%,320px);min-height:90px}
 .rr-poll .poll-public-layout>.poll-coverage{margin:0;padding-top:14px}
 @media(max-width:800px){
-.rr-poll .poll-public-layout{padding:12px 18px 20px}
-.rr-poll .poll-public-layout>.poll-match{grid-template-columns:1fr;gap:12px}
-.rr-poll .poll-public-layout .poll-teams,.rr-poll .poll-public-layout .poll-timer{grid-column:1}
-.rr-poll .poll-public-layout .poll-teams{grid-template-columns:repeat(2,minmax(0,1fr))}
+.rr-poll .poll-public-layout{padding:12px 14px 20px}
+.rr-poll .poll-public-layout>.poll-match{grid-template-columns:minmax(0,1fr) minmax(104px,140px) minmax(0,1fr);gap:8px;padding:12px 0 18px}
+.rr-poll .poll-public-layout .poll-teams{display:contents}
 .rr-poll .poll-public-layout .poll-team,.rr-poll .poll-public-layout .poll-team:last-child{display:flex;flex-direction:column;align-items:center;text-align:center}
-.rr-poll .poll-public-layout .poll-team:first-child{grid-column:1}
-.rr-poll .poll-public-layout .poll-team:last-child{grid-column:2}
-.rr-poll .poll-public-layout .poll-team img,.rr-poll .poll-public-layout .poll-team strong{grid-row:auto;grid-column:auto}
-.rr-poll .poll-public-layout .poll-timer{padding:8px}
+.rr-poll .poll-public-layout .poll-team:first-child{grid-column:1;grid-row:1}
+.rr-poll .poll-public-layout .poll-team:last-child{grid-column:3;grid-row:1}
+.rr-poll .poll-public-layout .poll-team img{width:clamp(54px,15vw,72px);height:clamp(54px,15vw,72px)}
+.rr-poll .poll-public-layout .poll-team strong{grid-row:auto;grid-column:auto;font-size:clamp(14px,4vw,20px);line-height:1.2}
+.rr-poll .poll-public-layout .poll-timer{grid-column:2;grid-row:1;padding:7px 4px}
+.rr-poll .poll-public-layout #poll-clock{font-size:clamp(19px,5vw,26px)}
+.rr-poll .poll-public-layout #poll-clock-note{font-size:10px;line-height:1.2}
 .rr-poll .poll-content-grid{grid-template-columns:1fr;gap:18px;padding:22px 0}
 .rr-poll .poll-content-grid .poll-intro{padding:0}
 }
@@ -543,12 +547,8 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <section class="poll-intro" aria-labelledby="poll-article-heading">
 <h2 id="poll-article-heading"><?php echo esc_html($rr_public_welcome['headline']); ?></h2>
 <p class="poll-intro-lead"><?php echo esc_html($rr_public_welcome['lead']); ?></p>
-<?php if ($rr_public_welcome['standing'] !== ''): ?><p><?php echo esc_html($rr_public_welcome['standing']); ?></p><?php endif; ?>
-<p><?php echo esc_html($rr_public_welcome['previous']); ?></p>
-<?php if (!empty($rr_public_welcome['scorer']['name']) && !empty($rr_public_welcome['scorer']['goals'])): ?>
-<p><?php echo esc_html('Bremnes sin toppscorer i turneringen er '.$rr_public_welcome['scorer']['name'].', med '.$rr_public_welcome['scorer']['goals'].' mål.'); ?> <a href="<?php echo esc_url($rr_public_welcome['scorer_url']); ?>" target="_blank" rel="noopener">Se lagstatistikken hos Fotball.no</a></p>
-<?php endif; ?>
-<p class="poll-intro-invite"><?php echo esc_html($rr_public_welcome['invite']); ?></p>
+<?php if ($rr_public_welcome['context'] !== ''): ?><p><?php echo esc_html($rr_public_welcome['context']); ?></p><?php endif; ?>
+<p class="poll-intro-close"><?php if ($rr_public_welcome['scorer_sentence'] !== ''): ?><?php echo esc_html($rr_public_welcome['scorer_sentence']); ?> <a href="<?php echo esc_url($rr_public_welcome['scorer_url']); ?>" target="_blank" rel="noopener">Se statistikken hos Fotball.no</a> <?php endif; ?><?php echo esc_html($rr_public_welcome['invite']); ?></p>
 <p class="poll-intro-source">Kilder: <a href="<?php echo esc_url(rr_poll_source_url($rr_match_id)); ?>" target="_blank" rel="noopener">Fotball.no</a><?php if ($rr_public_welcome['verified_table']): ?> (tabell sjekket <?php echo esc_html(wp_date('d.m H:i',$rr_public_welcome['fetched'],new DateTimeZone('Europe/Oslo'))); ?>)<?php endif; ?> · Radio Rubbens kontrollerte 2026-resultater.</p>
 </section>
 
