@@ -78,6 +78,22 @@ function rr_one_customize($wp_customize) {
         $wp_customize->add_control($id, ['label'=>$label, 'section'=>'rr_radio', 'type'=>$type]);
     }
 
+    $wp_customize->add_section('rr_match_banner', [
+        'title' => __('Kampstripe i toppen', 'radio-rubben-one'),
+        'priority' => 31,
+    ]);
+    $wp_customize->add_setting('rr_next_match_banner_days', [
+        'default' => 7,
+        'sanitize_callback' => static function($value) { return max(0,min(60,(int)$value)); },
+    ]);
+    $wp_customize->add_control('rr_next_match_banner_days', [
+        'label' => __('Vis neste kamp innen antall dager', 'radio-rubben-one'),
+        'description' => __('Standard er 7 dager. Bruk 0 for å skjule stripen. Pågående avstemning vises fortsatt.', 'radio-rubben-one'),
+        'section' => 'rr_match_banner',
+        'type' => 'number',
+        'input_attrs' => ['min'=>0,'max'=>60,'step'=>1],
+    ]);
+
     $wp_customize->add_setting('rr_live_status', ['default'=>false, 'sanitize_callback'=>'rest_sanitize_boolean']);
     $wp_customize->add_control('rr_live_status', [
         'label' => __('Vis LIVE NÅ', 'radio-rubben-one'),
