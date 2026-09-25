@@ -47,28 +47,56 @@ if ($weekly_quiz || $live_quiz):
 <section class="rr-section rr-alt rr-home-latest"><div class="rr-wrap"><div class="rr-section-head"><div><p class="rr-eyebrow">AKTUELT</p><h2>Siste fra Radio Rubben.</h2><p>Artikler, tanker og lokale saker.</p></div><a class="rr-btn-outline" href="<?php echo esc_url(rr_one_get_first_existing_url(['nyheter'], '/nyheter/')); ?>">Se alt →</a></div><?php $latest=new WP_Query(['post_type'=>'post','posts_per_page'=>6,'post_status'=>'publish','ignore_sticky_posts'=>true]); if($latest->have_posts()): ?><div class="rr-post-grid rr-home-posts"><?php while($latest->have_posts()):$latest->the_post();?><article class="rr-post-card"><?php if(has_post_thumbnail()):?><a class="rr-post-thumb" href="<?php the_permalink();?>"><?php the_post_thumbnail('medium_large', ['style' => 'object-fit:contain;object-position:center;']);?></a><?php endif;?><h3><a href="<?php the_permalink();?>"><?php the_title();?></a></h3><time datetime="<?php echo esc_attr(get_the_date('c')); ?>"><?php echo esc_html(get_the_date()); ?></time></article><?php endwhile;?></div><?php wp_reset_postdata(); else:?><p class="rr-large-copy">Her kommer artikler og oppdateringer fra Radio Rubben.</p><?php endif;?></div></section>
 
 
-<section class="rr-section rr-home-rss" aria-labelledby="rr-home-rss-title">
-  <div class="rr-wrap">
-    <div class="rr-section-head"><div><p class="rr-eyebrow">LOKALT NÅ</p><h2 id="rr-home-rss-title">Siste fra Bømlo kommune.</h2><p>Aktuelle saker hentet fra kommunens RSS-feed.</p></div><a class="rr-btn-outline" href="<?php echo esc_url(home_url('/aktuelt-og-kunngjoringer-fra-bomlo-kommune/')); ?>">Se alle saker →</a></div>
-    <?php if (shortcode_exists('rubben_rss_cards')) echo do_shortcode('[rubben_rss_cards urls="https://www.bomlo.kommune.no/ArtikkelRSS.ashx?NyhetsKategoriId=26&Spraak=Nynorsk" count="3"]'); ?>
-    <p class="rr-home-rss-credit">Foto: <a href="https://commons.wikimedia.org/wiki/File:Mosterhamn.jpg" target="_blank" rel="noopener">Jan-Tore Egge / Wikimedia Commons</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · beskåret i visning</p>
+<section class="rr-section rr-home-local" aria-label="Lokale oppdateringer og vær">
+  <div class="rr-wrap rr-home-local-grid">
+    <div class="rr-home-rss" aria-labelledby="rr-home-rss-title">
+      <div class="rr-section-head"><div><p class="rr-eyebrow">LOKALT NÅ</p><h2 id="rr-home-rss-title">Siste fra Bømlo kommune.</h2><p>Aktuelle saker hentet fra kommunens RSS-feed.</p></div><a class="rr-btn-outline" href="<?php echo esc_url(home_url('/aktuelt-og-kunngjoringer-fra-bomlo-kommune/')); ?>">Se alle saker →</a></div>
+      <?php if (shortcode_exists('rubben_rss_cards')) echo do_shortcode('[rubben_rss_cards urls="https://www.bomlo.kommune.no/ArtikkelRSS.ashx?NyhetsKategoriId=26&Spraak=Nynorsk" count="3"]'); ?>
+      <p class="rr-home-rss-credit">Foto: <a href="https://commons.wikimedia.org/wiki/File:Mosterhamn.jpg" target="_blank" rel="noopener">Jan-Tore Egge / Wikimedia Commons</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a> · beskåret i visning</p>
+    </div>
+    <aside class="rr-home-weather-aside" aria-label="Lokalt vær"><?php rr_weather_card(); ?></aside>
   </div>
 </section>
 <style>
-.rr-home-rss{position:relative;isolation:isolate;padding-block:48px;background:#15171e}
-.rr-home-rss::before{position:absolute;z-index:0;inset:0;content:"";background:url("<?php echo esc_url(wp_get_attachment_url(923)); ?>") center 58% / cover no-repeat;opacity:.2;pointer-events:none}
-.rr-home-rss>.rr-wrap{position:relative;z-index:1}
+.rr-home-local{position:relative;isolation:isolate;padding-block:64px;background:#15171e}
+.rr-home-local::before{position:absolute;z-index:0;inset:0;content:"";background:url("<?php echo esc_url(wp_get_attachment_url(923)); ?>") center 58% / cover no-repeat;opacity:.2;pointer-events:none}
+.rr-home-local-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) minmax(285px,330px);gap:clamp(32px,4vw,56px);align-items:start}
+.rr-home-rss{min-width:0}
 .rr-home-rss-credit{margin:14px 0 0;color:#b9bec9;font-size:11px;text-align:right}
 .rr-home-rss-credit a{color:inherit;text-decoration:underline}
 .rr-home-rss .rubben-rss-cards__head{display:none}
-.rr-home-rss .rubben-rss-cards__list{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px!important}
+.rr-home-rss .rubben-rss-cards__list{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px!important}
 .rr-home-rss .rubben-rss-cards__item{background:#20232b!important;border:1px solid #393d48!important;padding:20px!important;min-height:130px;color:#eef0f5}
+.rr-home-rss .rubben-rss-cards__item:last-child:nth-child(odd){grid-column:1/-1}
 .rr-home-rss .rubben-rss-cards__item a{color:#fff;text-decoration:none}
 .rr-home-rss .rubben-rss-cards__item a:hover{text-decoration:underline;text-decoration-color:#f5cb45}
-@media(max-width:760px){.rr-home-rss .rubben-rss-cards__list{grid-template-columns:1fr}.rr-home-rss{padding-block:32px}}
+.rr-home-weather-aside{min-width:0}
+.rr-home-weather-aside .rr-weather{width:100%;max-width:none;margin:0;padding:20px;border-radius:18px;box-shadow:0 14px 35px #0003}
+.rr-home-weather-aside .rr-weather-head{display:block}
+.rr-home-weather-aside .rr-weather-head label{width:100%;max-width:none;margin-top:10px}
+.rr-home-weather-aside .rr-weather h2{font-size:23px}
+.rr-home-weather-aside .rr-weather .rr-weather-now{display:grid;grid-template-columns:60px minmax(0,1fr);gap:8px;padding:12px 0}
+.rr-home-weather-aside .rr-weather .rr-weather-now>.rr-weather-icon{width:55px;height:55px}
+.rr-home-weather-aside .rr-weather .rr-weather-temp{font-size:52px;line-height:1}
+.rr-home-weather-aside .rr-weather .rr-weather-now p{font-size:13px;margin:2px 0}
+.rr-home-weather-aside .rr-weather dl{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:7px;margin:6px 0 0;padding:0;border:0}
+.rr-home-weather-aside .rr-weather dl>div{padding:10px;min-width:0}
+.rr-home-weather-aside .rr-weather dd{font-size:17px;overflow-wrap:anywhere}
+.rr-home-weather-aside .rr-weather-hourly>summary{padding:11px 0;border-top:1px solid #a5ccef24;color:#e0edff;font-size:13px;font-weight:700;cursor:pointer}
+.rr-home-weather-aside .rr-weather-hourly .rr-weather-hours{margin:8px 0}
+.rr-home-weather-aside .rr-weather .rr-weather-credit{font-size:10px}
+@media(max-width:980px){
+ .rr-home-local-grid{grid-template-columns:1fr;gap:48px}
+ .rr-home-weather-aside .rr-weather{max-width:560px}
+}
+@media(max-width:650px){
+ .rr-home-local{padding-block:38px}
+ .rr-home-local-grid{gap:42px}
+ .rr-home-rss .rubben-rss-cards__list{grid-template-columns:1fr}
+ .rr-home-rss .rubben-rss-cards__item:last-child:nth-child(odd){grid-column:auto}
+ .rr-home-weather-aside .rr-weather{max-width:none}
+}
 </style>
-
-<?php rr_weather_card(); ?>
 
 <section class="rr-wrap rr-home-music-brief" aria-labelledby="rr-music-title"><div><p class="rr-eyebrow">MUSIKKEN PÅ RUBBEN</p><h2 id="rr-music-title">Kjente låter. Nye opplevelser.</h2><p>Gode favoritter, nye bekjentskaper og kjente låter i nye versjoner.</p></div><nav aria-label="Utforsk radioen"><a class="rr-text-link" href="<?php echo esc_url(rr_one_get_first_existing_url(['reimagined'], '/reimagined/')); ?>">Oppdag Reimagined →</a><a class="rr-text-link" href="<?php echo esc_url(rr_one_get_first_existing_url(['pa-radio-rubben','pages-2'], '/pa-radio-rubben/')); ?>">På Radio Rubben →</a></nav></section>
 
