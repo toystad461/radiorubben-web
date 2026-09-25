@@ -418,6 +418,17 @@ get_header();
 .rr-poll .poll-coverage img{width:120px;max-width:100%;height:auto;object-fit:contain}
 .rr-poll .poll-coverage small{font-size:11px;color:#c3cddd;letter-spacing:.04em;text-align:center}
 </style>
+<style>
+.rr-poll:not(.rr-speaker){max-width:1180px}
+.rr-poll:not(.rr-speaker)>.poll-match{max-width:960px;margin:24px auto 32px}
+.rr-poll .poll-content-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:24px;align-items:start;margin:24px 0}
+.rr-poll .poll-content-grid>.poll-intro,.rr-poll .poll-content-grid>.poll-vote-card{margin:0;min-width:0}
+.rr-poll .poll-content-grid .poll-intro{padding:28px}
+.rr-poll .poll-content-grid .poll-intro h2{font-size:clamp(22px,3vw,30px);color:#fff;margin:0 0 20px}
+.rr-poll:not(.rr-speaker)>.poll-partner{margin:32px 0 0;padding:28px;background:#171d29;border:1px solid #515d74;border-radius:18px}
+.rr-poll:not(.rr-speaker)>.poll-partner .poll-partner-logo{width:min(100%,400px)}
+@media(max-width:800px){.rr-poll .poll-content-grid{grid-template-columns:1fr;gap:18px}.rr-poll .poll-content-grid .poll-intro{padding:22px}}
+</style>
 <main class="rr-poll<?php echo $rr_control ? ' rr-speaker' : ''; ?><?php echo ($rr_control && $rr_live_section) ? ' rr-speaker-live' : ''; ?>">
 <p class="tag"><?php echo $rr_control ? 'Dagens Bremnesing · Kampstyring' : 'Dagens Kamp'; ?></p>
 <h1><?php echo $rr_control ? 'Speakerboard' : 'Velkommen på kamp!'; ?></h1>
@@ -432,42 +443,6 @@ get_header();
 <a href="<?php echo esc_url(rr_poll_dashboard_url($rr_url,'hendelser')); ?>"<?php if($rr_dashboard_section==='hendelser') echo ' aria-current="page"'; ?>>Historikk</a>
 </nav>
 <p id="poll-feedback" role="status" aria-live="polite"></p>
-<?php endif; ?>
-<?php if (!$rr_control): ?>
-<?php $rr_public_welcome=rr_poll_public_welcome($rr_match); ?>
-<section class="poll-intro" aria-label="Velkommen til kampen">
-<p class="poll-intro-lead"><?php echo esc_html($rr_public_welcome['lead']); ?></p>
-<p><strong>Plassering på tabellen</strong><br><?php echo esc_html($rr_public_welcome['standing']); ?></p>
-<p><strong>Tidligere oppgjør</strong><br><?php echo esc_html($rr_public_welcome['previous']); ?></p>
-<?php if (!empty($rr_public_welcome['scorer']['name']) && !empty($rr_public_welcome['scorer']['goals'])): ?>
-<p><strong>Bremnes sin toppscorer i turneringen</strong><br><?php echo esc_html($rr_public_welcome['scorer']['name'].' har scoret '.$rr_public_welcome['scorer']['goals'].' mål.'); ?> <a href="<?php echo esc_url($rr_public_welcome['scorer_url']); ?>" target="_blank" rel="noopener">Se lagstatistikken hos Fotball.no</a></p>
-<?php endif; ?>
-<p class="poll-intro-invite"><?php echo esc_html($rr_public_welcome['invite']); ?></p>
-<p class="poll-intro-source">Kilder: <a href="<?php echo esc_url(rr_poll_source_url($rr_match_id)); ?>" target="_blank" rel="noopener">Fotball.no</a><?php if ($rr_public_welcome['verified_table']): ?> (tabell sjekket <?php echo esc_html(wp_date('d.m H:i',$rr_public_welcome['fetched'],new DateTimeZone('Europe/Oslo'))); ?>)<?php endif; ?> · Radio Rubbens kontrollerte 2026-resultater.</p>
-</section>
-
-<?php endif; ?>
-<?php if (!$rr_control): ?>
-<a class="poll-vote-shortcut" href="#poll-live">Stem på Dagens Bremnesing <span aria-hidden="true">↓</span></a>
-<style>
-.rr-poll a.poll-vote-shortcut{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:52px;margin:20px 0;padding:14px 18px;border-radius:12px;background:#f5cb45;color:#141821;font-size:16px;font-weight:800;line-height:1.4;text-align:center;text-decoration:none}
-.rr-poll a.poll-vote-shortcut:hover{background:#ffdb68}
-#poll-live{scroll-margin-top:120px}
-</style>
-<script>
-document.addEventListener('DOMContentLoaded',()=>{
- const link=document.querySelector('.poll-vote-shortcut'),target=document.getElementById('poll-live');
- if(!link||!target)return;
- link.addEventListener('click',event=>{
-  event.preventDefault();
-  const header=document.querySelector('.rr-header');
-  const offset=(header?header.getBoundingClientRect().height:0)+24;
-  target.setAttribute('tabindex','-1');
-  target.focus({preventScroll:true});
-  window.scrollTo({top:Math.max(0,target.getBoundingClientRect().top+window.scrollY-offset),behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
- });
-});
-</script>
 <?php endif; ?>
 <section class="poll-match" aria-labelledby="poll-match-heading">
 <h2 id="poll-match-heading"><?php echo $rr_control ? 'Valgt kamp' : 'Du stemmer på denne kampen'; ?></h2>
@@ -517,7 +492,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <ol id="speaker-poll-live-results"></ol>
 </div>
 <?php endif; ?>
-<?php if ($rr_match_sponsor !== '' && (!$rr_control || !$rr_live_section)): ?>
+<?php if ($rr_control && $rr_match_sponsor !== '' && !$rr_live_section): ?>
 <section class="poll-partner" aria-label="Dagens kampsponsor">
 <p class="poll-partner-label">Dagens kampsponsor</p>
 <div class="poll-partner-logo">
@@ -530,9 +505,25 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <?php elseif ($rr_control && $rr_admin && !$rr_live_section): ?>
 <section class="poll-partner"><p class="poll-partner-label">Dagens kampsponsor</p><p class="muted">Legg til sponsornavn og logo under Kampoppsett og sponsor.</p></section>
 <?php endif; ?>
-<?php if (!$rr_control): ?><div class="poll-coverage"><span>Utviklet for lokalfotballen – i samarbeid med Radio Rubben</span><img src="<?php echo esc_url(rr_one_logo_url()); ?>" alt="Radio Rubben" width="120"><small>Digitalt engasjement rundt kampen</small></div><?php endif; ?>
+
 </section>
 
+<?php if (!$rr_control): ?><div class="poll-content-grid"><?php endif; ?>
+<?php if (!$rr_control): ?>
+<?php $rr_public_welcome=rr_poll_public_welcome($rr_match); ?>
+<section class="poll-intro" aria-labelledby="poll-article-heading">
+<h2 id="poll-article-heading">Kampartikkel</h2>
+<p class="poll-intro-lead"><?php echo esc_html($rr_public_welcome['lead']); ?></p>
+<p><strong>Plassering på tabellen</strong><br><?php echo esc_html($rr_public_welcome['standing']); ?></p>
+<p><strong>Tidligere oppgjør</strong><br><?php echo esc_html($rr_public_welcome['previous']); ?></p>
+<?php if (!empty($rr_public_welcome['scorer']['name']) && !empty($rr_public_welcome['scorer']['goals'])): ?>
+<p><strong>Bremnes sin toppscorer i turneringen</strong><br><?php echo esc_html($rr_public_welcome['scorer']['name'].' har scoret '.$rr_public_welcome['scorer']['goals'].' mål.'); ?> <a href="<?php echo esc_url($rr_public_welcome['scorer_url']); ?>" target="_blank" rel="noopener">Se lagstatistikken hos Fotball.no</a></p>
+<?php endif; ?>
+<p class="poll-intro-invite"><?php echo esc_html($rr_public_welcome['invite']); ?></p>
+<p class="poll-intro-source">Kilder: <a href="<?php echo esc_url(rr_poll_source_url($rr_match_id)); ?>" target="_blank" rel="noopener">Fotball.no</a><?php if ($rr_public_welcome['verified_table']): ?> (tabell sjekket <?php echo esc_html(wp_date('d.m H:i',$rr_public_welcome['fetched'],new DateTimeZone('Europe/Oslo'))); ?>)<?php endif; ?> · Radio Rubbens kontrollerte 2026-resultater.</p>
+</section>
+
+<?php endif; ?>
 <?php if (!$rr_control || ($rr_admin && $rr_live_section)): ?>
 <section class="card<?php echo !$rr_control?' poll-vote-card':''; ?>" id="poll-live">
 <?php if (!$rr_control): ?><header class="poll-vote-heading"><span class="poll-vote-eyebrow">Din stemme teller</span><h2>Dagens Bremnesing</h2><p>Hvem fortjener din stemme i dag?</p></header><?php endif; ?>
@@ -796,7 +787,22 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <?php if (!$rr_control): ?><p id="poll-feedback" role="status" aria-live="polite"></p><?php endif; ?>
 </section>
 <?php endif; ?>
-
+<?php if (!$rr_control): ?>
+</div>
+<?php if ($rr_match_sponsor !== ''): ?>
+<section class="poll-partner" aria-label="Dagens kampsponsor">
+<p class="poll-partner-label">Dagens kampsponsor</p>
+<div class="poll-partner-logo">
+<?php if ($rr_sponsor_logo_id): ?>
+<?php echo wp_get_attachment_image($rr_sponsor_logo_id,'large',false,['alt'=>$rr_match_sponsor,'class'=>'poll-partner-image']); ?>
+<?php else: ?><strong><?php echo esc_html($rr_match_sponsor); ?></strong><?php endif; ?>
+</div>
+<p class="poll-partner-thanks">Takk til <?php echo esc_html($rr_match_sponsor); ?> for støtten til lokalfotballen.</p>
+</section>
+<?php endif; ?>
+<?php if ($rr_match_sponsor === ''): ?><section class="poll-partner" aria-label="Dagens kampsponsor"><h2>Dagens kampsponsor</h2><p>Ikke registrert for denne kampen ennå.</p></section><?php endif; ?>
+<div class="poll-coverage"><span>Utviklet for lokalfotballen – i samarbeid med Radio Rubben</span><img src="<?php echo esc_url(rr_one_logo_url()); ?>" alt="Radio Rubben" width="120"><small>Digitalt engasjement rundt kampen</small></div>
+<?php endif; ?>
 <?php if ($rr_control && $rr_admin && $rr_dashboard_section==='hendelser'): ?>
 <section class="card" id="poll-lineup"><h2>Kamphendelser</h2>
 <?php if ($rr_nff_message): ?><p role="status"><?php echo esc_html($rr_nff_message); ?></p><?php endif; ?>
