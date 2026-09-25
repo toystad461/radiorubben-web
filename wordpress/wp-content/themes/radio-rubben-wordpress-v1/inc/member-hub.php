@@ -69,7 +69,7 @@ function rr_member_dashboard() {
     <section class="rr-member-dashboard" aria-labelledby="rr-member-welcome">
       <div class="rr-member-account-bar"><p class="rr-eyebrow">DIN PLASS PÅ RADIO RUBBEN</p></div>
       <h2 id="rr-member-welcome">Hei, <?php echo esc_html($name); ?>!</h2>
-      <p>Kjekt å ha deg her. Litt musikkglede, litt konkurranse – og plass til din stemme.</p>
+      <p>Her finner du quiz, musikkønsker og hilsener samlet.</p>
 
       <div class="rr-member-grid">
         <article class="rr-member-quiz">
@@ -100,7 +100,7 @@ function rr_member_dashboard() {
       <nav class="rr-member-shortcuts" aria-label="Snarveier på Min Rubben">
         <a href="<?php echo esc_url(home_url('/min-side/?rrm_kind=wish#rrm-send')); ?>">Ønsk en låt →</a>
         <a href="<?php echo esc_url(home_url('/min-side/?rrm_kind=greeting#rrm-send')); ?>">Send en hilsen →</a>
-        <a href="#rrm-duel">Låtduellen →</a>
+        <a href="<?php echo esc_url(home_url('/quiz/#rr-weekly')); ?>">Spill ukens quiz →</a>
       </nav>
     </section>
     <?php
