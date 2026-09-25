@@ -53,6 +53,66 @@ function rr_welcome_table($info) {
     }
     return [];
 }
+/**
+ * Public match introduction. Wording is stable for a given match and changes
+ * when the selected FIKS ID changes; factual details come from checked sources.
+ */
+function rr_poll_public_welcome($match) {
+    $id=(int)($match['id']??0);
+    $home=sanitize_text_field((string)($match['home']??'Bremnes'));
+    $away=sanitize_text_field((string)($match['away']??'motstanderen'));
+    $venue=sanitize_text_field((string)($match['venue']??''));
+    $competition=sanitize_text_field((string)($match['competition']??''));
+    $openers=[
+        'Hjertelig velkommen til kamp! I dag tar '.$home.' imot '.$away,
+        'Velkommen, alle som følger kampen! '.$home.' møter '.$away,
+        'God kampdag og velkommen til alle på tribunen og dere som følger med hjemmefra! '.$home.' spiller mot '.$away,
+    ];
+    $lead=$openers[$id%count($openers)];
+    if ($venue!=='') $lead.=' på '.$venue;
+    $lead.='.';
+    if ($competition!=='') $lead.=' Oppgjøret spilles i '.$competition.'.';
+
+    $cache_key='rr_poll_public_intro_'.$id;
+    $snapshot=get_transient($cache_key);
+    if (!is_array($snapshot)) {
+        $snapshot=['table'=>[],'fetched'=>time()];
+        $info=rr_welcome_match($match);
+        if (empty($info['error'])) $snapshot['table']=rr_welcome_table($info);
+        set_transient($cache_key,$snapshot,!empty($snapshot['table'])?15*MINUTE_IN_SECONDS:5*MINUTE_IN_SECONDS);
+    }
+    $table=isset($snapshot['table']) && is_array($snapshot['table']) ? $snapshot['table'] : [];
+    $standing=count($table)===2 ? 'På tabellen: '.implode(' ',$table) : 'Tabellplasseringen for begge lag er ikke bekreftet i riktig avdeling akkurat nå.';
+
+    $history_file=__DIR__.'/bremnes-history-2026.php';
+    $history=is_readable($history_file)?require $history_file:[];
+    $team=((int)($match['home_id']??0)===48835)?'kvinner':'herrer';
+    $kickoff=strtotime((string)($match['kickoff']??''))?:time();
+    $meetings=[];
+    foreach ((array)$history as $row) {
+        if (!is_array($row) || empty($row['historical']) || ($row['team']??'')!==$team
+            || strcasecmp(trim((string)($row['opponent']??'')),trim($away))!==0) continue;
+        $when=strtotime((string)($row['kickoff']??''));
+        if (!$when || $when >= $kickoff || !isset($row['result']['us'],$row['result']['them'])
+            || !ctype_digit((string)$row['result']['us']) || !ctype_digit((string)$row['result']['them'])) continue;
+        $meetings[]=['time'=>$when,'us'=>(int)$row['result']['us'],'them'=>(int)$row['result']['them']];
+    }
+    usort($meetings,static function($a,$b){return $b['time']<=>$a['time'];});
+    if ($meetings) {
+        $last=$meetings[0];
+        $outcome=$last['us']>$last['them']?'vant':($last['us']<$last['them']?'tapte':'spilte uavgjort');
+        $previous='Forrige registrerte oppgjør i 2026-oversikten var '.wp_date('d.m.Y',$last['time'],new DateTimeZone('Europe/Oslo')).'. '.$home.' '.$outcome.' '.$last['us'].'–'.$last['them'].' mot '.$away.'.';
+    } else {
+        $previous='Vi har ennå ikke et bekreftet tidligere oppgjør mellom lagene i Radio Rubbens 2026-oversikt.';
+    }
+    $invite=[
+        'Hvem fortjener å bli Dagens Bremnesing? Logg inn med Vipps og gi din stemme når avstemningen åpner.',
+        'Følg kampen og vær med på å kåre Dagens Bremnesing. Avstemningen åpner ved kampstart.',
+        'Heia fram laget, og stem på spilleren du mener fortjener tittelen Dagens Bremnesing når kampen er i gang.',
+    ];
+    return ['lead'=>$lead,'standing'=>$standing,'previous'=>$previous,'invite'=>$invite[$id%count($invite)],
+        'fetched'=>(int)($snapshot['fetched']??time()),'verified_table'=>count($table)===2];
+}
 $rr_welcome_info=[]; $rr_welcome_script=''; $rr_welcome_notes=[];
 if ($rr_control && $rr_admin) {
     $rr_welcome_generate=($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['rr_welcome_generate']));
