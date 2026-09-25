@@ -100,7 +100,7 @@ function rr_poll_public_welcome($match) {
     ];
     $lead=$openers[$id%count($openers)];
     if ($venue!=='') $lead.=' på '.$venue;
-    $lead.=' '.($competition!==''?'Oppgjøret spilles i '.$competition.'. ':'');
+    $lead.='. '.($competition!==''?'Oppgjøret spilles i '.$competition.'. ':'');
     $date=sanitize_text_field((string)($match['date_label']??''));
     if ($date!=='') $lead.='Kampstart: '.$date.'. ';
     $lead.='Ta turen til stadion og få med deg kampen fra tribunen.';

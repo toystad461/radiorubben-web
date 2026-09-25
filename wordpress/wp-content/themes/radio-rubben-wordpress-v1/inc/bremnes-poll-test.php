@@ -459,7 +459,7 @@ get_header();
 </style>
 <main class="rr-poll<?php echo $rr_control ? ' rr-speaker' : ''; ?><?php echo ($rr_control && $rr_live_section) ? ' rr-speaker-live' : ''; ?>">
 <p class="tag"><?php echo $rr_control ? 'Dagens Bremnesing · Kampstyring' : 'Dagens Kamp'; ?></p>
-<h1><?php echo $rr_control ? 'Speakerboard' : 'Velkommen på kamp!'; ?></h1>
+<h1><?php echo $rr_control ? 'Speakerboard' : 'Kampdag med Bremnes'; ?></h1>
 <?php if ($rr_control && $rr_admin && $rr_match_error): ?>
 <p class="card" role="alert">Kampen ble ikke endret: <?php echo esc_html($rr_match_error); ?></p>
 <?php elseif ($rr_control && $rr_admin && isset($_GET['rr_match_saved'])): ?>
