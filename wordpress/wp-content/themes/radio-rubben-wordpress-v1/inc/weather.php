@@ -104,7 +104,7 @@ add_action('wp_ajax_nopriv_rr_weather','rr_weather_ajax');
 add_action('wp_enqueue_scripts',function(){
     if (!is_front_page()) return;
     wp_enqueue_style('rr-weather',get_template_directory_uri().'/assets/css/weather.css',[],'1.1.0');
-    wp_enqueue_script('rr-weather',get_template_directory_uri().'/assets/js/weather.js',[],'1.1.1',true);
+    wp_enqueue_script('rr-weather',get_template_directory_uri().'/assets/js/weather.js',[],'1.1.2',true);
 });
 function rr_weather_card() {
     $url=admin_url('admin-ajax.php');
