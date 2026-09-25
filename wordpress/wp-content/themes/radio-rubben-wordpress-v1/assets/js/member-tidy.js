@@ -3,6 +3,11 @@
   const init = () => {
     if (!document.body.classList.contains('page-id-736')) return;
     const loggedIn = document.body.classList.contains('logged-in');
+    if (!loggedIn) {
+      const entry = document.querySelector('.rr-vipps-entry');
+      const challenge = document.querySelector('.rr-quiz-challenge');
+      if (entry && challenge) entry.after(challenge);
+    }
     const dashboard = document.querySelector('.rr-member-dashboard:not(.rr-member-support)');
     const shortcuts = dashboard?.querySelector('.rr-member-shortcuts');
     const grid = dashboard?.querySelector('.rr-member-grid');

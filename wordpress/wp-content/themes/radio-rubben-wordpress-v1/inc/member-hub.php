@@ -5,8 +5,8 @@ require_once __DIR__ . '/member-delete.php';
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('rr-member-hub', get_template_directory_uri().'/assets/css/member-hub.css', ['rr-one-design'], '1.0.1');
     if (is_page(736)) {
-        wp_enqueue_style('rr-member-tidy', get_template_directory_uri().'/assets/css/member-tidy.css', ['rr-member-hub'], '1.0.2');
-        wp_enqueue_script('rr-member-tidy', get_template_directory_uri().'/assets/js/member-tidy.js', [], '1.0.0', true);
+        wp_enqueue_style('rr-member-tidy', get_template_directory_uri().'/assets/css/member-tidy.css', ['rr-member-hub'], '1.0.3');
+        wp_enqueue_script('rr-member-tidy', get_template_directory_uri().'/assets/js/member-tidy.js', [], '1.0.1', true);
     }
 });
 add_action('template_redirect', function () {
@@ -69,7 +69,7 @@ function rr_member_dashboard() {
     <section class="rr-member-dashboard" aria-labelledby="rr-member-welcome">
       <div class="rr-member-account-bar"><p class="rr-eyebrow">DIN PLASS PÅ RADIO RUBBEN</p></div>
       <h2 id="rr-member-welcome">Hei, <?php echo esc_html($name); ?>!</h2>
-      <p>Kjekt å ha deg her. Litt musikkglede, litt konkurranse – og plass til din stemme.</p>
+      <p>Her finner du quiz, musikkønsker og hilsener samlet.</p>
 
       <div class="rr-member-grid">
         <article class="rr-member-quiz">
@@ -100,7 +100,7 @@ function rr_member_dashboard() {
       <nav class="rr-member-shortcuts" aria-label="Snarveier på Min Rubben">
         <a href="<?php echo esc_url(home_url('/min-side/?rrm_kind=wish#rrm-send')); ?>">Ønsk en låt →</a>
         <a href="<?php echo esc_url(home_url('/min-side/?rrm_kind=greeting#rrm-send')); ?>">Send en hilsen →</a>
-        <a href="#rrm-duel">Låtduellen →</a>
+        <a href="<?php echo esc_url(home_url('/quiz/#rr-weekly')); ?>">Spill ukens quiz →</a>
       </nav>
     </section>
     <?php

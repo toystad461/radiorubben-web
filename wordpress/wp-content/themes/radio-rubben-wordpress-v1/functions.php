@@ -36,6 +36,9 @@ function rr_one_assets() {
     wp_enqueue_style('rr-one-style', get_stylesheet_uri(), [], RR_ONE_VERSION);
     wp_enqueue_style('rr-one-theme', get_template_directory_uri() . '/assets/css/theme.css', [], RR_ONE_VERSION);
     wp_enqueue_style('rr-one-design', get_template_directory_uri() . '/assets/css/design-v13.css', ['rr-one-theme'], RR_ONE_VERSION);
+    if (is_page(910)) {
+        wp_add_inline_style('rr-one-design', '.page-id-910 #content{position:relative;isolation:isolate;background:#0b0d11}.page-id-910 #content::before{content:"";position:absolute;inset:0;z-index:0;background:url("https://www.radiorubben.no/wp-content/uploads/2026/09/Radio-Rubben-%E2%80%93-Fotball.png") center top/cover no-repeat;opacity:.1;pointer-events:none}.page-id-910 #content>.rr-poll{position:relative;z-index:1}');
+    }
     if (is_front_page()) wp_enqueue_style('rr-home-tidy', get_template_directory_uri() . '/assets/css/home-tidy.css', ['rr-one-design'], '1.0.0');
     if (is_singular('rr_match') || is_page('rrlive')) wp_enqueue_style('rrlive-match', get_template_directory_uri() . '/assets/css/rrlive.css', ['rr-one-design'], '0.2.4');
     wp_enqueue_style('rr-mobile-shell', get_template_directory_uri() . '/assets/css/mobile-shell.css', ['rr-one-design','rr-member-hub'], '1.0.0');
