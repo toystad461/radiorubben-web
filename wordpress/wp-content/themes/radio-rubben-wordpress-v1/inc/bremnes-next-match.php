@@ -12,15 +12,14 @@ get_header();
 .rr-next-kicker{margin:0 0 8px;color:#f5cb45;font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;text-align:center}
 .rr-next-page h1{margin:0 0 28px;font-size:clamp(30px,6vw,48px);line-height:1.1;text-align:center}
 .rr-next-card{overflow:hidden;border:1px solid #586980;border-top:3px solid #f5cb45;border-radius:20px;background:linear-gradient(145deg,#202b3e,#121925)}
-.rr-next-teams{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:18px;padding:30px 24px 22px;text-align:center}
+.rr-next-teams{display:grid;grid-template-columns:minmax(0,1fr) minmax(175px,230px) minmax(0,1fr);align-items:center;gap:18px;padding:24px 24px 18px;text-align:center}
 .rr-next-team{display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0}
 .rr-next-team img{width:92px;height:92px;object-fit:contain;padding:7px;border-radius:14px;background:#fff}
 .rr-next-team strong{font-size:clamp(19px,4vw,28px);line-height:1.2;overflow-wrap:anywhere}
-.rr-next-vs{font-size:18px;font-weight:900;color:#f5cb45}
-.rr-next-countdown-box{margin:0 16px 16px;padding:22px 16px;border-radius:14px;background:#0d1522;text-align:center}
+.rr-next-countdown-box{margin:0;padding:14px 10px;border-radius:14px;background:#0d1522;text-align:center}
 .rr-next-countdown-label{margin:0 0 7px;color:#b9c6d8;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-.rr-next-countdown{font-size:clamp(34px,8vw,58px);font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
-.rr-next-details{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin:0;padding:0 20px 24px;list-style:none;color:#d7dfeb;font-size:14px;text-align:center}
+.rr-next-countdown{font-size:clamp(23px,3vw,32px);font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+.rr-next-details{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 18px;margin:0;padding:14px 20px 20px;border-top:1px solid #46546c;list-style:none;color:#d7dfeb;font-size:14px;text-align:center}
 .rr-next-section{margin-top:18px;padding:24px;border:1px solid #46546c;border-radius:16px;background:#171d29}
 .rr-next-section h2{margin:0 0 12px;font-size:22px}
 .rr-next-section p{line-height:1.65}
@@ -38,7 +37,11 @@ get_header();
  .rr-next-page{width:calc(100% - 28px);margin-top:24px}
  .rr-next-teams{gap:10px;padding:24px 12px 18px}
  .rr-next-team img{width:62px;height:62px}
- .rr-next-vs{font-size:14px}
+ .rr-next-teams{grid-template-columns:minmax(0,1fr) minmax(105px,140px) minmax(0,1fr);gap:6px;padding:16px 8px}
+ .rr-next-team strong{font-size:15px}
+ .rr-next-countdown{font-size:19px}
+ .rr-next-countdown-box{padding:10px 4px}
+ .rr-next-countdown-label{font-size:9px}
  .rr-next-section{padding:19px 16px}
  .rr-share-actions{display:grid;grid-template-columns:1fr}
 }
@@ -89,15 +92,14 @@ get_header();
         <?php if (!empty($rr_next['home_logo'])): ?><img src="<?php echo esc_url($rr_next['home_logo']); ?>" alt="<?php echo esc_attr($rr_next['home'].' sin logo'); ?>"><?php endif; ?>
         <strong><?php echo esc_html($rr_next['home']); ?></strong>
       </div>
-      <div class="rr-next-vs">VS</div>
+      <div class="rr-next-countdown-box">
+        <p class="rr-next-countdown-label">Kampstart om</p>
+        <div class="rr-next-countdown" data-kickoff="<?php echo esc_attr($rr_next['kickoff']); ?>">--:--:--</div>
+      </div>
       <div class="rr-next-team">
         <?php if (!empty($rr_next['away_logo'])): ?><img src="<?php echo esc_url($rr_next['away_logo']); ?>" alt="<?php echo esc_attr($rr_next['away'].' sin logo'); ?>" referrerpolicy="no-referrer"><?php endif; ?>
         <strong><?php echo esc_html($rr_next['away']); ?></strong>
       </div>
-    </div>
-    <div class="rr-next-countdown-box">
-      <p class="rr-next-countdown-label">Kampstart om</p>
-      <div class="rr-next-countdown" data-kickoff="<?php echo esc_attr($rr_next['kickoff']); ?>">--:--:--</div>
     </div>
     <ul class="rr-next-details">
       <li><strong><?php echo esc_html(ucfirst($rr_date)); ?></strong></li>
@@ -105,16 +107,6 @@ get_header();
       <?php if ($rr_venue!==''): ?><li><?php echo esc_html($rr_venue); ?></li><?php endif; ?>
       <?php if ($rr_comp!==''): ?><li><?php echo esc_html($rr_comp); ?></li><?php endif; ?>
     </ul>
-  </section>
-
-  <section class="rr-next-section">
-    <h2>Del kampen med venner</h2>
-    <div class="rr-share-preview"><?php echo esc_html($rr_share_text); ?></div>
-    <div class="rr-share-actions">
-      <button type="button" class="rr-facebook" id="rr-facebook-share">Del på Facebook</button>
-      <button type="button" id="rr-copy-share">Kopier delingstekst</button>
-    </div>
-    <p class="rr-share-status" id="rr-share-status" role="status"></p>
   </section>
 
   <section class="rr-next-section rr-next-article">
@@ -139,6 +131,16 @@ get_header();
       <p>Vi har foreløpig ikke et tidligere møte mellom disse lagene i Radio Rubbens kontrollerte 2026-resultatoversikt.</p>
     <?php endif; ?>
     <p class="rr-next-history-meta">Historikken bygger kun på kontrollerte kampresultater i Radio Rubbens 2026-oversikt. Vi fyller ikke inn eldre historikk uten bekreftede data.</p>
+  </section>
+
+  <section class="rr-next-section">
+    <h2>Del kampen med venner</h2>
+    <div class="rr-share-preview"><?php echo esc_html($rr_share_text); ?></div>
+    <div class="rr-share-actions">
+      <button type="button" class="rr-facebook" id="rr-facebook-share">Del på Facebook</button>
+      <button type="button" id="rr-copy-share">Kopier delingstekst</button>
+    </div>
+    <p class="rr-share-status" id="rr-share-status" role="status"></p>
   </section>
 
   <p class="rr-next-source">Kampopplysninger fra <a href="<?php echo esc_url('https://www.fotball.no/fotballdata/kamp/?fiksId='.(int)$rr_next['id']); ?>">Fotball.no</a> · FIKS-ID <?php echo (int)$rr_next['id']; ?></p>
