@@ -5,8 +5,8 @@ require_once __DIR__ . '/member-delete.php';
 add_action('wp_enqueue_scripts', function () {
     wp_enqueue_style('rr-member-hub', get_template_directory_uri().'/assets/css/member-hub.css', ['rr-one-design'], '1.0.1');
     if (is_page(736)) {
-        wp_enqueue_style('rr-member-tidy', get_template_directory_uri().'/assets/css/member-tidy.css', ['rr-member-hub'], '1.0.2');
-        wp_enqueue_script('rr-member-tidy', get_template_directory_uri().'/assets/js/member-tidy.js', [], '1.0.0', true);
+        wp_enqueue_style('rr-member-tidy', get_template_directory_uri().'/assets/css/member-tidy.css', ['rr-member-hub'], '1.0.3');
+        wp_enqueue_script('rr-member-tidy', get_template_directory_uri().'/assets/js/member-tidy.js', [], '1.0.1', true);
     }
 });
 add_action('template_redirect', function () {
