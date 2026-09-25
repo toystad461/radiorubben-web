@@ -25,10 +25,19 @@ function rr_welcome_match($match) {
         $cells=$xp->query('./td',$row);
         if ($cells->length>=2 && rr_welcome_text($cells->item(1))!=='') $refs[]=['role'=>rr_welcome_text($cells->item(0)),'name'=>rr_welcome_text($cells->item(1)),'club'=>rr_welcome_text($cells->item(2))];
     }
+    $competition_link=null;
+    foreach($xp->query('//a[contains(@href,"/fotballdata/turnering/hjem/")]') as $link) {
+        if (rr_welcome_text($link)===rr_welcome_text($xp->query('//a[contains(@href,"/fotballdata/turnering/hjem/")]')->item(0))) { $competition_link=$link; break; }
+    }
+    $competition_id=0;
+    if ($competition_link) {
+        parse_str(wp_parse_url($competition_link->getAttribute('href'),PHP_URL_QUERY)??'', $competition_query);
+        $competition_id=(int)($competition_query['fiksId']??0);
+    }
     $head=$xp->query('.//*['.rr_poll_class_xpath('headingElement').']',$card);
     return ['refs'=>$refs,'ids'=>$ids,'date'=>rr_welcome_text($head->item(0)),'time'=>rr_welcome_text($head->item(1)),
         'venue'=>rr_welcome_text($xp->query('.//*['.rr_poll_class_xpath('footerElement').']',$card)->item(0)),
-        'competition'=>rr_welcome_text($xp->query('//a[contains(@href,"/fotballdata/turnering/hjem/")]')->item(0)),
+        'competition'=>rr_welcome_text($competition_link),'competition_id'=>$competition_id,
         'fetched'=>time(),'error'=>''];
 }
 function rr_welcome_table($info) {
@@ -53,6 +62,28 @@ function rr_welcome_table($info) {
     }
     return [];
 }
+/** Highest goal tally for the home team in the selected competition. */
+function rr_welcome_top_scorer($info) {
+    $team_id=(int)($info['ids'][0]??0);
+    $competition_id=(int)($info['competition_id']??0);
+    if (!$team_id || !$competition_id || empty($info['competition'])) return [];
+    $xp=rr_welcome_document('https://www.fotball.no/fotballdata/lag/hjem/?fiksId='.$team_id.'&underside=statistikk');
+    if (is_wp_error($xp)) return [];
+    $top=[]; $goals=0; $tied=false;
+    foreach($xp->query('//a[@data-stattype="goal"][@data-teamid="'.$team_id.'"][@data-tournamentid="'.$competition_id.'"]') as $link) {
+        $heading=rr_welcome_text($xp->query('preceding::*['.rr_poll_class_xpath('sectionHeadingContent').'][1]',$link)->item(0));
+        if ($heading!==$info['competition']) continue;
+        $count=rr_welcome_text($link);
+        $player=$xp->query('ancestor::tr[1]/td[1]/a[contains(@href,"/fotballdata/person/profil/")]',$link)->item(0);
+        if (!ctype_digit($count) || !$player || (int)$count<=0) continue;
+        $name=rr_welcome_text($player);
+        if ($name==='') continue;
+        $number=(int)$count;
+        if ($number>$goals) { $top=['name'=>$name,'goals'=>$number]; $goals=$number; $tied=false; }
+        elseif ($number===$goals) { $tied=true; }
+    }
+    return $tied ? [] : $top;
+}
 /**
  * Public match introduction. Wording is stable for a given match and changes
  * when the selected FIKS ID changes; factual details come from checked sources.
@@ -76,9 +107,9 @@ function rr_poll_public_welcome($match) {
     $cache_key='rr_poll_public_intro_'.$id;
     $snapshot=get_transient($cache_key);
     if (!is_array($snapshot)) {
-        $snapshot=['table'=>[],'fetched'=>time()];
+        $snapshot=['table'=>[],'scorer'=>[],'fetched'=>time()];
         $info=rr_welcome_match($match);
-        if (empty($info['error'])) $snapshot['table']=rr_welcome_table($info);
+        if (empty($info['error'])) { $snapshot['table']=rr_welcome_table($info); $snapshot['scorer']=rr_welcome_top_scorer($info); $snapshot['team_id']=(int)($info['ids'][0]??0); }
         set_transient($cache_key,$snapshot,!empty($snapshot['table'])?15*MINUTE_IN_SECONDS:5*MINUTE_IN_SECONDS);
     }
     $table=isset($snapshot['table']) && is_array($snapshot['table']) ? $snapshot['table'] : [];
@@ -111,7 +142,9 @@ function rr_poll_public_welcome($match) {
         'Heia fram laget, og stem på spilleren du mener fortjener tittelen Dagens Bremnesing når kampen er i gang.',
     ];
     return ['lead'=>$lead,'standing'=>$standing,'previous'=>$previous,'invite'=>$invite[$id%count($invite)],
-        'fetched'=>(int)($snapshot['fetched']??time()),'verified_table'=>count($table)===2];
+        'fetched'=>(int)($snapshot['fetched']??time()),'verified_table'=>count($table)===2,
+        'scorer'=>isset($snapshot['scorer']) && is_array($snapshot['scorer']) ? $snapshot['scorer'] : [],
+        'scorer_url'=>!empty($snapshot['scorer']) && !empty($snapshot['team_id']) ? 'https://www.fotball.no/fotballdata/lag/hjem/?fiksId='.(int)$snapshot['team_id'].'&underside=statistikk' : ''];
 }
 $rr_welcome_info=[]; $rr_welcome_script=''; $rr_welcome_notes=[];
 if ($rr_control && $rr_admin) {
