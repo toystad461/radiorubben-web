@@ -319,6 +319,13 @@ get_header();
 .rr-poll select{width:100%;background:#0c1220;color:white;margin:12px 0}.rr-poll button{background:#b7243d;color:white;cursor:pointer}
 .rr-poll button:disabled{opacity:.45;cursor:default}.rr-poll .controls{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
 .rr-poll a{color:#aaceff;text-decoration:underline}.rr-poll li{padding:9px 0}.rr-poll :focus-visible{outline:3px solid #ffc857;outline-offset:3px}
+.rr-poll .poll-intro{margin:18px 0 24px;padding:20px 22px;border:1px solid #46546c;border-left:4px solid #f5cb45;border-radius:13px;background:#171d29}
+.rr-poll .poll-intro p{margin:0 0 13px;line-height:1.6;color:#d5dce8}
+.rr-poll .poll-intro p:last-child{margin-bottom:0}
+.rr-poll .poll-intro-lead{font-size:17px;font-weight:700;color:#fff!important}
+.rr-poll .poll-intro strong{color:#f5cb45}
+.rr-poll .poll-intro-invite{font-weight:700}
+.rr-poll .poll-intro-source{font-size:11px;color:#aab7cc!important}
 .rr-poll .poll-match{background:linear-gradient(145deg,#202b3e,#121925);border:1px solid #62718a;border-top:3px solid #f5cb45;border-radius:18px;padding:24px 16px;text-align:center;margin:22px 0}
 .rr-poll .poll-match h2{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:#f5cb45;margin:0 0 22px}
 .rr-poll .poll-teams{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:center}
@@ -427,7 +434,14 @@ get_header();
 <p id="poll-feedback" role="status" aria-live="polite"></p>
 <?php endif; ?>
 <?php if (!$rr_control): ?>
-<p class="muted poll-intro">Velkommen til å stemme på Dagens Bremnesing! Gi din stemme til spilleren du mener fortjener utmerkelsen.</p>
+<?php $rr_public_welcome=rr_poll_public_welcome($rr_match); ?>
+<section class="poll-intro" aria-label="Velkommen til kampen">
+<p class="poll-intro-lead"><?php echo esc_html($rr_public_welcome['lead']); ?></p>
+<p><strong>Plassering på tabellen</strong><br><?php echo esc_html($rr_public_welcome['standing']); ?></p>
+<p><strong>Tidligere oppgjør</strong><br><?php echo esc_html($rr_public_welcome['previous']); ?></p>
+<p class="poll-intro-invite"><?php echo esc_html($rr_public_welcome['invite']); ?></p>
+<p class="poll-intro-source">Kilder: <a href="<?php echo esc_url(rr_poll_source_url($rr_match_id)); ?>" target="_blank" rel="noopener">Fotball.no</a><?php if ($rr_public_welcome['verified_table']): ?> (tabell sjekket <?php echo esc_html(wp_date('d.m H:i',$rr_public_welcome['fetched'],new DateTimeZone('Europe/Oslo'))); ?>)<?php endif; ?> · Radio Rubbens kontrollerte 2026-resultater.</p>
+</section>
 
 <?php endif; ?>
 <?php if (!$rr_control): ?>
