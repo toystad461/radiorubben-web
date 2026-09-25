@@ -92,15 +92,18 @@ function rr_poll_public_welcome($match) {
     $away=sanitize_text_field((string)($match['away']??'motstanderen'));
     $venue=sanitize_text_field((string)($match['venue']??''));
     $competition=sanitize_text_field((string)($match['competition']??''));
+    $headline=$home.' møter '.$away.($venue!==''?' på '.$venue:'');
     $openers=[
-        'Hjertelig velkommen til kamp! I dag tar '.$home.' imot '.$away,
-        'Velkommen, alle som følger kampen! '.$home.' møter '.$away,
-        'God kampdag og velkommen til alle på tribunen og dere som følger med hjemmefra! '.$home.' spiller mot '.$away,
+        $home.' tar imot '.$away,
+        'Det er klart for '.$home.' mot '.$away,
+        $home.' og '.$away.' møtes til kamp',
     ];
     $lead=$openers[$id%count($openers)];
     if ($venue!=='') $lead.=' på '.$venue;
-    $lead.='.';
-    if ($competition!=='') $lead.=' Oppgjøret spilles i '.$competition.'.';
+    $lead.=' '.($competition!==''?'Oppgjøret spilles i '.$competition.'. ':'');
+    $date=sanitize_text_field((string)($match['date_label']??''));
+    if ($date!=='') $lead.='Kampstart: '.$date.'. ';
+    $lead.='Ta turen til stadion og få med deg kampen fra tribunen.';
 
     $cache_key='rr_poll_public_intro_'.$id;
     $snapshot=get_transient($cache_key);
@@ -111,7 +114,7 @@ function rr_poll_public_welcome($match) {
         set_transient($cache_key,$snapshot,!empty($snapshot['table'])?15*MINUTE_IN_SECONDS:5*MINUTE_IN_SECONDS);
     }
     $table=isset($snapshot['table']) && is_array($snapshot['table']) ? $snapshot['table'] : [];
-    $standing=count($table)===2 ? 'På tabellen: '.implode(' ',$table) : 'Tabellplasseringen for begge lag er ikke bekreftet i riktig avdeling akkurat nå.';
+    $standing=count($table)===2 ? 'Før kampen viser tabellen følgende: '.implode(' ',$table) : '';
 
     $history_file=__DIR__.'/bremnes-history-2026.php';
     $history=is_readable($history_file)?require $history_file:[];
@@ -135,11 +138,11 @@ function rr_poll_public_welcome($match) {
         $previous='Vi har ennå ikke et bekreftet tidligere oppgjør mellom lagene i Radio Rubbens 2026-oversikt.';
     }
     $invite=[
-        'Hvem fortjener å bli Dagens Bremnesing? Logg inn med Vipps og gi din stemme når avstemningen åpner.',
-        'Følg kampen og vær med på å kåre Dagens Bremnesing. Avstemningen åpner ved kampstart.',
-        'Heia fram laget, og stem på spilleren du mener fortjener tittelen Dagens Bremnesing når kampen er i gang.',
+        'Når kampen er i gang, kan du også stemme på spilleren du mener fortjener tittelen Dagens Bremnesing.',
+        'Ta turen til kampen, og vær med på å kåre Dagens Bremnesing når avstemningen åpner.',
+        'Fra tribunen kan du følge oppgjøret og stemme fram Dagens Bremnesing når kampen er i gang.',
     ];
-    return ['lead'=>$lead,'standing'=>$standing,'previous'=>$previous,'invite'=>$invite[$id%count($invite)],
+    return ['headline'=>$headline,'lead'=>$lead,'standing'=>$standing,'previous'=>$previous,'invite'=>$invite[$id%count($invite)],
         'fetched'=>(int)($snapshot['fetched']??time()),'verified_table'=>count($table)===2,
         'scorer'=>isset($snapshot['scorer']) && is_array($snapshot['scorer']) ? $snapshot['scorer'] : [],
         'scorer_url'=>!empty($snapshot['scorer']) && !empty($snapshot['team_id']) ? 'https://www.fotball.no/fotballdata/lag/hjem/?fiksId='.(int)$snapshot['team_id'].'&underside=statistikk' : ''];
