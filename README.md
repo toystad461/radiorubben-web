@@ -29,3 +29,5 @@ Hemmeligheter, API-nøkler og passord skal aldri lagres i repositoryet.
 ## Neste WordPress-theme
 
 [Radio Rubben Next 2.0.0-rc.1](theme-next/README.md) inneholder det nye presentasjonslaget, separat metadata-plugin, child theme, dokumentasjon og ZIP-bygg. Dette er en stagingkandidat uten automatisk produksjonspublisering.
+
+[Brukerveiledning: forstå theme og bytt trygt](theme-next/BRUKERVEILEDNING.md) forklarer overgangen uten å forutsette kodekunnskap.

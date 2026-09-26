@@ -2,6 +2,8 @@
 
 Installérbar stagingkandidat. Ikke godkjent for produksjonsaktivering ennå.
 
+**Ny i theme-verdenen? Start med [brukerveiledningen for Thomas](BRUKERVEILEDNING.md).** Den forklarer hva som følger med ved theme-bytte, hva som må sikres og hvordan overgangen testes.
+
 ## Kildekode
 
 - `radio-rubben-next/`: hovedtheme; kun presentasjon.
