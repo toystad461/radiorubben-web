@@ -127,9 +127,9 @@ final class Robot {
         if(!self::allowed()) wp_die('Ingen tilgang.');
         $id=absint($_GET['match_id']??8985491); $f=null; try{$f=self::latest($id);}catch(\Throwable $e){}
         $notice=get_transient('rrfr_notice_'.get_current_user_id()); if($notice) delete_transient('rrfr_notice_'.get_current_user_id());
-        echo '<div class="wrap rrfr"><header><p class="rrfr-eyebrow">RADIO RUBBEN · REDAKSJON</p><h1>Fotballroboten</h1><p>Finn historien bak resultatet.</p><span class="rrfr-badge">Versjon 2 · AI-utkast</span></header>';
+        echo '<div class="wrap rrfr"><header><p class="rrfr-eyebrow">RADIO RUBBEN · REDAKSJON</p><h1>Fotballroboten</h1><p>Finn historien bak resultatet.</p><span class="rrfr-badge">AI-utkast · Redaksjonell læring</span></header>';
         if($notice) echo '<div role="status" class="rrfr-notice">'.esc_html($notice).'</div>';
-        echo '<nav aria-label="Arbeidssteg"><a href="#grunnlag">1 · Kampgrunnlag</a><a href="#vinkel">2 · Finn vinkelen</a><a href="#referat">3 · Skriv referat</a><a href="#arkiv">4 · Arkiv</a></nav>';
+        echo '<nav aria-label="Arbeidssteg"><a href="#grunnlag">1 · Kampgrunnlag</a><a href="#vinkel">2 · Finn vinkelen</a><a href="#referat">3 · Skriv referat</a><a href="#arkiv">4 · Arkiv</a><a href="'.esc_url(Learning::url()).'">Lær av mine rettelser</a></nav>';
         echo '<section class="rrfr-card"><form method="get"><input type="hidden" name="page" value="rr-fotballrobot"><label for="rrfr-id">Kamp-ID fra Fotball.no</label><div class="rrfr-row"><input id="rrfr-id" name="match_id" type="number" min="1" required value="'.esc_attr($id).'"><button>Velg kamp</button></div></form><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';
         self::formFields($id,'refresh'); echo '<p><label><input name="finished" type="checkbox" value="1"> Jeg har kontrollert at kampen er ferdigspilt. Kampslutt fra eksisterende kamparkiv gjenbrukes automatisk.</label></p><button class="rrfr-primary">Hent kampgrunnlag</button><p class="rrfr-muted">Dekker Bremnes herrer A og damer A. Kildene mellomlagres i ti minutter.</p></form></section>';
         Writer::settings($id);

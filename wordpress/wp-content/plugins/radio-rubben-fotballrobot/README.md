@@ -1,6 +1,6 @@
-# Radio Rubbens Fotballrobot 0.4.0
+# Radio Rubbens Fotballrobot 0.5.0
 
-Spillerfølging er implementert i denne versjonen. Se [PLAYERS.md](PLAYERS.md) for bruk, arkitektur, tester og begrensninger. 0.4.0 er ikke installert på produksjon.
+Spillerfølging er implementert i denne versjonen. Se [PLAYERS.md](PLAYERS.md) for bruk, arkitektur, tester og begrensninger. 0.5.0 er ikke installert på produksjon.
 
 ## Historikk fra eksisterende 0.3.2
 
@@ -61,3 +61,19 @@ Egen artikkelmal for innlegg med `_rrfr_ai_match`: mindre overskrift, kompakt AI
 Utkast 993 beholdes upublisert og teksten er uendret; kategori er Fotball (17). Dashboard, dashboard_test, tema og andre artikkeltyper endres ikke. Desktop- og mobilbredde 390px kontrollert. Automatiske kontroller dekker filtrering av manuelle data, tidsrekkefølge, minuttavrunding og referee-parser.
 
 Skriveinstruks og separat faktakontroll kobler nå manuelt dokumenterte innhopp med senere offisielle mål/kort ved entydig fullt navn, samme lag og riktig tidsrekkefølge. Dette er en vedvarende redaksjonell regel, ikke automatisk modelltrening. Ingen ny betalt tekstgenerering ble kjørt for denne regelen; eksisterende artikkelprosa beholdes.
+
+
+
+## Lær av mine rettelser — bevart fra 0.4.1
+
+Ligger i pluginen, uavhengig av WordPress-tema. Administrator med tilgang til artikkelen åpner Fotballrobot → Lær av mine rettelser, velger et lagret AI-referat, beskriver lærdommen og godkjenner tekstkopien. Rediger og lagre i artikkeleditoren først; ulagrete endringer overføres ikke. Et eget felt i artikkeleditoren lenker til læringssiden.
+
+Privat metadata `_rrfr_learning` lagrer original (bare når den faktisk finnes), godkjent tekst, forklaring, bruksområde, innholdshash, versjon, tidspunkt og administrator-ID. Ingen automatisk lagring fra autosave eller publisering. Administrator kan deaktivere eksemplet. Metadata brukes ikke i offentlig mal eller REST-respons. Læring lagres bare med WordPress-nonce, administrator-/artikkelrettigheter, eksplisitt godkjenning og samsvarende artikkel-/læringsversjon.
+
+Ved ny AI-skriving velges inntil tre aktive og uendrede eksempler. Det finnes generelle eksempler og eksempler for dokumentert innbytter som scorer. Relevante spesifikke eksempler prioriteres; deretter nyeste. Teksteksemplene begrenses til tittel og tre avsnitt à 1200 tegn. Kampdata fra eksemplene er ikke kilder for ny kamp. Faktaredaktøren får bare den aktuelle faktapakken, ikke eksemplene. `_rrfr_learning_used` dokumenterer eksemplene som ble brukt; `_rrfr_original_article` bevarer originalen for nye AI-utkast. Eksisterende eldre utkast får ingen oppdiktet original.
+
+Lagring krever ingen nye AI-kall. Teksteksempler følger med den eksisterende AI-forespørselen og gir noe mer input ved senere skriving. Modellen finjusteres ikke. Endelig tekstkvalitet må vurderes på flere reelle kamper.
+
+Verifisering: 21 læringskontroller og 18 skriveflytkontroller med simulert leverandør, i tillegg til tidligere parser-/skriver-/rapportkontroller. Tester dekker feil rettigheter, manglende godkjenning, gamle tekstversjoner, deaktivering, gjenaktivering, navne-/tidskobling, dataminimering og at eksempler ikke sendes til faktaredaktøren.
+
+Tilbakerulling: installer `work/radio-rubben-fotballrobot-0.3.2-backup.zip`; metadata beholdes uten å bli brukt. Ved samtidig utvikling av spillerprofiler må læringsfilen, kroker, Writer-tilkobling og administrasjonslenker flettes før neste fullstendige pluginopplasting.

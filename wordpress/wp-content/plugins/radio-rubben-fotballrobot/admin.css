@@ -4,3 +4,5 @@
 .rrfr .notice,.rrfr .notice p,.rrfr .notice h3{color:#1d2327}.rrfr .notice a{color:#135e96}.rrfr .notice code{display:inline;background:#f0f0f1;color:#1d2327}
 
 .rrfr-player{padding:20px 0;border-bottom:1px solid #58616c}.rrfr-player details{margin:16px 0}.rrfr input.regular-text{max-width:100%}.rrfr textarea{max-width:100%}.rrfr fieldset{border:1px solid #58616c;padding:12px}
+
+.rrfr textarea{display:block;width:100%;max-width:100%;margin-top:10px;padding:12px;border:1px solid #74839b;border-radius:7px;background:#0c1421;color:#f1f3f7;font:16px/1.6 system-ui,sans-serif}.rrfr select{max-width:100%;padding:7px 32px 7px 12px;font-size:15px;min-height:44px}.rrfr-example{background:#101723;border:1px solid #465369;border-radius:10px;padding:20px;margin:16px 0;max-width:760px}.rrfr-example p{white-space:pre-wrap}.rrfr-disable{margin-top:20px;padding-top:16px;border-top:1px solid #465369}.rrfr input[type=checkbox]{flex:none}

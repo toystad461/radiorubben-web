@@ -1,6 +1,6 @@
-# Spillere jeg følger — 0.4.0
+# Spillere jeg følger — 0.5.0
 
-Første versjon av spillerfølging i den eksisterende Fotballrobot-utvidelsen. Denne leveransen er kode og installasjonspakke; den er ikke installert på produksjon.
+Felles versjon med spillerfølging og «Lær av mine rettelser» fra 0.4.1. Første versjon av spillerfølging i den eksisterende Fotballrobot-utvidelsen. Denne leveransen er kode og installasjonspakke; den er ikke installert på produksjon.
 
 ## Bruk
 
@@ -45,6 +45,8 @@ php tests/writer.php
 php tests/writer-flow.php
 php tests/report.php
 php tests/players.php
+php tests/learning.php
+php tests/bootstrap.php
 ```
 
 Spillertestene dekker faktisk NFF-markup hentet 26. september 2026, URL-validering, ID-forveksling, første grunnlag, differanser, lagring, feil, duplikater, låsing, ignorering og idempotente utkast. WordPress-flyten bruker en isolert testdobbel; den erstatter ikke en stagingtest med ekte WordPress, cron og brukerroller.
@@ -53,4 +55,4 @@ Administrasjonssiden er kjørt gjennom PHP uten feil. Visuell nettlesertest kunn
 
 ## Tilbakerulling
 
-Installer forrige plugin-versjon og fjern bare cron-hook `rrfr_players_tick` hvis nødvendig. Deaktivering av 0.4.0 fjerner cron-planen. Spillerdata og redaksjonelle utkast beholdes; ingenting slettes automatisk.
+Installer forrige plugin-versjon og fjern bare cron-hook `rrfr_players_tick` hvis nødvendig. Deaktivering av 0.5.0 fjerner cron-planen. Spillerdata og redaksjonelle utkast beholdes; ingenting slettes automatisk.
