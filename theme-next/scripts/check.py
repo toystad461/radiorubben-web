@@ -30,5 +30,5 @@ for package in packages:
         assert not file.is_symlink(), str(file)
         if file.is_file():
             assert file.name not in ['wp-config.php', '.env', '.DS_Store'], str(file)
-            assert file.suffix.lower() in ['.php', '.css', '.js', '.json', '.md', '.txt', '.png', '.webp'], str(file)
+            assert file.suffix.lower() in ['.php', '.css', '.js', '.json', '.md', '.txt', '.png', '.webp', '.jpg'], str(file)
 print(f'PASS: {len(php_files)} PHP files, JavaScript syntax, JSON, templates, child parent, presentation boundary and package file allowlist.')

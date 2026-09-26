@@ -1,5 +1,34 @@
 <?php
 defined( 'ABSPATH' ) || exit;
+/** Resolve known FIKS club logos locally; never fetch during a page request.
+ * Stored match snapshots remain untouched. Unknown URLs retain their existing behavior.
+ */
+function rr_site_club_logo_url( $url ) {
+    if ( ! is_string( $url ) ) { return ''; }
+    $parts = wp_parse_url( $url );
+    if ( ! is_array( $parts ) ) { return $url; }
+    $host = strtolower( $parts['host'] ?? '' );
+    $path = $parts['path'] ?? '';
+    $pattern = 'images.fotball.no' === $host ? '~^/clublogos/([1-9][0-9]*)\.png$~' : ( 'logo.fotballdata.no' === $host ? '~^/logos/([1-9][0-9]*)\.jpg$~' : '' );
+    if ( $pattern && preg_match( $pattern, $path, $matches ) ) {
+        $file = 'assets/club-logos/' . $matches[1] . '.jpg';
+        if ( is_file( RR_SITE_DIR . $file ) ) { return RR_SITE_URL . $file; }
+    }
+    // Legacy fixtures used an absolute upload URL for Bremnes instead of its FIKS logo.
+    if ( in_array( $host, array( 'radiorubben.no', 'www.radiorubben.no', '127.0.0.1', 'localhost' ), true ) && '/wp-content/uploads/2026/09/Bremnes-laglogo.png' === $path ) {
+        return RR_SITE_URL . 'assets/club-logos/827.jpg';
+    }
+    return $url;
+}
+add_filter( 'rr_theme_match_data', function ( $data ) {
+    if ( is_array( $data ) ) {
+        foreach ( array( 'home_logo', 'away_logo' ) as $key ) {
+            if ( isset( $data[$key] ) ) { $data[$key] = rr_site_club_logo_url( $data[$key] ); }
+        }
+    }
+    return $data;
+}, 30 );
+
 /** Explicit application template allowlist, independent of active theme paths. */
 function rr_site_template( $name ) {
     if ( in_array( $name, array( 'member-profile', 'member-support', 'member-account-actions' ), true ) ) {

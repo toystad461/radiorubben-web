@@ -91,7 +91,7 @@ get_header();
   <section class="rr-next-card" aria-label="Neste kamp">
     <div class="rr-next-teams">
       <div class="rr-next-team">
-        <?php if (!empty($rr_next['home_logo'])): ?><img src="<?php echo esc_url($rr_next['home_logo']); ?>" alt="<?php echo esc_attr($rr_next['home'].' sin logo'); ?>"><?php endif; ?>
+        <?php if (!empty($rr_next['home_logo'])): ?><img src="<?php echo esc_url(rr_site_club_logo_url($rr_next['home_logo'])); ?>" alt="<?php echo esc_attr($rr_next['home'].' sin logo'); ?>"><?php endif; ?>
         <strong><?php echo esc_html($rr_next['home']); ?></strong>
       </div>
       <div class="rr-next-countdown-box">
@@ -99,7 +99,7 @@ get_header();
         <div class="rr-next-countdown" data-kickoff="<?php echo esc_attr($rr_next['kickoff']); ?>"><?php echo esc_html($rr_initial_countdown); ?></div>
       </div>
       <div class="rr-next-team">
-        <?php if (!empty($rr_next['away_logo'])): ?><img src="<?php echo esc_url($rr_next['away_logo']); ?>" alt="<?php echo esc_attr($rr_next['away'].' sin logo'); ?>" referrerpolicy="no-referrer"><?php endif; ?>
+        <?php if (!empty($rr_next['away_logo'])): ?><img src="<?php echo esc_url(rr_site_club_logo_url($rr_next['away_logo'])); ?>" alt="<?php echo esc_attr($rr_next['away'].' sin logo'); ?>" referrerpolicy="no-referrer"><?php endif; ?>
         <strong><?php echo esc_html($rr_next['away']); ?></strong>
       </div>
     </div>

@@ -510,9 +510,9 @@ get_header();
 <section class="poll-match" aria-labelledby="poll-match-heading">
 <h2 id="poll-match-heading"><?php echo $rr_control ? 'Valgt kamp' : esc_html($rr_match['home'].' mot '.$rr_match['away']); ?></h2>
 <div class="poll-teams<?php echo empty($rr_state['opened'])?' is-pregame':''; ?>">
-<div class="poll-team"><?php if ($rr_match['home_logo']): ?><img src="<?php echo esc_url($rr_match['home_logo']); ?>" alt="<?php echo esc_attr($rr_match['home'].' sin logo'); ?>" width="76" height="76"><?php endif; ?><strong><?php echo esc_html($rr_match['home']); ?></strong></div>
+<div class="poll-team"><?php if ($rr_match['home_logo']): ?><img src="<?php echo esc_url(rr_site_club_logo_url($rr_match['home_logo'])); ?>" alt="<?php echo esc_attr($rr_match['home'].' sin logo'); ?>" width="76" height="76"><?php endif; ?><strong><?php echo esc_html($rr_match['home']); ?></strong></div>
 <span class="poll-versus" id="poll-score"<?php echo empty($rr_state['opened'])?' hidden':''; ?> aria-label="Registrert kampresultat" aria-live="polite"><?php $rr_score=$rr_display_score; echo $rr_state['opened'] ? esc_html($rr_score['home'].' – '.$rr_score['away']) : '–'; ?></span>
-<div class="poll-team"><?php if ($rr_match['away_logo']): ?><img src="<?php echo esc_url($rr_match['away_logo']); ?>" alt="<?php echo esc_attr($rr_match['away'].' sin logo'); ?>" width="76" height="76" referrerpolicy="no-referrer"><?php endif; ?><strong><?php echo esc_html($rr_match['away']); ?></strong></div>
+<div class="poll-team"><?php if ($rr_match['away_logo']): ?><img src="<?php echo esc_url(rr_site_club_logo_url($rr_match['away_logo'])); ?>" alt="<?php echo esc_attr($rr_match['away'].' sin logo'); ?>" width="76" height="76" referrerpolicy="no-referrer"><?php endif; ?><strong><?php echo esc_html($rr_match['away']); ?></strong></div>
 </div>
 <?php
 $rr_waiting=empty($rr_state['opened']);

@@ -4,7 +4,7 @@
 
 **Funksjonene fra dagens theme er sikret i en separat, installérbar utvidelse og prøvd sammen med Next på en isolert stagingkopi. Produksjon er ikke byttet.**
 
-Ny pakke: `rr-site-functions-1.0.0-rc.1.zip`. Hovedthemet er fortsatt `radio-rubben-next-2.0.0-rc.1.zip`. De skal vurderes sammen. Metadata-pluginet og child theme er egne valg.
+Ny pakke: `rr-site-functions-1.0.0-rc.2.zip`. Hovedthemet er fortsatt `radio-rubben-next-2.0.0-rc.1.zip`. De skal vurderes sammen. Metadata-pluginet og child theme er egne valg.
 
 Dette statusnotatet oppdaterer migreringsstatusen i den opprinnelige theme-kandidatens `docs/DEPLOY.md`: fersk kildekopi, uttrekk av funksjoner og lokal staging er nå gjennomført. De opprinnelige theme-dokumentene beskriver også situasjonen før denne funksjonsutvidelsen ble laget.
 
@@ -22,7 +22,7 @@ Filkopieringen ga varsel om at selve wp-content-katalogen endret seg mens nettst
 - WordPress 7.1.2, PHP **8.2.34**, MariaDB 11.4. Databaseplattformen er ikke dokumentert identisk med produksjonens MySQL-konfigurasjon.
 - WordPress og database kjører på internt Docker-nett uten utgående internett. En separat lokal mellomtjener gir nettlesertilgang.
 - Utgående WordPress HTTP, e-post, cron og automatiske oppdateringer er blokkert. Direkte nettverksforsøk fra WordPress-containeren ble også avvist.
-- Nettleserpolicy blokkerer eksterne skript, bilder, strømmer, skjemaer og tilkoblinger. Eksterne laglogoer kan derfor mangle i staging uten at det er en feil i migreringspakken.
+- Nettleserpolicy blokkerer eksterne skript, bilder, strømmer, skjemaer og tilkoblinger. Kjente laglogoer leveres nå lokalt fra Site Functions rc.2; andre eksterne bilder forblir blokkert.
 - Staging har noindex. Private kopier ligger utenfor repositoryet i en mappe med begrensede filrettigheter.
 
 ## Implementert migrering
@@ -97,3 +97,9 @@ Ingen av disse produksjonstrinnene er utført i denne oppgaven.
 Maskinlesbar, dataminimert testoppsummering: [migration-2026-09-26.json](../tests/results/migration-2026-09-26.json). Ingen testpassord, medlemsopplysninger eller backupinnhold inngår.
 
 Ved ZIP-installasjonen meldte eksisterende Starter Templates om en gammel absolutt loggsti i stagingkopien. WordPress sine oppdateringssjekker ble blokkert av nettverkssperren. Disse miljø-/tredjepartsvarslene er ikke skjult eller regnet som vellykkede eksterne integrasjonstester.
+
+## Logooppdatering – Site Functions 1.0.0-rc.2
+
+Logoene på `/dagenskamp/` pekte til images.fotball.no og ble blokkert av stagingens bildepolicy. Tolv klubblogoer fra Fotballdatas logobank er nå pakket med funksjonspluginet. Visningslaget oversetter kjente FIKS-logo-URL-er til lokale filer, også for arkiverte kamper, uten å skrive til kampdataene. Ingen nye nettverkskall utføres ved sidevisning. Klubb-ID-ene stammer fra eksisterende kampdata og terminliste. Ukjente klubber trenger fortsatt en lokal logo lagt til.
+
+Verifisert 26.09.2026: alle 108 PHP-filer, JavaScript, JSON og pakkekontroller bestått; installert rc.2-ZIP på staging. Dagens kamp (Bremnes–Arna-Bjørnar 2), arkivkampen (Bremnes–Viggo) og `/nestekamp/` leverer begge logoer lokalt med HTTP 200 og gyldige JPEG-filer. Nettleseren bekreftet at dagens to logoer var lastet (200 px bildebredde), og visningen ble kontrollert visuelt. Produksjon og stagingens nettverksvern er uendret.
