@@ -1,7 +1,7 @@
 from pathlib import Path
 import zipfile,hashlib,json
 b=Path(__file__).resolve().parents[1];out=b/'dist';out.mkdir(exist_ok=True)
-packages={'radio-rubben-next':'2.0.0-rc.1','rr-editorial-contract':'1.0.0-rc.1','radio-rubben-child':'1.0.0'}
+packages={'radio-rubben-next':'2.0.0-rc.1','rr-editorial-contract':'1.0.0-rc.1','radio-rubben-child':'1.0.0','rr-site-functions':'1.0.0-rc.1'}
 manifest=[]
 for name,version in packages.items():
  root=b/name;dest=out/(name+'-'+version+'.zip');files=[]

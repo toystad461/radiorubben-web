@@ -1,12 +1,15 @@
 # Radio Rubben Next — 2.0.0-rc.1
 
-Installérbar stagingkandidat. Ikke godkjent for produksjonsaktivering ennå.
+Installérbar stagingkandidat. Funksjoner fra dagens theme er nå sikret i `rr-site-functions` og testet lokalt på fersk produksjonskopi. Eksterne sluttkontroller gjenstår før produksjonsaktivering.
+
+**Gjeldende status:** [Migrering og staging](docs/MIGRERING-OG-STAGING.md). Dette oppdaterer migreringsstatusen i de opprinnelige theme-dokumentene.
 
 **Ny i theme-verdenen? Start med [brukerveiledningen for Thomas](BRUKERVEILEDNING.md).** Den forklarer hva som følger med ved theme-bytte, hva som må sikres og hvordan overgangen testes.
 
 ## Kildekode
 
 - `radio-rubben-next/`: hovedtheme; kun presentasjon.
+- `rr-site-functions/`: separat overgangspakke for dagens kamp-, speaker-, quiz-, medlems-, vær- og RRLive-funksjoner.
 - `rr-editorial-contract/`: valgfri separat metadata-/REST-plugin.
 - `radio-rubben-child/`: child theme for lokale tilpasninger.
 - `radio-rubben-next/docs/`: malbruk, rr-* kontrakt, VPS-migrering, QA og krav før produksjonsbytte.
@@ -41,3 +44,7 @@ Lokale databaser, WordPress-kjerne, referansebackuper og midlertidige testdata i
 ## Arbeidsflyt
 
 Lag gren → endre kanonisk kildekode → kjør kontroller → pull request → gjennomgang → slå sammen. Versjonér theme/plugin separat ved neste utgivelse. Bevar metadata-kontrakten når motorer senere flyttes til VPS. Ingen API-nøkler eller produksjonsinnlogginger skal inn i kildekoden.
+
+## Migreringstester
+
+`tests/migration-seed.php`, `migration-http.py`, `migration-contract.php` og `migration-cleanup.php` tester den komplette, disponible localhost-kopien med eksisterende plugins og sider. De skal ikke kjøres på produksjon. PHP-skriptene krever lokal miljøtype og eksplisitt `RR_DISPOSABLE_TEST_DB=1`. Seed lager midlertidige testkontoer og testkamp; HTTP-testen krever den private fixture-filen, som aldri skal i Git. Cleanup gjenoppretter relevante lokale innstillinger og fjerner testdata.

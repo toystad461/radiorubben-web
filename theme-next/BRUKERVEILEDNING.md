@@ -5,7 +5,7 @@ Gjelder Radio Rubben Next **2.0.0-rc.1** og det undersøkte grunnlaget for dagen
 
 ## 1. Det viktigste før du begynner
 
-**Du skal kunne erstatte dagens theme, men den nye versjonen skal ikke aktiveres på radiorubben.no ennå.** Vi har laget det nye presentasjonslaget. Vi har ikke fullført flyttingen av alle funksjonene som ligger inne i det gamle themet.
+**Du skal kunne erstatte dagens theme, men den nye versjonen skal ikke aktiveres på radiorubben.no ennå.** Vi har laget det nye presentasjonslaget. Funksjonene er nå flyttet til en separat utvidelse og prøvd på en isolert kopi. Ekte Vipps-innlogging, nye eksterne data og endelig driftssjekk gjenstår. Se [oppdatert stagingrapport](docs/MIGRERING-OG-STAGING.md).
 
 Bekymringen din er derfor relevant. Et theme-bytte sletter normalt ikke artikler og bilder, men funksjoner kan slutte å virke dersom koden som driver dem, ligger i themet som blir slått av. Data kan fortsatt finnes selv om siden, knappen eller administrasjonsverktøyet blir borte.
 
@@ -57,7 +57,7 @@ At en artikkel fortsatt finnes i administrasjonen, beviser derfor ikke at alle f
 
 ## 5. Dette gjelder konkret for Radio Rubben
 
-Oversikten nedenfor bygger på kodegrunnlaget vi har undersøkt. Den komplette lokale kopien er fra 23. september, mens nettsidens offentlige visning ble undersøkt 26. september. En fersk, fullstendig eksport må bekrefte dagens situasjon før flytting.
+Oversikten nedenfor bygger på kodegrunnlaget vi har undersøkt. Den første lokale kopien var fra 23. september. Migreringen er nå basert på en ny kopi av kode og database fra 26. september. En fersk eksport og lokal overgangstest er nå gjennomført; tabellen beskriver avhengighetene som måtte sikres. Gjeldende gjennomføringsstatus står i stagingrapporten.
 
 | Funksjon | Det vi vet | Hva som må være gjort før bytte |
 |---|---|---|
@@ -76,11 +76,12 @@ Oversikten nedenfor bygger på kodegrunnlaget vi har undersøkt. Den komplette l
 
 Den nye kandidaten inneholder forside, artikler, vanlige sider, kategoriarkiver, søk, 404-side og visuelle oppsett for sport, radio, RSS, journalister, sponsorer og kamp/live. Den har også rammer som eksisterende applikasjoner kan bruke.
 
-De tre installasjonspakkene har ulike oppgaver:
+De fire installasjonspakkene har ulike oppgaver:
 
 | Pakke | Bruk |
 |---|---|
 | `radio-rubben-next-2.0.0-rc.1.zip` | Selve hovedthemet. Installeres under **Utseende → Temaer**. |
+| `rr-site-functions-1.0.0-rc.1.zip` | Sikrer funksjonene fra gammelt theme. Installeres under **Utvidelser**, sammen med de eksisterende pluginene. |
 | `rr-editorial-contract-1.0.0-rc.1.zip` | Valgfri utvidelse for journalist-ID og kildeopplysninger. Installeres under **Utvidelser**. Erstatter ingen kamp- eller medlemsmotor. |
 | `radio-rubben-child-1.0.0.zip` | Valgfritt undertema for egne visuelle kodeendringer. Krever at hovedthemet er installert. |
 
@@ -123,7 +124,7 @@ Når funksjonene er sikret, gjøres dette **på testsiden**:
 5. Kontroller logo, menyer, forside, kontaktopplysninger og radiostrøm.
 6. Gå gjennom prøvelisten nedenfor før noe vurderes som klart.
 
-GitHub-knappen **Download ZIP** gir hele kodeprosjektet. Den ZIP-en skal ikke lastes opp som theme. Bruk den egne installasjonspakken. Hvis du laster ned en samlet GitHub Actions-pakke, pakk den ut først; inni ligger de tre separate ZIP-ene.
+GitHub-knappen **Download ZIP** gir hele kodeprosjektet. Den ZIP-en skal ikke lastes opp som theme. Bruk den egne installasjonspakken. Hvis du laster ned en samlet GitHub Actions-pakke, pakk den ut først; inni ligger de fire separate ZIP-ene.
 
 ### Trinn 5: Godkjenn med konkrete bevis
 
@@ -226,6 +227,6 @@ Vi skal kunne svare ja på alle disse punktene:
 - Har du sett og godkjent utseendet på mobil og datamaskin?
 - Har vi prøvd tilbakeføring og avtalt hvordan nye data skal bevares?
 
-**Neste nødvendige utviklingssteg er å sikre funksjonene fra dagens theme og gjennomføre staging-testen. Du trenger ikke aktivere den nye kandidaten for å komme videre.**
+**Funksjonsflyttingen og den lokale staging-testen er nå utført. Neste steg er de eksterne sluttkontrollene og avtalt produksjonsbytte, beskrevet i stagingrapporten. Du skal fortsatt ikke aktivere kandidaten på produksjon på egen hånd.**
 
 For tekniske detaljer: [migreringsplan](radio-rubben-next/docs/DEPLOY.md), [maloversikt](radio-rubben-next/docs/TEMPLATES.md) og [rr-* / VPS-kontrakten](radio-rubben-next/docs/RR-CONTRACT.md).

@@ -1,0 +1,345 @@
+{
+  "environment": {
+    "wordpress": "7.1.2",
+    "php": "8.2.34",
+    "database": "MariaDB 11.4",
+    "scope": "isolated localhost production snapshot; synthetic mutation fixtures"
+  },
+  "http_behavior": {
+    "checks": [
+      {
+        "check": "Local login admin",
+        "pass": true
+      },
+      {
+        "check": "Local login member",
+        "pass": true
+      },
+      {
+        "check": "Local login delete",
+        "pass": true
+      },
+      {
+        "check": "Admin speaker renders",
+        "pass": true
+      },
+      {
+        "check": "Existing dashboard prototype preserved",
+        "pass": true
+      },
+      {
+        "check": "Member cannot enter speaker",
+        "pass": true
+      },
+      {
+        "check": "Anonymous cannot control match",
+        "pass": true
+      },
+      {
+        "check": "Member cannot use admin nonce",
+        "pass": true
+      },
+      {
+        "check": "Admin action requires valid nonce",
+        "pass": true
+      },
+      {
+        "check": "Create fresh synthetic match session",
+        "pass": true
+      },
+      {
+        "check": "Start first half",
+        "pass": true
+      },
+      {
+        "check": "Clock and vote open",
+        "pass": true
+      },
+      {
+        "check": "Anonymous vote rejected",
+        "pass": true
+      },
+      {
+        "check": "Invalid voting token rejected",
+        "pass": true
+      },
+      {
+        "check": "Speaker records home goal",
+        "pass": true
+      },
+      {
+        "check": "Score reflects recorded goal",
+        "pass": true
+      },
+      {
+        "check": "Speaker records substitution",
+        "pass": true
+      },
+      {
+        "check": "Substituted starter and reserve remain voting candidates",
+        "pass": true
+      },
+      {
+        "check": "Eligible administrator test vote accepted",
+        "pass": true
+      },
+      {
+        "check": "Duplicate vote rejected",
+        "pass": true
+      },
+      {
+        "check": "Pause at halftime",
+        "pass": true
+      },
+      {
+        "check": "Start second half",
+        "pass": true
+      },
+      {
+        "check": "Set synthetic clock to 85 minutes",
+        "pass": true
+      },
+      {
+        "check": "Vote closes at 85 minutes",
+        "pass": true
+      },
+      {
+        "check": "Clock correction accepted",
+        "pass": true
+      },
+      {
+        "check": "Clock correction cannot reopen closed vote",
+        "pass": true
+      },
+      {
+        "check": "Finish and archive match",
+        "pass": true
+      },
+      {
+        "check": "Public archived match remains accessible",
+        "pass": true
+      },
+      {
+        "check": "Private draw details absent for public",
+        "pass": true
+      },
+      {
+        "check": "Original RRLive permalink route renders",
+        "pass": true
+      },
+      {
+        "check": "Member dashboard, profile and deletion controls retained",
+        "pass": true
+      },
+      {
+        "check": "Quiz start requires login",
+        "pass": true
+      },
+      {
+        "check": "Quiz ready without disclosing answers before start",
+        "pass": true
+      },
+      {
+        "check": "Quiz rejects invalid nonce",
+        "pass": true
+      },
+      {
+        "check": "Member starts 20-question quiz",
+        "pass": true
+      },
+      {
+        "check": "Quiz answer key not sent during play",
+        "pass": true
+      },
+      {
+        "check": "Quiz submission is scored and saved",
+        "pass": true
+      },
+      {
+        "check": "Repeated quiz submission cannot overwrite result",
+        "pass": true
+      },
+      {
+        "check": "Account deletion requires typed confirmation",
+        "pass": true
+      },
+      {
+        "check": "Synthetic member self-deletion completes",
+        "pass": true
+      }
+    ],
+    "passed": 40,
+    "total": 40
+  },
+  "contracts": {
+    "checks": [
+      {
+        "check": "Bridge owns functions with new theme",
+        "pass": true
+      },
+      {
+        "check": "Callable rr_poll_active_vote",
+        "pass": true
+      },
+      {
+        "check": "Plugin owns rr_poll_active_vote",
+        "pass": true
+      },
+      {
+        "check": "Callable rr_poll_rollover_selection",
+        "pass": true
+      },
+      {
+        "check": "Plugin owns rr_poll_rollover_selection",
+        "pass": true
+      },
+      {
+        "check": "Callable rrwq_week",
+        "pass": true
+      },
+      {
+        "check": "Plugin owns rrwq_week",
+        "pass": true
+      },
+      {
+        "check": "Callable rr_weather_card",
+        "pass": true
+      },
+      {
+        "check": "Plugin owns rr_weather_card",
+        "pass": true
+      },
+      {
+        "check": "Callable rr_member_dashboard",
+        "pass": true
+      },
+      {
+        "check": "Plugin owns rr_member_dashboard",
+        "pass": true
+      },
+      {
+        "check": "Callable rr_member_can_self_delete",
+        "pass": true
+      },
+      {
+        "check": "Plugin owns rr_member_can_self_delete",
+        "pass": true
+      },
+      {
+        "check": "Callable rrlive_get_match_data",
+        "pass": true
+      },
+      {
+        "check": "Plugin owns rrlive_get_match_data",
+        "pass": true
+      },
+      {
+        "check": "RRLive content registered",
+        "pass": true
+      },
+      {
+        "check": "RRLive permalink preserved",
+        "pass": true
+      },
+      {
+        "check": "Shortcode rubben_rss_cards",
+        "pass": true
+      },
+      {
+        "check": "Shortcode rubben_live_quiz",
+        "pass": true
+      },
+      {
+        "check": "Shortcode min_rubben",
+        "pass": true
+      },
+      {
+        "check": "Shortcode rr_player",
+        "pass": true
+      },
+      {
+        "check": "Shortcode rr_weekly_competition",
+        "pass": true
+      },
+      {
+        "check": "Shortcode contact-form-7",
+        "pass": true
+      },
+      {
+        "check": "Shortcode continue-with-vipps",
+        "pass": true
+      },
+      {
+        "check": "Weather AJAX retained",
+        "pass": true
+      },
+      {
+        "check": "Weekly quiz AJAX retained",
+        "pass": true
+      },
+      {
+        "check": "Member deletion retained",
+        "pass": true
+      },
+      {
+        "check": "HTTP outbound blocked",
+        "pass": true
+      },
+      {
+        "check": "Email sending blocked",
+        "pass": true
+      },
+      {
+        "check": "Cron disabled",
+        "pass": true
+      },
+      {
+        "check": "Radio stream setting preserved",
+        "pass": true
+      },
+      {
+        "check": "Live quiz engine still active",
+        "pass": true
+      },
+      {
+        "check": "Disabled LIVE quiz rejects server requests",
+        "pass": true
+      },
+      {
+        "check": "RSS renderer attached once",
+        "pass": true
+      },
+      {
+        "check": "Quiz data eraser preserved",
+        "pass": true
+      },
+      {
+        "check": "Quiz data export preserved",
+        "pass": true
+      },
+      {
+        "check": "Paused birthday collector remains paused",
+        "pass": true
+      }
+    ],
+    "total": 37,
+    "passed": 37
+  },
+  "route_status_equivalence": true,
+  "routes_compared": 18,
+  "local_assets_passed": 36,
+  "theme_switch_preserved": [
+    "application option hashes",
+    "post hashes",
+    "user count",
+    "shortcodes",
+    "rr_match registration"
+  ],
+  "not_tested": [
+    "external Vipps confirmation",
+    "fresh remote NFF/RSS/weather requests",
+    "active audio stream playback",
+    "production email/cron/payment/automation",
+    "production cache/CDN/performance"
+  ]
+}

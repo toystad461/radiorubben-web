@@ -6,11 +6,11 @@ import subprocess
 
 root = Path(__file__).resolve().parents[1]
 theme = root / 'radio-rubben-next'
-packages = [theme, root / 'rr-editorial-contract', root / 'radio-rubben-child']
-php_files = [p for package in packages for p in package.rglob('*.php')]
+packages = [theme, root / 'rr-editorial-contract', root / 'radio-rubben-child', root / 'rr-site-functions']
+php_files = [p for package in packages for p in package.rglob('*.php')] + list((root / 'tests').glob('*.php'))
 for file in php_files:
     subprocess.run(['php', '-l', str(file)], check=True, capture_output=True)
-for file in theme.rglob('*.js'):
+for file in [p for package in packages for p in package.rglob('*.js')]:
     subprocess.run(['node', '--check', str(file)], check=True)
 for file in root.rglob('*.json'):
     json.loads(file.read_text())
