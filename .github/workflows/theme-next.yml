@@ -1,0 +1,35 @@
+name: Next theme — kontroll og ZIP
+on:
+  pull_request:
+    branches: [main]
+    paths: ['theme-next/**', '.github/workflows/theme-next.yml']
+  push:
+    branches: [main, 'theme/**']
+    paths: ['theme-next/**', '.github/workflows/theme-next.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Vis kontrollmiljø
+        run: |
+          php --version
+          node --version
+          python3 --version
+      - name: Kontroller kildekode og presentasjonsgrense
+        run: python3 theme-next/scripts/check.py
+      - name: Bygg installasjonspakker og SHA-256
+        run: python3 theme-next/scripts/package.py
+      - name: Lagre installasjonspakker
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: radio-rubben-next-${{ github.sha }}
+          path: theme-next/dist/
+          if-no-files-found: error
+          retention-days: 30

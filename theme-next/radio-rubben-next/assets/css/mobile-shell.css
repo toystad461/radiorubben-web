@@ -1,0 +1,30 @@
+/* Shared header and player; no changes to audio behaviour. */
+body.rr-stream-unavailable{padding-bottom:calc(52px + env(safe-area-inset-bottom,0px))}
+.rr-mini-player.rr-mini-unavailable{height:auto;min-height:0;gap:10px;padding:12px max(16px,calc((100vw - 1180px)/2));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));font-size:13px;line-height:20px;background:#141820}
+.rr-mini-unavailable strong{font-size:13px;white-space:nowrap}
+.rr-mini-unavailable>span:last-child{color:#b8bfcb;min-width:0}
+.rr-pause-dot{width:7px;height:7px;border-radius:50%;background:#929ba9;flex:none}
+body.rr-stream-configured{padding-bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+@media(max-width:1100px){
+.rr-header .rr-nav{top:100%;max-height:calc(100dvh - 160px);overflow-y:auto}
+.rr-header .rr-nav a{display:flex;align-items:center;min-height:44px}
+}
+@media(max-width:720px){
+.rr-header .rr-header-inner{min-height:68px;gap:10px;width:calc(100% - 28px);padding-block:8px}
+.rr-header .rr-header-inner .rr-brand{width:clamp(106px,29vw,145px)}
+.rr-header .rr-header-inner>.rr-member-entry{min-height:44px;padding:8px 10px;font-size:12px;border-radius:9px;margin-left:auto}
+.rr-header .rr-menu-toggle{width:44px;height:44px;padding:10px;flex:0 0 44px}
+.rr-header .rr-nav ul{padding:12px 20px;gap:4px}
+.rr-header .rr-nav li{width:100%}
+.rr-mini-player:not(.rr-mini-unavailable){min-height:68px;gap:10px;padding:10px 14px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.rr-mini-meta .rr-player-message{margin:0;font-size:11px;line-height:1.4}
+.rr-mini-meta strong{font-size:13px}
+.rr-mini-player .rr-broadcast{font-size:10px;padding:4px 6px;letter-spacing:0}
+.rr-mini-player .rr-mini-play{width:44px;height:44px}
+body.rr-stream-configured{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:360px){
+.rr-mini-player.rr-mini-unavailable{gap:7px;font-size:12px;padding-inline:12px}
+.rr-mini-unavailable strong{font-size:12px}
+.rr-mini-player:not(.rr-mini-unavailable) .rr-broadcast{max-width:70px}
+}

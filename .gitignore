@@ -17,3 +17,12 @@ wp-config.php
 *.key
 wordpress/wp-content/uploads/
 wordpress/wp-content/cache/
+
+# Next theme: generated packages and local-only material
+/theme-next/dist/
+/theme-next/qa/
+/theme-next/reference/
+__pycache__/
+.DS_Store
+*.sqlite
+*.sqlite3
