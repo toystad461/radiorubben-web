@@ -491,6 +491,22 @@ get_header();
 .rr-poll .poll-content-grid>.poll-intro{order:2}
 }
 </style>
+<style>
+/* Preserve the clock when legacy Code Snippets still override the public card. */
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock>.poll-match{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(104px,180px) minmax(0,1fr);text-align:center}
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock .poll-teams{display:contents!important}
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock .poll-team{grid-column:1!important;grid-row:1!important;flex-direction:column;justify-content:center!important;text-align:center}
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock .poll-team:last-child{grid-column:3!important;grid-row:1!important;flex-direction:column;justify-content:center!important;text-align:center}
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock .poll-match .poll-timer{display:block!important;grid-column:2;grid-row:1;min-width:0;font-variant-numeric:tabular-nums}
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock .poll-versus{grid-column:2;grid-row:2}
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock .poll-team strong{font-size:clamp(14px,2vw,23px);overflow-wrap:anywhere}
+.rr-site-match-clock .rr-dk-pre-score{display:none!important}
+@media(max-width:700px){
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock>.poll-match{grid-template-columns:minmax(0,1fr) 104px minmax(0,1fr);gap:8px;padding:14px 10px}
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock .poll-team strong{font-size:14px}
+.rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock .poll-team img{width:54px;height:54px;max-width:none}
+}
+</style>
 <section class="rr-poll<?php echo $rr_control ? ' rr-speaker' : ''; ?><?php echo ($rr_control && $rr_live_section) ? ' rr-speaker-live' : ''; ?>">
 <p class="tag"><?php echo $rr_control ? 'Dagens Bremnesing · Kampstyring' : ($rr_archive_public?'Kamparkiv':'Dagens Kamp'); ?></p>
 <h1><?php echo $rr_control ? 'Speakerboard' : ($rr_archive_public?esc_html($rr_match['home'].' – '.$rr_match['away']):'Kampdag med Bremnes'); ?></h1>
@@ -506,7 +522,7 @@ get_header();
 </nav>
 <p id="poll-feedback" role="status" aria-live="polite"></p>
 <?php endif; ?>
-<?php if (!$rr_control): ?><div class="poll-public-layout"><?php endif; ?>
+<?php if (!$rr_control): ?><div class="poll-public-layout rr-site-match-clock"><?php endif; ?>
 <section class="poll-match" aria-labelledby="poll-match-heading">
 <h2 id="poll-match-heading"><?php echo $rr_control ? 'Valgt kamp' : esc_html($rr_match['home'].' mot '.$rr_match['away']); ?></h2>
 <div class="poll-teams<?php echo empty($rr_state['opened'])?' is-pregame':''; ?>">

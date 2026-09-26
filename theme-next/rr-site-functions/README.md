@@ -1,4 +1,4 @@
-# Radio Rubben Site Functions 1.0.0-rc.2
+# Radio Rubben Site Functions 1.0.0-rc.3
 
 Separat migreringsutvidelse for funksjoner som tidligere ble lastet av `radio-rubben-wordpress-v1` 1.3.6. Basert på fersk, lesebasert produksjonskopi fra 26. september 2026, med filhashene dokumentert i `SOURCE-MANIFEST.json`.
 

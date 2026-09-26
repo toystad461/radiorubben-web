@@ -4,7 +4,7 @@
 
 **Funksjonene fra dagens theme er sikret i en separat, installérbar utvidelse og prøvd sammen med Next på en isolert stagingkopi. Produksjon er ikke byttet.**
 
-Ny pakke: `rr-site-functions-1.0.0-rc.2.zip`. Hovedthemet er fortsatt `radio-rubben-next-2.0.0-rc.1.zip`. De skal vurderes sammen. Metadata-pluginet og child theme er egne valg.
+Ny pakke: `rr-site-functions-1.0.0-rc.3.zip`. Hovedthemet er fortsatt `radio-rubben-next-2.0.0-rc.1.zip`. De skal vurderes sammen. Metadata-pluginet og child theme er egne valg.
 
 Dette statusnotatet oppdaterer migreringsstatusen i den opprinnelige theme-kandidatens `docs/DEPLOY.md`: fersk kildekopi, uttrekk av funksjoner og lokal staging er nå gjennomført. De opprinnelige theme-dokumentene beskriver også situasjonen før denne funksjonsutvidelsen ble laget.
 
@@ -103,3 +103,9 @@ Ved ZIP-installasjonen meldte eksisterende Starter Templates om en gammel absolu
 Logoene på `/dagenskamp/` pekte til images.fotball.no og ble blokkert av stagingens bildepolicy. Tolv klubblogoer fra Fotballdatas logobank er nå pakket med funksjonspluginet. Visningslaget oversetter kjente FIKS-logo-URL-er til lokale filer, også for arkiverte kamper, uten å skrive til kampdataene. Ingen nye nettverkskall utføres ved sidevisning. Klubb-ID-ene stammer fra eksisterende kampdata og terminliste. Ukjente klubber trenger fortsatt en lokal logo lagt til.
 
 Verifisert 26.09.2026: alle 108 PHP-filer, JavaScript, JSON og pakkekontroller bestått; installert rc.2-ZIP på staging. Dagens kamp (Bremnes–Arna-Bjørnar 2), arkivkampen (Bremnes–Viggo) og `/nestekamp/` leverer begge logoer lokalt med HTTP 200 og gyldige JPEG-filer. Nettleseren bekreftet at dagens to logoer var lastet (200 px bildebredde), og visningen ble kontrollert visuelt. Produksjon og stagingens nettverksvern er uendret.
+
+## Kampklokke – Site Functions 1.0.0-rc.3
+
+Den aktive, gamle Code Snippets-layouten skjulte `.poll-timer` med `display:none!important`. Pluginets offentlige kampkort har nå en avgrenset layoutregel som viser klokken mellom lagene, også når dette snippetet er aktivt. Kampmotor, start/stopp og lagrede tider er uendret.
+
+Kontrollert i nettleser på staging: synlig nedtelling som oppdateres, begge logoer, mobilbredde 390 px uten horisontal overflyt og arkivkamp med lagret 103:00 samt resultat 2–2. PHP-, JavaScript- og pakkekontroller bestått. Produksjon er ikke endret.

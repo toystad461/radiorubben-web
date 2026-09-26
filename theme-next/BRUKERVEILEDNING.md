@@ -81,7 +81,7 @@ De fire installasjonspakkene har ulike oppgaver:
 | Pakke | Bruk |
 |---|---|
 | `radio-rubben-next-2.0.0-rc.1.zip` | Selve hovedthemet. Installeres under **Utseende → Temaer**. |
-| `rr-site-functions-1.0.0-rc.2.zip` | Sikrer funksjonene fra gammelt theme. Installeres under **Utvidelser**, sammen med de eksisterende pluginene. |
+| `rr-site-functions-1.0.0-rc.3.zip` | Sikrer funksjonene fra gammelt theme. Installeres under **Utvidelser**, sammen med de eksisterende pluginene. |
 | `rr-editorial-contract-1.0.0-rc.1.zip` | Valgfri utvidelse for journalist-ID og kildeopplysninger. Installeres under **Utvidelser**. Erstatter ingen kamp- eller medlemsmotor. |
 | `radio-rubben-child-1.0.0.zip` | Valgfritt undertema for egne visuelle kodeendringer. Krever at hovedthemet er installert. |
 
