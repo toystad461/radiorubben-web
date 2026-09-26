@@ -1,6 +1,6 @@
-# Radio Rubbens Fotballrobot 0.5.0
+# Radio Rubbens Fotballrobot 0.6.0
 
-Spillerfølging er implementert i denne versjonen. Se [PLAYERS.md](PLAYERS.md) for bruk, arkitektur, tester og begrensninger. 0.5.0 er ikke installert på produksjon.
+Spillerfølging er implementert i denne versjonen. Se [PLAYERS.md](PLAYERS.md) for bruk, arkitektur, tester og begrensninger. 0.5.0 ble installert og Tiril (FIKS 3942773) ble kontrollert mot offentlige data. Se [PLAYER-REVIEW.md](PLAYER-REVIEW.md) for godkjenningsflyten i 0.6.0.
 
 ## Historikk fra eksisterende 0.3.2
 
