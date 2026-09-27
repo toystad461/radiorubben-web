@@ -198,6 +198,25 @@ Siste maskinlesbare bevis: [read-only-2026-09-27.json](../tests/results/read-onl
 (totalfrist 20). Ingen feilresultater er omskrevet til bestått. Senere Actions-rapporter
 kan variere med nettverk og kilder; de endrer ikke automatisk manuelle gates.
 
+### CI-bevis etter commit d0cb1aa
+
+Begge PR-workflowene, **Kontroller Radio Rubben** og **Next theme — kontroll og ZIP**,
+fullførte med success på `d0cb1aa24157f7f3d732a97e3829c9cf42fe5f45`.
+[Actions-kjøring 36299816799](https://github.com/toystad461/radiorubben-web/actions/runs/36299816799)
+bekrefter kildekontroll, 15 regresjonstester, ZIP-bygg og opplasting av leserapporten.
+
+Fra GitHub-runneren ble resultatet **7 PASS, 0 FAIL/ERROR/WARN, 1 SKIP**: også MET GET,
+forecast-format, ferskhet og dekning besto. Lyd er fortsatt SKIP. Dette avklarer at den
+lokale værtidsfristen ikke alene dokumenterte en feil hos MET. De lokale feilforsøkene
+beholdes som faktisk historikk; ingen manuell integrasjonsgate lukkes av CI-resultatet.
+
+Dataminimert [CI-rapport](../tests/results/read-only-2026-09-27-ci.json) er hentet fra artifact
+10924249023 og bevart i repositoryet før artifactets 14-dagers levetid utløper.
+ZIP-SHA-256 ble kontrollert mot opplastingsloggen:
+`ffd7fcacf8e408967485d84df115acfa304a4c16d4cb6fa8f9cbcba5066a2e07`.
+Rapportens `source_ref` og `probe_sha256` samsvarer med kandidaten/kontrollskriptet.
+Disse CI-resultatene gjelder den navngitte commiten; senere kjøringer har egne rapporter.
+
 ### Obligatoriske manuelle gates før eventuell produksjonsaktivering
 
 Alle er **ÅPNE / IKKE GODKJENT**. Thomas er godkjenner; teknisk utfører dokumenterer hver
