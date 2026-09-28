@@ -1,5 +1,6 @@
 <?php
 namespace RadioRubben\Fotballrobot {
+ class Players {static function ids(){return [];}}
  class Robot {static function allowed(){return $GLOBALS['allowed'];}}
  class Writer {static function playerArticle($f,$c,$p){$GLOBALS['writes']++;if($GLOBALS['write_fail'])throw new \RuntimeException('Provider failed');return ['title'=>'Tiril med mål for Brann','lead'=>'Et kontrollert sammendrag.','paragraphs'=>['Registrerte opplysninger.'],'checks'=>[['claim'=>'Test','support'=>'facts']]];}}
 }
@@ -17,14 +18,19 @@ function get_post_meta($id,$k,...$a){return $GLOBALS['meta'][$id][$k]??'';}
 function get_post($id){return isset($GLOBALS['posts'][$id])?clone $GLOBALS['posts'][$id]:null;}
 function wp_insert_post($v,...$a){global $next;$id=$next++;$GLOBALS['posts'][$id]=(object)(['ID'=>$id,'post_excerpt'=>'','post_content'=>'']+$v);foreach($v['meta_input']??[] as $k=>$m)update_post_meta($id,$k,$m);return $id;}
 function wp_update_post($v,...$a){$v=R::guardTest($v+['post_status'=>get_post($v['ID'])->post_status],$v);foreach($v as $k=>$val)$GLOBALS['posts'][$v['ID']]->$k=$val;return $v['ID'];}
-function get_posts($q){return array_values(array_filter($GLOBALS['posts'],fn($p)=>get_post_meta($p->ID,$q['meta_key'])===$q['meta_value']));}
+function get_posts($q){return array_values(array_filter($GLOBALS['posts'],fn($p)=>!array_key_exists('meta_value',$q)||get_post_meta($p->ID,$q['meta_key'])===$q['meta_value']));}
 function is_wp_error($r){return false;}function esc_html($v){return htmlspecialchars((string)$v);}function esc_url($v){return htmlspecialchars($v);}
-function admin_url($p){return 'https://example.test/wp-admin/'.$p;}function wp_mail($to,$subject,$body,$headers){$GLOBALS['mail'][]=compact('to','subject','body','headers');return $GLOBALS['mail_ok'];}
+function absint($v){return abs((int)$v);}function get_transient($k){return false;}function delete_transient($k){}
+function esc_attr($v){return esc_html($v);}function wp_nonce_field($v){}function wp_kses_post($v){return $v;}
+function get_edit_post_link($id,...$a){return admin_url('post.php?post='.$id);}function wp_die($m){throw new RuntimeException($m);}
+function is_email($v){return filter_var($v,FILTER_VALIDATE_EMAIL);}
+function admin_url($p){return 'https://example.test/wp-admin/'.$p;}function wp_mail($to,$subject,$body,$headers){$GLOBALS['mail'][]=compact('to','subject','body','headers');if(!empty($GLOBALS['mail_throw']))throw new RuntimeException('Transport exception');return $GLOBALS['mail_ok'];}
 function current_user_can($cap,...$a){return $GLOBALS['allowed']&&($cap!=='publish_posts'||$GLOBALS['publish']);}
 function get_current_user_id(){return 7;}function sanitize_textarea_field($s){return trim(strip_tags($s));}
 $f=['source'=>'https://www.fotball.no/fotballdata/person/profil/?fiksId=3942773','fetched_at'=>'2026-09-26T00:00:00Z'];
+putenv('RRFR_REVIEW_FROM_EMAIL=approved-sender@example.org');putenv('RRFR_REVIEW_FROM_APPROVED=1');
 $id=R::create('test:1',$f,true);check($writes===1,'One write');check(count($mail)===1,'One notification');
-check($mail[0]['to']===R::TO&&str_contains(implode(' ',$mail[0]['headers']),R::FROM),'Explicit mail addresses');
+check($mail[0]['to']===R::TO&&str_contains(implode(' ',$mail[0]['headers']),'approved-sender@example.org'),'Explicit mail addresses');
 check(str_contains($mail[0]['subject'],'[TEST]'),'Test subject');check(!str_contains($mail[0]['body'],'operation=approve'),'Mail link is read-only');
 check(R::create('test:1',$f,true)===$id&&$writes===1&&count($mail)===1,'Creation idempotent');R::notify($id);check(count($mail)===1,'Notification idempotent');
 $s=R::state($id);$h=R::hash(get_post($id));
@@ -44,7 +50,47 @@ $id2=R::create('live:1',$f,false);$s=R::state($id2);$publish=false;rejects(fn()=
 R::decide($id2,$s['version'],R::hash(get_post($id2)),'approve','');check(get_post($id2)->post_status==='publish','Real approval publishes once');rejects(fn()=>R::decide($id2,$s['version'],R::hash(get_post($id2)),'approve',''),'Published replay rejected');
 $write_fail=true;$id3=R::create('fail:1',$f,false);check(R::state($id3)['status']==='failed','Failure visible');$n=$writes;R::create('fail:1',$f,false);check($writes===$n,'No automatic paid retry');
 $s=R::state($id3);rejects(fn()=>R::decide($id3,$s['version'],R::hash(get_post($id3)),'resubmit',''),'No blank failed text sent for approval');
-$write_fail=false;$mail_ok=false;$id4=R::create('mail:fail',$f,true);check(R::state($id4)['mail']==='failed','Mail failure visible');$s=R::state($id4);$mail_ok=true;R::decide($id4,$s['version'],R::hash(get_post($id4)),'mail','');check(R::state($id4)['mail']==='accepted','Explicit mail retry');
+$write_fail=false;$mail_ok=false;$id4=R::create('mail:fail',$f,true);check(R::state($id4)['mail']==='rejected','Mail failure visible');$s=R::state($id4);$mail_ok=true;R::decide($id4,$s['version'],R::hash(get_post($id4)),'mail','');check(R::state($id4)['mail']==='accepted','Explicit mail retry');
 $options['rrfr_review_lock_'.$id4]=time();rejects(fn()=>R::decide($id4,R::state($id4)['version'],R::hash(get_post($id4)),'approve',''),'Concurrent actions blocked');
+// No live WordPress, mail transport or provider is involved in these cases.
+$n=count($mail);putenv('RRFR_REVIEW_FROM_EMAIL');putenv('RRFR_REVIEW_FROM_APPROVED');
+$missing=R::create('mail:missing',$f,true);
+check(R::state($missing)['mail']==='not_configured'&&count($mail)===$n,'Missing sender never calls transport');
+check(R::state($missing)['status']==='pending'&&get_post($missing)->post_status==='draft','Missing sender preserves reviewable draft');
+check(!isset(R::state($missing)['mail_at']),'Disabled sending has no transport timestamp');
+rejects(fn()=>R::headers(),'No fallback From header');
+$s=R::state($missing);R::decide($missing,$s['version'],R::hash(get_post($missing)),'mail','');
+check(count($mail)===$n&&R::state($missing)['mail']==='not_configured','Crafted retry cannot bypass configuration gate');
+putenv('RRFR_REVIEW_FROM_EMAIL=approved-sender@example.org');
+check(R::sender()==='','Address alone is not operator approval');
+putenv('RRFR_REVIEW_FROM_APPROVED=1');
+foreach(['', 'not-an-email', "approved-sender@example.org\r\nBcc: hidden@example.org", "approved-sender@example.org\n", 'Name <approved-sender@example.org>'] as $bad){
+    putenv('RRFR_REVIEW_FROM_EMAIL='.$bad);R::notify($missing);
+    check(R::state($missing)['mail']==='not_configured'&&count($mail)===$n,'Invalid sender blocks transport');
+}
+putenv('RRFR_REVIEW_FROM_EMAIL=approved-sender@example.org');$mail_ok=false;
+R::notify($missing);check(R::state($missing)['mail']==='rejected'&&count($mail)===$n+1,'Configured transport false is rejected');
+check(!empty(R::state($missing)['mail_at']),'Transport attempt has timestamp');
+$mail_throw=true;R::notify($missing);$mail_throw=false;
+check(R::state($missing)['mail']==='rejected','Transport exception is visible without exposing exception text');
+$mail_ok=true;$s=R::state($missing);R::decide($missing,$s['version'],R::hash(get_post($missing)),'mail','');
+check(R::state($missing)['mail']==='accepted'&&count($mail)===$n+3,'Explicit retry after configuration can be accepted');
+check(end($mail)['headers']===['Content-Type: text/plain; charset=UTF-8','From: Fotballroboten <approved-sender@example.org>'],'Only configured sender is used');
+R::notify($missing);check(count($mail)===$n+3,'Accepted notification is not automatically repeated');
+check(str_contains(R::mailLabel('not_configured'),'Ingen sending forsøkt'),'Admin distinguishes disabled sending');
+check(str_contains(R::mailLabel('rejected'),'Transport avvist'),'Admin distinguishes transport rejection');
+check(str_contains(R::mailLabel('accepted'),'levering til innboksen er ikke bekreftet'),'Admin acceptance does not claim delivery');
+check(str_contains(R::mailLabel('failed'),'årsaken er ikke fastslått'),'Historical failures are not reclassified as proven sender faults');
+putenv('RRFR_REVIEW_FROM_EMAIL');putenv('RRFR_REVIEW_FROM_APPROVED');
+$_GET['post_id']=$missing;
+foreach(['not_configured','rejected','accepted'] as $status){
+    $s=R::state($missing);$s['mail']=$status;update_post_meta($missing,R::META,$s);
+    if($status!=='not_configured'){putenv('RRFR_REVIEW_FROM_EMAIL=approved-sender@example.org');putenv('RRFR_REVIEW_FROM_APPROVED=1');}
+    ob_start();R::page();$html=ob_get_clean();
+    check(str_contains($html,esc_html(R::mailLabel($status))),'Actual admin page renders '.$status);
+    check(str_contains($html,'value="mail" disabled')===($status==='not_configured'),'Retry button follows current configuration');
+}
+putenv('RRFR_REVIEW_FROM_EMAIL');putenv('RRFR_REVIEW_FROM_APPROVED');
 echo "$count approval checks passed; no real mail, AI calls or publication\n";
 }
+

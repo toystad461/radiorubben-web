@@ -4,7 +4,6 @@ namespace RadioRubben\Fotballrobot;
 /** Durable, human-approved publication. Links only open the authenticated review page. */
 final class PlayerReview {
     const TO='thomas.sellevold-oystad@radiorubben.no';
-    const FROM='fotballrobot@radiorubben.no';
     const META='_rrfr_player_review';
     public static function menu(): void {add_submenu_page('rr-fotballrobot','Artikler til godkjenning','Artikler til godkjenning','manage_options','rrfr-player-review',[self::class,'page']);}
     public static function url(int $id=0): string {return admin_url('admin.php?page=rrfr-player-review'.($id?'&post_id='.$id:''));}
@@ -15,15 +14,42 @@ final class PlayerReview {
         $lock='rrfr_review_lock_'.$key;if(!add_option($lock,time(),'','no'))throw new \RuntimeException('Forslaget behandles allerede. En avbrutt jobb må kontrolleres før låsen fjernes.');
         try{return $fn();}finally{delete_option($lock);}
     }
-    public static function headers(): array {return ['Content-Type: text/plain; charset=UTF-8','From: Fotballroboten <'.self::FROM.'>'];}
+    /** Server-only configuration. Setting approval asserts that the operator verified the sender. */
+    public static function sender(): string {
+        $from=defined('RRFR_REVIEW_FROM_EMAIL')?constant('RRFR_REVIEW_FROM_EMAIL'):getenv('RRFR_REVIEW_FROM_EMAIL');
+        $approved=defined('RRFR_REVIEW_FROM_APPROVED')?constant('RRFR_REVIEW_FROM_APPROVED'):getenv('RRFR_REVIEW_FROM_APPROVED');
+        if(!in_array($approved,[true,'1'],true)||!is_string($from)
+            ||preg_match('/[\x00-\x1f\x7f]/',$from))return '';
+        $from=trim($from);
+        return is_email($from)?$from:'';
+    }
+    public static function mailLabel(string $status): string {
+        $labels=[
+            'none'=>'Ikke sendt',
+            'not_configured'=>'Ikke konfigurert – e-post er deaktivert. Ingen sending forsøkt; gyldig, godkjent avsender må settes i privat konfigurasjon.',
+            'sending'=>'Uavklart utsending – kontroller innboksen før nytt forsøk',
+            'accepted'=>'Transport akseptert – e-postsystemet har akseptert meldingen; levering til innboksen er ikke bekreftet',
+            'rejected'=>'Transport avvist – WordPress/e-posttransporten bekreftet ikke aksept. Kontroller e-postoppsettet før nytt forsøk.',
+            'failed'=>'Tidligere sending feilet – årsaken er ikke fastslått',
+        ];
+        return $labels[$status]??$status;
+    }
+    public static function headers(): array {
+        $from=self::sender();
+        if($from==='')throw new \RuntimeException(self::mailLabel('not_configured'));
+        return ['Content-Type: text/plain; charset=UTF-8','From: Fotballroboten <'.$from.'>'];
+    }
     public static function notify(int $id): void {
         self::lock('mail_'.$id,static function() use($id){
             $s=self::state($id);$p=get_post($id);
             if($s['status']!=='pending'||in_array($s['mail']??'', ['accepted','sending'],true))return;
+            if(self::sender()===''){
+                $s['mail']='not_configured';unset($s['mail_at']);self::put($id,$s);return;
+            }
             $s['mail']='sending';self::put($id,$s);
             $subject=($s['test']?'[TEST] ':'').'Fotballroboten: '.$p->post_title;
             $body=($s['test']?"TEST – ingen publisering, også når du velger ja.\n\n":'').$p->post_title."\n\n".$p->post_excerpt."\n\nLes hele forslaget og velg ja, nei eller be om endringer med kommentar:\n".self::url($id)."\n\nDu må logge inn i WordPress. Lenken publiserer ingenting. Kommentarer skrives på godkjenningssiden; svar på denne e-posten behandles ikke automatisk.\n\nFotballroboten · Radio Rubben";
-            try {$ok=wp_mail(self::TO,preg_replace('/[\r\n]+/',' ',$subject),$body,self::headers());$s['mail']=$ok?'accepted':'failed';}catch(\Throwable $e){$s['mail']='failed';}
+            try {$ok=wp_mail(self::TO,preg_replace('/[\r\n]+/',' ',$subject),$body,self::headers());$s['mail']=$ok===true?'accepted':'rejected';}catch(\Throwable $e){$s['mail']='rejected';}
             $s['mail_at']=gmdate(DATE_ATOM);self::put($id,$s);
         });
     }
