@@ -40,14 +40,18 @@ final class Robot {
     public static function refresh(int $id,bool $confirmed=false): array {
         $source=self::fetch('match',$id); $m=Facts::match($source['html'],$id);
         if(!array_intersect([30365,48835],[$m['home']['id'],$m['away']['id']])) throw new \RuntimeException('Denne roboten dekker bare Bremnes herrer A og damer A.');
+        $apiSource=null;
+        if(class_exists(Fotballdata::class) && Fotballdata::enabled()) $apiSource=Fotballdata::verify($m,827);
         $archive=get_option('rr_match_archive_'.$id,[]);
         $finished=!empty($archive['state']['finished']);
         if($finished && isset($archive['score']['home'],$archive['score']['away']) && $m['score']!==[(int)$archive['score']['home'],(int)$archive['score']['away']]) throw new \RuntimeException('NFF-resultatet avviker fra kamparkivet. Kontroller før nytt utkast.');
         if($m['score']===null || strtotime($m['kickoff'])>time()) $confirmed=false;
         $forms=[]; $sources=[['url'=>$source['url'],'fetched_at'=>$source['fetched_at']]]; $warnings=[];
+        if($apiSource) { $sources[]=$apiSource; $warnings[]='Kampfakta kontrollert mot Fotballdata. Hendelser og spilleroppfølging bruker fortsatt Fotball.no.'; }
         foreach(['home','away'] as $side) {
             try {
-                $s=self::fetch('team',$m[$side]['id']); $rows=Facts::history($s['html'],$m[$side]['id']);
+                if($apiSource) { $s=Fotballdata::history($m[$side]['id']); $rows=$s['rows']; }
+                else { $s=self::fetch('team',$m[$side]['id']); $rows=Facts::history($s['html'],$m[$side]['id']); }
                 $current=array_values(array_filter($rows,fn($r)=>$r['id']===$id));
                 if(count($current)!==1 || $current[0]['competition_id']!==$m['competition']['id'] || $current[0]['score']!==$m['score']) throw new \RuntimeException('Laglisten og kampkortet kunne ikke knyttes entydig sammen.');
                 $forms[$side]=Facts::form($rows,$m,$m[$side]['id']);

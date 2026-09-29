@@ -9,6 +9,7 @@
 namespace RadioRubben\Fotballrobot;
 if (!defined('ABSPATH')) exit;
 require_once __DIR__.'/includes/facts.php';
+require_once __DIR__.'/includes/fotballdata.php';
 require_once __DIR__.'/includes/robot.php';
 require_once __DIR__.'/includes/writer.php';
 require_once __DIR__.'/includes/report.php';
