@@ -3,6 +3,8 @@ namespace RadioRubben\Fotballrobot;
 
 /** Server-only Fotballdata adapter. Never persist raw responses or credential URLs. */
 final class Fotballdata {
+    public static function clubTeams(): array { return self::request('clubs/827/teams'); }
+    public static function clubMatches(): array { return self::request('clubs/827/matches'); }
     public static function enabled(): bool {
         return defined('RRFR_FOTBALLDATA_ENABLED') && RRFR_FOTBALLDATA_ENABLED === true;
     }

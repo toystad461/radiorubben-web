@@ -39,7 +39,10 @@ final class Robot {
     }
     public static function refresh(int $id,bool $confirmed=false): array {
         $source=self::fetch('match',$id); $m=Facts::match($source['html'],$id);
-        if(!array_intersect([30365,48835],[$m['home']['id'],$m['away']['id']])) throw new \RuntimeException('Denne roboten dekker bare Bremnes herrer A og damer A.');
+        if(!array_intersect([30365,48835],[$m['home']['id'],$m['away']['id']])) {
+            $teams=ClubCoverage::teams(Fotballdata::clubTeams());
+            if(!array_intersect(array_keys($teams),[$m['home']['id'],$m['away']['id']])) throw new \RuntimeException('Denne roboten dekker Bremnes fra G13/J13 og oppover.');
+        }
         $apiSource=null;
         if(class_exists(Fotballdata::class) && Fotballdata::enabled()) $apiSource=Fotballdata::verify($m,827);
         $archive=get_option('rr_match_archive_'.$id,[]);
@@ -135,7 +138,7 @@ final class Robot {
         if($notice) echo '<div role="status" class="rrfr-notice">'.esc_html($notice).'</div>';
         echo '<nav aria-label="Arbeidssteg"><a href="#grunnlag">1 · Kampgrunnlag</a><a href="#vinkel">2 · Finn vinkelen</a><a href="#referat">3 · Skriv referat</a><a href="#arkiv">4 · Arkiv</a><a href="'.esc_url(Learning::url()).'">Lær av mine rettelser</a></nav>';
         echo '<section class="rrfr-card"><form method="get"><input type="hidden" name="page" value="rr-fotballrobot"><label for="rrfr-id">Kamp-ID fra Fotball.no</label><div class="rrfr-row"><input id="rrfr-id" name="match_id" type="number" min="1" required value="'.esc_attr($id).'"><button>Velg kamp</button></div></form><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';
-        self::formFields($id,'refresh'); echo '<p><label><input name="finished" type="checkbox" value="1"> Jeg har kontrollert at kampen er ferdigspilt. Kampslutt fra eksisterende kamparkiv gjenbrukes automatisk.</label></p><button class="rrfr-primary">Hent kampgrunnlag</button><p class="rrfr-muted">Dekker Bremnes herrer A og damer A. Kildene mellomlagres i ti minutter.</p></form></section>';
+        self::formFields($id,'refresh'); echo '<p><label><input name="finished" type="checkbox" value="1"> Jeg har kontrollert at kampen er ferdigspilt. Kampslutt fra eksisterende kamparkiv gjenbrukes automatisk.</label></p><button class="rrfr-primary">Hent kampgrunnlag</button><p class="rrfr-muted">Dekker Bremnes fra G13/J13 og oppover. Kildene mellomlagres i ti minutter.</p></form></section>';
         Writer::settings($id);
         if($f) {
             Writer::script($id,$f['fact_hash']);

@@ -1,7 +1,6 @@
 name: WordPress kontroll og publisering
 on:
   pull_request:
-    branches: [main]
     paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', '.github/workflows/wordpress.yml']
   push:
     branches: [main]
@@ -31,6 +30,10 @@ jobs:
           find wordpress -name '*.php' -print0 | xargs -0 -n1 php -l
           bash -n scripts/deploy-wordpress.sh
           bash -n scripts/deploy-wordpress-remote.sh
+      - name: Test klubbdekning og oppstart uten ekstern transport
+        run: |
+          php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/club-coverage.php
+          php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/bootstrap.php
       - name: Test Fotballdata uten ekstern transport
         run: php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/fotballdata.php
       - name: Test godkjenning og e-postvarsler uten ekstern transport
