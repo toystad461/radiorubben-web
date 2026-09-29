@@ -55,7 +55,7 @@ final class Robot {
                 $current=array_values(array_filter($rows,fn($r)=>$r['id']===$id));
                 if(count($current)!==1 || $current[0]['competition_id']!==$m['competition']['id'] || $current[0]['score']!==$m['score']) throw new \RuntimeException('Laglisten og kampkortet kunne ikke knyttes entydig sammen.');
                 $forms[$side]=Facts::form($rows,$m,$m[$side]['id']);
-                $sources[]=['url'=>$s['url'],'fetched_at'=>$s['fetched_at']];
+                $sources[]=['url'=>$s['url'],'fetched_at'=>$s['fetched_at'],'provider'=>$s['provider']??'Fotball.no'];
                 if($forms[$side]['unresolved_count']) $warnings[]=$m[$side]['name'].': historikken har kamper uten entydig resultat; rekker er avgrenset.';
             } catch(\Throwable $e) { $forms[$side]=null; $warnings[]=$m[$side]['name'].': '.$e->getMessage(); }
         }
@@ -101,7 +101,7 @@ final class Robot {
             foreach($m['events'] as $e) if(in_array($e['type'],['Spillemål','Straffemål','Selvmål'],true)) { $has=true; $body.='<!-- wp:paragraph --><p>'.esc_html($e['minute']."′ · ".$e['name'].' · '.$m[$e['side']]['name'].' · '.$e['type']).'</p><!-- /wp:paragraph -->'; }
             if(!$has) $body.='<!-- wp:paragraph --><p>Målscorere er ikke tilgjengelige i grunnlaget.</p><!-- /wp:paragraph -->';
             $body.='<!-- wp:paragraph --><p><small>Kilder: ';
-            foreach($f['sources'] as $i=>$s) $body.=($i?' · ':'').'<a href="'.esc_url($s['url']).'">fotball.no</a>';
+            foreach($f['sources'] as $i=>$s) $body.=($i?' · ':'').'<a href="'.esc_url($s['url']).'">'.esc_html($s['provider']??'Fotball.no').'</a>';
             $body.='</small></p><!-- /wp:paragraph -->';
             $p=wp_insert_post(['post_type'=>'post','post_status'=>'draft','post_title'=>$chosen['title'],'post_name'=>'rr-robot-prove-'.$id,'post_content'=>$body,'post_excerpt'=>$paras[0],'post_category'=>get_term(16,'category')&&!is_wp_error(get_term(16,'category'))?[16]:[],'meta_input'=>['_rrfr_trial_match'=>$id,'_rrfr_fact_hash'=>$hash,'_rrfr_fact_snapshot'=>$f,'_rrfr_angle'=>$angle]],true);
             if(is_wp_error($p)) throw new \RuntimeException($p->get_error_message());
@@ -152,7 +152,7 @@ final class Robot {
             foreach($f['angles'] as $i=>$a) echo '<label class="rrfr-angle"><input type="radio" name="angle" value="'.esc_attr($a['id']).'" '.checked($i,0,false).'><span><strong>'.esc_html($a['title']).'</strong><small>'.esc_html($a['reason']).'</small></span></label>';
             echo '<div id="referat"><h3>Skriv referat</h3><p>AI skriver referatet og gjør deretter en separat faktakontroll. Du gjennomleser utkastet før publisering. Eksisterende AI-utkast åpnes uten å bli overskrevet.</p><button type="button" id="rrfr-write" class="rrfr-primary" '.disabled($f['finished_confirmed'] && Writer::key()!=='',false,false).'>Skriv AI-referat</button><p id="rrfr-progress" role="status" aria-live="polite"></p><details><summary>Faktatekst uten AI</summary><button '.disabled($f['finished_confirmed'],false,false).'>Lag eller åpne faktatekst</button></details></div></form></section></main><aside><section class="rrfr-card"><h2>Kontroll og kilder</h2><p>'.esc_html($f['confirmation']).'</p>';
             foreach($f['warnings'] as $w) echo '<p class="rrfr-notice">'.esc_html($w).'</p>';
-            foreach($f['sources'] as $i=>$s) echo '<p><a href="'.esc_url($s['url']).'" target="_blank" rel="noopener">'.esc_html($i===0?'Kampside':($i===1?$m['home']['name']:$m['away']['name']).' · lagside').'</a><br><small>Hentet '.esc_html(wp_date('d.m.Y H:i',strtotime($s['fetched_at']))).'</small></p>';
+            foreach($f['sources'] as $i=>$s) echo '<p><a href="'.esc_url($s['url']).'" target="_blank" rel="noopener">'.esc_html($s['provider']??($i===0?'Kampside':($i===1?$m['home']['name']:$m['away']['name']).' · lagside')).'</a><br><small>Hentet '.esc_html(wp_date('d.m.Y H:i',strtotime($s['fetched_at']))).'</small></p>';
             echo '<p class="rrfr-muted">Tabellplass beregnes ikke i første versjon. Manglende data utelates.</p><details><summary>Registrerte hendelser</summary><ul>';
             foreach($m['events'] as $e) echo '<li>'.esc_html($e['minute']."′ ".$e['name'].' · '.$e['type']).'</li>';
             echo '</ul></details><details><summary>Instruks til artikkelskriveren</summary><p>'.esc_html($f['writing_brief']).'</p></details><details><summary>Faktapakke for eksisterende AI-oppgave</summary><p>Autentisert tilgang kreves.</p><code>'.esc_html('/rr-fotballrobot/v1/matches/'.$id).'</code></details></section></aside></div>';
