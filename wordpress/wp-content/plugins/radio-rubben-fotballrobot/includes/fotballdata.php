@@ -64,6 +64,79 @@ final class Fotballdata {
             'venue'=>self::text($r['StadiumName']??null),
             'source'=>'https://www.fotball.no/fotballdata/kamp/?fiksId='.$id];
     }
+    /** Normalize only public sports fields from the two match responses. */
+    public static function matchDetail(array $basic,array $detail,int $id,int $club): array {
+        self::integer($id,1); self::integer($club,1);
+        $row=self::matchRow($basic);
+        if($row['id']!==$id || ($basic['HomeTeamClubId']??null)!==$club && ($basic['AwayTeamClubId']??null)!==$club)
+            throw new \RuntimeException('Fotballdata: kampen tilhører ikke den valgte klubben.');
+        if(($detail['MatchId']??null)!==$id || !isset($detail['MatchEventList'],$detail['Referees'])
+            || !is_array($detail['MatchEventList']) || !is_array($detail['Referees']))
+            throw new \RuntimeException('Fotballdata: kampdetaljer mangler eller har feil ID.');
+        $check=self::matchRow($detail);
+        foreach(['id','home','away','kickoff','score','competition_id','venue'] as $field)
+            if($row[$field]!==$check[$field])
+                throw new \RuntimeException('Fotballdata: kampkort og hendelser stemmer ikke overens.');
+        $refs=[];
+        foreach($detail['Referees'] as $ref) {
+            if(!is_array($ref)) throw new \RuntimeException('Fotballdata: ugyldig dommerrad.');
+            if(($ref['PersonInfoHidden']??false)===true) continue;
+            $role=trim((string)($ref['RefereeType']??''));
+            $name=trim((string)($ref['FirstName']??'').' '.(string)($ref['SurName']??''));
+            if($role!=='' && $name!=='') $refs[]=['role'=>$role,'name'=>$name];
+        }
+        $events=[]; $seen=[];
+        foreach($detail['MatchEventList'] as $event) {
+            if(!is_array($event) || ($event['MatchId']??null)!==$id)
+                throw new \RuntimeException('Fotballdata: ugyldig kamphendelse.');
+            $eventId=self::integer($event['MatchEventId']??null,1);
+            if(isset($seen[$eventId])) throw new \RuntimeException('Fotballdata: dobbelt kamphendelse.');
+            $seen[$eventId]=true;
+            $type=trim((string)($event['MatchEventType']??''));
+            if($type==='' || preg_match('/^(?:Start|Slutt) [12]\\. omgang$|^Kampen er slutt$/u',$type)) continue;
+            $team=self::integer($event['TeamId']??null,1);
+            if(!in_array($team,[$row['home']['id'],$row['away']['id']],true))
+                throw new \RuntimeException('Fotballdata: hendelsen har feil lag.');
+            $minute=self::integer($event['Minute']??null);
+            if($minute>160) throw new \RuntimeException('Fotballdata: ugyldig kampminutt.');
+            $events[]=['id'=>(string)$eventId,'side'=>$team===$row['home']['id']?'home':'away',
+                'minute'=>(string)$minute,'order'=>$minute*100,
+                'name'=>($event['PersonInfoHidden']??false)===true?'':trim((string)($event['PlayerName']??'')),
+                'type'=>$type];
+        }
+        usort($events,static fn($a,$b)=>($a['order']<=>$b['order']) ?: strcmp($a['id'],$b['id']));
+        return ['referees'=>$refs,'id'=>$id,'home'=>$row['home'],'away'=>$row['away'],
+            'kickoff'=>$row['kickoff'],'competition'=>['id'=>$row['competition_id'],'name'=>self::text($basic['TournamentName']??null)],
+            'venue'=>$row['venue'],'score'=>$row['score'],'half_time'=>null,'events'=>$events,
+            'source'=>'https://www.fotballdata.no/radata'];
+    }
+    public static function match(int $id,int $club=827): array {
+        self::integer($id,1); self::integer($club,1);
+        $query=['clubid'=>$club];
+        return self::matchDetail(self::request('matches/'.$id,$query),
+            self::request('matches/'.$id.'/peopleandevents',$query),$id,$club);
+    }
+    public static function tournamentHistory(int $tournament,int $team,int $club=827): array {
+        self::integer($tournament,1); self::integer($team,1); self::integer($club,1);
+        $data=self::request('tournaments/'.$tournament.'/matches',['clubid'=>$club]);
+        if(($data['TournamentId']??null)!==$tournament || !isset($data['Matches']) || !is_array($data['Matches']))
+            throw new \RuntimeException('Fotballdata: feil turnering eller manglende kamper.');
+        $rows=[];
+        foreach($data['Matches'] as $raw) {
+            if(!is_array($raw)) throw new \RuntimeException('Fotballdata: ugyldig kamprad.');
+            if(!in_array($team,[$raw['HomeTeamId']??null,$raw['AwayTeamId']??null],true)) continue;
+            $row=self::matchRow($raw);
+            if($row['competition_id']!==$tournament) throw new \RuntimeException('Fotballdata: kamp i feil turnering.');
+            if(($raw['FinalResultApprovedByDistrict']??false)!==true)
+                $row['score']=null;
+            if(isset($rows[$row['id']]) && $rows[$row['id']]!==$row)
+                throw new \RuntimeException('Fotballdata: motstridende kampkopier.');
+            $rows[$row['id']]=$row;
+        }
+        if(!$rows) throw new \RuntimeException('Fotballdata: ingen kamper for laget i turneringen.');
+        return ['rows'=>array_values($rows),'url'=>'https://www.fotballdata.no/radata',
+            'provider'=>'Fotballdata','fetched_at'=>gmdate(DATE_ATOM)];
+    }
     public static function historyRows(array $data,int $team): array {
         if(($data['TeamId']??null)!==$team || !isset($data['Matches']) || !is_array($data['Matches']))
             throw new \RuntimeException('Fotballdata: feil lag eller manglende kampliste.');
