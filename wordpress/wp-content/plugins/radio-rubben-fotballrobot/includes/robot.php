@@ -38,25 +38,34 @@ final class Robot {
         $data=['html'=>$html,'url'=>$url,'fetched_at'=>gmdate(DATE_ATOM)]; set_transient($key,$data,10*MINUTE_IN_SECONDS); return $data;
     }
     public static function refresh(int $id,bool $confirmed=false): array {
-        $source=self::fetch('match',$id); $m=Facts::match($source['html'],$id);
+        $apiSource=null;
+        if(Fotballdata::enabled()) {
+            $m=Fotballdata::match($id,827);
+            $source=['url'=>'https://www.fotballdata.no/radata','fetched_at'=>gmdate(DATE_ATOM),'provider'=>'Fotballdata'];
+            $apiSource=$source;
+        } else {
+            $source=self::fetch('match',$id);
+            $m=Facts::match($source['html'],$id);
+        }
         if(!array_intersect([30365,48835],[$m['home']['id'],$m['away']['id']])) {
             $teams=ClubCoverage::teams(Fotballdata::clubTeams());
             if(!array_intersect(array_keys($teams),[$m['home']['id'],$m['away']['id']])) throw new \RuntimeException('Denne roboten dekker Bremnes fra G13/J13 og oppover.');
         }
-        $apiSource=null;
-        if(class_exists(Fotballdata::class) && Fotballdata::enabled()) $apiSource=Fotballdata::verify($m,827);
         $archive=get_option('rr_match_archive_'.$id,[]);
         $finished=!empty($archive['state']['finished']);
         if($finished && isset($archive['score']['home'],$archive['score']['away']) && $m['score']!==[(int)$archive['score']['home'],(int)$archive['score']['away']]) throw new \RuntimeException('NFF-resultatet avviker fra kamparkivet. Kontroller før nytt utkast.');
         if($m['score']===null || strtotime($m['kickoff'])>time()) $confirmed=false;
         $forms=[]; $sources=[['url'=>$source['url'],'fetched_at'=>$source['fetched_at']]]; $warnings=[];
-        if($apiSource) { $sources[]=$apiSource; $warnings[]='Kampfakta kontrollert mot Fotballdata. Hendelser og spilleroppfølging bruker fortsatt Fotball.no.'; }
+        if($apiSource) $warnings[]='Kampfakta og kamphendelser hentet fra Fotballdata. Spillerprofiler utenfor Bremnes følger fortsatt Fotball.no.';
         foreach(['home','away'] as $side) {
             try {
-                if($apiSource) { $s=Fotballdata::history($m[$side]['id']); $rows=$s['rows']; }
+                if($apiSource) { $s=Fotballdata::tournamentHistory($m['competition']['id'],$m[$side]['id']); $rows=$s['rows']; }
                 else { $s=self::fetch('team',$m[$side]['id']); $rows=Facts::history($s['html'],$m[$side]['id']); }
                 $current=array_values(array_filter($rows,fn($r)=>$r['id']===$id));
-                if(count($current)!==1 || $current[0]['competition_id']!==$m['competition']['id'] || $current[0]['score']!==$m['score']) throw new \RuntimeException('Laglisten og kampkortet kunne ikke knyttes entydig sammen.');
+                if(count($current)!==1 || $current[0]['competition_id']!==$m['competition']['id']
+                    || ($current[0]['score']!==null && $current[0]['score']!==$m['score'])
+                    || (!$apiSource && $current[0]['score']!==$m['score']))
+                    throw new \RuntimeException('Laglisten og kampkortet kunne ikke knyttes entydig sammen.');
                 $forms[$side]=Facts::form($rows,$m,$m[$side]['id']);
                 $sources[]=['url'=>$s['url'],'fetched_at'=>$s['fetched_at'],'provider'=>$s['provider']??'Fotball.no'];
                 if($forms[$side]['unresolved_count']) $warnings[]=$m[$side]['name'].': historikken har kamper uten entydig resultat; rekker er avgrenset.';
