@@ -26,6 +26,23 @@ rejects(fn()=>Fotballdata::matchRow(['Cancelled'=>'false']+$raw),'unknown status
 $m=$r+['competition'=>['id'=>205982]];
 Fotballdata::assertMatch($raw,$m); check(true,'matching independent sources');
 rejects(fn()=>Fotballdata::assertMatch(['AwayTeamGoals'=>1]+$raw,$m),'source conflict');
+$basic=['HomeTeamClubId'=>827,'AwayTeamClubId'=>900,'TournamentName'=>'5. div. menn avd. 03']+$raw;
+$goal=['MatchEventId'=>701,'MatchId'=>101,'TeamId'=>30365,'Minute'=>89,
+    'MatchEventType'=>'Spillemål','PlayerName'=>'Erlend Nesse','PersonInfoHidden'=>false];
+$detail=['MatchEventList'=>[$goal],'Referees'=>[
+    ['RefereeType'=>'Dommer','FirstName'=>'Ola','SurName'=>'Nordmann','PersonInfoHidden'=>false,'Email'=>'private@example.invalid'],
+    ['RefereeType'=>'Assistent','FirstName'=>'Skjult','SurName'=>'Person','PersonInfoHidden'=>true]
+]]+$raw;
+$full=Fotballdata::matchDetail($basic,$detail,101,827);
+check($full['events'][0]['name']==='Erlend Nesse','API goal');
+check($full['events'][0]['side']==='home','API event side');
+check($full['referees']===[['role'=>'Dommer','name'=>'Ola Nordmann']],'public referees only');
+check($full['half_time']===null,'unknown half-time stays unknown');
+check(!str_contains(json_encode($full),'private@example.invalid'),'no referee contact details');
+rejects(fn()=>Fotballdata::matchDetail(['HomeTeamClubId'=>900]+$basic,$detail,101,827),'wrong club');
+rejects(fn()=>Fotballdata::matchDetail($basic,['MatchEventList'=>[$goal,$goal]]+$detail,101,827),'duplicate event');
+rejects(fn()=>Fotballdata::matchDetail($basic,['MatchEventList'=>[['TeamId'=>999]+$goal]]+$detail,101,827),'wrong event team');
+rejects(fn()=>Fotballdata::matchDetail($basic,['AwayTeamGoals'=>1]+$detail,101,827),'conflicting detail score');
 check(!Fotballdata::enabled(),'opt in only');
 // Mock HTTP: never make external requests or include a real credential.
 define('RRFR_FOTBALLDATA_CID','1');
@@ -39,6 +56,9 @@ function wp_safe_remote_get($url,$args) {
     if($transport==='throw') throw new \RuntimeException($url);
     if($transport==='denied') return ['status'=>403,'body'=>'credential details'];
     if($transport==='invalid') return ['status'=>200,'body'=>'{invalid'];
+    if(str_contains($url,'/tournaments/')) return ['status'=>200,'body'=>json_encode([
+        'TournamentId'=>205982,'Matches'=>[$raw,['MatchId'=>102,'AwayTeamId'=>30365,'HomeTeamId'=>19046]+$raw],
+        'Persons'=>[['Email'=>'private@example.invalid']]])];
     return ['status'=>200,'body'=>json_encode(['TeamId'=>30365,'Matches'=>[$raw],'Persons'=>[['Email'=>'private@example.invalid']]])];
 }
 function is_wp_error($r) {return false;}
@@ -54,4 +74,9 @@ foreach(['throw','denied','invalid'] as $mode) {
     catch(\RuntimeException $e) {check(!str_contains($e->getMessage(),RRFR_FOTBALLDATA_CWD),'safe errors');}
 }
 $before=$calls; rejects(fn()=>Fotballdata::history(-1),'invalid outbound id'); check($calls===$before,'no invalid HTTP');
+$transport='success';
+$tournament=Fotballdata::tournamentHistory(205982,19046);
+check(count($tournament['rows'])===2,'opponent history from club-scoped tournament');
+check(!str_contains(json_encode($tournament),'private@example.invalid'),'tournament contacts omitted');
+rejects(fn()=>Fotballdata::tournamentHistory(-1,30365),'invalid tournament id');
 echo 'OK: '.$count." Fotballdata checks\n";
