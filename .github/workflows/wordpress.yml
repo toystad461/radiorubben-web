@@ -31,6 +31,8 @@ jobs:
           find wordpress -name '*.php' -print0 | xargs -0 -n1 php -l
           bash -n scripts/deploy-wordpress.sh
           bash -n scripts/deploy-wordpress-remote.sh
+      - name: Test motstander og historikk for hjemme- og bortekamper
+        run: php wordpress/tests/next-match-opponent.php
   deploy:
     needs: validate
     if: >-

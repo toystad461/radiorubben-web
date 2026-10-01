@@ -77,6 +77,9 @@ function rr_poll_next_match_data() {
     }
     $match['id']=$id;
     $match['fixture_team']=$fixture['team'];
+    // Use the verified fixture side, including away matches and imported records.
+    $match['fixture_home']=($fixture['home']??'')==='yes';
+    $match['opponent']=$match[$match['fixture_home']?'away':'home'];
     $match['url']=home_url('/nestekamp/');
     return $match;
 }
@@ -92,10 +95,21 @@ function rr_poll_next_match_share_data() {
     $date=wp_date('l d.m.Y',$ts,$tz);
     $time=wp_date('H:i',$ts,$tz);
     $venue=sanitize_text_field($match['venue']??'');
-    $title='Jeg skal på kamp – bli med!';
+    $title=!empty($match['fixture_home'])?'Hjemmekamp for Bremnes':'Bremnes på bortebane';
     $description=sanitize_text_field($match['home'].' – '.$match['away'].' · '.$date.' kl. '.$time.($venue!==''?' · '.$venue:''));
-    $text=$title."\n".$match['home'].' – '.$match['away']."\n".'Kampstart: '.$date.' kl. '.$time.($venue!==''?"\n".'Bane: '.$venue:'')."\n".home_url('/nestekamp/');
-    return ['match'=>$match,'title'=>$title,'description'=>$description,'text'=>$text,'url'=>home_url('/nestekamp/')];
+    $url=home_url('/nestekamp/');
+    $pair=sanitize_text_field($match['home'].' – '.$match['away']);
+    $opponent=sanitize_text_field($match['opponent']);
+    $details=$pair."\n".'Kampstart: '.$date.' kl. '.$time.($venue!==''?"\n".'Bane: '.$venue:'');
+    $tags='#BremnesIL #RadioRubben';
+    // Personal attendance is an explicit choice. No template implies voting is open.
+    $templates=[
+        'kampinfo'=>['label'=>'Kampinformasjon','text'=>$title." ⚽\n".$details."\n\nKampinfo: ".$url."\n".$tags],
+        'heia'=>['label'=>'Heia Bremnes','text'=>'Heia Bremnes! ⚽'."\n".'Bremnes møter '.$opponent.(!empty($match['fixture_home'])?' på hjemmebane.':' på bortebane.')."\n".$details."\n\n".$url."\n".$tags],
+        'jeg-skal'=>['label'=>'Jeg skal på kamp','text'=>'Jeg skal på kamp – bli med! ⚽'."\n".$details."\n\n".$url."\n".$tags],
+        'story'=>['label'=>'Kort til story','text'=>$title." ⚽\n".$pair."\n".$date.' · '.$time.($venue!==''?"\n".$venue:'')."\n".$url],
+    ];
+    return ['match'=>$match,'title'=>$title,'description'=>$description,'text'=>$templates['kampinfo']['text'],'templates'=>$templates,'url'=>$url];
 }
 function rr_poll_is_next_match_request() {
     $path=rtrim(wp_parse_url(wp_unslash($_SERVER['REQUEST_URI']??''),PHP_URL_PATH)??'','/');
