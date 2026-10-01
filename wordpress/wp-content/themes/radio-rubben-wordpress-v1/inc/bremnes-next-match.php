@@ -68,7 +68,7 @@ get_header();
     $rr_history_file=__DIR__.'/bremnes-history-2026.php';
     $rr_history=is_readable($rr_history_file)?require $rr_history_file:[];
     $rr_team_key=($rr_next['fixture_team']??'herrer')==='kvinner'?'kvinner':'herrer';
-    $rr_opponent=trim((string)($rr_next['away']??''));
+    $rr_opponent=trim((string)($rr_next['opponent']??''));
     $rr_meetings=[];
     foreach ((array)$rr_history as $rr_history_id=>$rr_row) {
         if (!is_array($rr_row) || empty($rr_row['historical']) || ($rr_row['team']??'')!==$rr_team_key) continue;
@@ -113,7 +113,7 @@ get_header();
 
   <section class="rr-next-section rr-next-article">
     <h2><?php echo esc_html($rr_next['home'].' møter '.$rr_next['away']); ?></h2>
-    <p><?php echo esc_html(($rr_team_key==='kvinner'?'Bremnes sitt damelag':'Bremnes sitt herrelag').' møter '.$rr_next['away'].' '.wp_date('l d.m.Y',$rr_ts,$rr_tz).' kl. '.$rr_time.'. '.($rr_venue!==''?'Oppgjøret spilles på '.$rr_venue.'. ':'').($rr_comp!==''?'Kampen hører til '.$rr_comp.'. ':'')); ?></p>
+    <p><?php echo esc_html(($rr_team_key==='kvinner'?'Bremnes sitt damelag':'Bremnes sitt herrelag').' møter '.$rr_opponent.' '.wp_date('l d.m.Y',$rr_ts,$rr_tz).' kl. '.$rr_time.'. '.($rr_venue!==''?'Oppgjøret spilles på '.$rr_venue.'. ':'').($rr_comp!==''?'Kampen hører til '.$rr_comp.'. ':'')); ?></p>
     <p>Ta turen og opplev kampen fra tribunen.</p>
     <h2>Tidligere oppgjør</h2>
     <?php if ($rr_meetings):

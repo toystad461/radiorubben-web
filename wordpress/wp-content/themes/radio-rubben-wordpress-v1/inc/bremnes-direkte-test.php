@@ -77,6 +77,8 @@ function rr_poll_next_match_data() {
     }
     $match['id']=$id;
     $match['fixture_team']=$fixture['team'];
+    // Use the verified fixture side, including away matches and imported records.
+    $match['opponent']=$match[($fixture['home']??'')==='yes'?'away':'home'];
     $match['url']=home_url('/nestekamp/');
     return $match;
 }
