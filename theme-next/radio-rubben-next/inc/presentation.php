@@ -17,6 +17,7 @@ function rr_theme_member_label() {
     return function_exists( 'rr_member_entry_label' ) ? rr_member_entry_label() : ( is_user_logged_in() ? __( 'Åpne Min Rubben', 'radio-rubben-next' ) : __( 'Logg inn på Min Rubben', 'radio-rubben-next' ) );
 }
 function rr_theme_logo_url() {
+    if ( rr_brand_uses_profile_logos() ) { return rr_brand_logo_url(); }
     $src = wp_get_attachment_image_url( absint( rr_theme_mod( 'custom_logo', 0 ) ), 'full' );
     return $src ?: get_theme_file_uri( '/assets/images/radio-rubben-logo.webp' );
 }

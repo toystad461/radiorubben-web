@@ -1,0 +1,71 @@
+/* Radio Rubben — profileringshåndbok 1.0, 30.09.2026. */
+:root {
+  --rubben-red: #FF001B;
+  --rubben-black: #000000;
+  --rubben-white: #FFFFFF;
+  --midnight: var(--rubben-black);
+  --navy: #111111;
+  --panel: #151515;
+  --white: var(--rubben-white);
+  --slate: #BDBDBD;
+  --line: #363636;
+  --blue: var(--rubben-red); /* Legacy name used for primary actions. */
+  --red: var(--rubben-red);
+  --signal: var(--rubben-white);
+  --wp--preset--color--background: var(--rubben-black);
+  --wp--preset--color--surface: #111111;
+  --wp--preset--color--card: #151515;
+  --wp--preset--color--border: #363636;
+  --wp--preset--color--text: var(--rubben-white);
+  --wp--preset--color--muted: #BDBDBD;
+  --wp--preset--color--brand: var(--rubben-red);
+  --wp--preset--color--accent: var(--rubben-white);
+  --wp--preset--color--button: var(--rubben-red);
+  --wp--preset--font-family--body: Arial, Helvetica, system-ui, sans-serif;
+}
+body { background: var(--rubben-black); font-family: Arial, Helvetica, system-ui, sans-serif; }
+body :is(h1,h2,h3,h4,h5,h6,button,input,textarea,select) { font-family: Arial, Helvetica, system-ui, sans-serif; }
+.rr-header, .rr-footer { background: var(--rubben-black); }
+.rr-header .rr-header-inner { gap: 22px; }
+.rr-header .rr-brand { width: 225px; padding: 10px 4px; }
+.rr-profile-logo { display: block; }
+.rr-profile-logo img, .rr-footer-logo { height: auto; object-fit: contain; }
+.rr-header .rr-brand img, .rr-footer-logo { filter: none; box-shadow: none; border-radius: 0; }
+.rr-footer .rr-footer-brand { max-width: 100%; }
+.rr-footer .rr-footer-logo { width: 240px; max-width: 100%; }
+.rr-footer .rr-footer-values { font-size: 12px; line-height: 1.8; letter-spacing: .02em; }
+.rr-header .rr-member-entry { background: #111111; border-color: var(--rubben-red); color: #FFFFFF; }
+.rr-member-invite { background: var(--panel); border-left-color: var(--rubben-red); }
+.rr-member-invite .rr-eyebrow { color: var(--rubben-white); }
+.rr-radio-card, .rr-post-card, .rr-program-grid article, .rr-value-cards article,
+.rr-contact-grid article, .rr-feature, .rr-form-box, .rr-note-card { background: var(--panel); }
+.rr-radio-cover { background: var(--rubben-black); }
+.rr-radio-cover img { height: auto; object-fit: contain; }
+.rr-local-section, .rr-subhero, .rr-listen-page, .rr-404 { background: var(--navy); }
+.rr-mini-player, .rr-mini-player.rr-mini-unavailable { background: #151515; border-color: var(--line); }
+.rr-nav a, .rr-footer-links { color: var(--rubben-white); }
+.rr-nav a:hover, .rr-nav .current-menu-item > a,
+.rr-footer-links a:hover, .rr-text-link:hover { color: var(--rubben-white); text-decoration: underline; text-decoration-color: var(--rubben-red); text-underline-offset: .3em; }
+/* Black on the exact profile red gives 5.28:1 contrast; white gives only 3.98:1. */
+.rr-btn, .rr-main-play, .rr-mini-play, .rr-search-form button,
+.rr-form-box input[type=submit], .rr-content .wp-block-button__link,
+.rr-home-engagement .rrm-button, .rr-pagination .current {
+  background: var(--rubben-red); color: var(--rubben-black); font-weight: 700;
+}
+.rr-btn:hover, .rr-main-play:hover, .rr-mini-play:hover,
+.rr-home-engagement .rrm-button:hover { background: var(--rubben-white); color: var(--rubben-black); }
+.rr-play-toggle:disabled { background: #454545; color: #FFFFFF; }
+.rr-collab { background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--rubben-red); }
+.rr-collab .rr-btn { background: var(--rubben-red); color: var(--rubben-black); }
+.rr-collab .rr-btn:hover { background: var(--rubben-white); }
+.rr-broadcast { background: #303030; color: var(--rubben-white); }
+.rr-broadcast.is-live { background: var(--rubben-red); color: var(--rubben-black); }
+.rr-mini-live { background: var(--rubben-red); color: var(--rubben-black); }
+@media (max-width:1100px) {
+  .rr-header .rr-brand { width: 165px; }
+  .rr-header .rr-nav { background: #111111; }
+}
+@media (max-width:720px) {
+  .rr-header .rr-header-inner { gap: 10px; }
+  .rr-header .rr-header-inner .rr-brand { width: clamp(106px,29vw,145px); padding: 4px; }
+}

@@ -13,42 +13,42 @@
         {
           "slug": "background",
           "name": "Background",
-          "color": "#0b0d11"
+          "color": "#000000"
         },
         {
           "slug": "surface",
           "name": "Surface",
-          "color": "#111722"
+          "color": "#111111"
         },
         {
           "slug": "card",
           "name": "Card",
-          "color": "#15181f"
+          "color": "#151515"
         },
         {
           "slug": "border",
           "name": "Border",
-          "color": "#2b303a"
+          "color": "#363636"
         },
         {
           "slug": "text",
           "name": "Text",
-          "color": "#f5f5f7"
+          "color": "#FFFFFF"
         },
         {
           "slug": "muted",
           "name": "Muted",
-          "color": "#afb5c0"
+          "color": "#BDBDBD"
         },
         {
           "slug": "brand",
           "name": "Brand",
-          "color": "#e43843"
+          "color": "#FF001B"
         },
         {
           "slug": "accent",
           "name": "Accent",
-          "color": "#ff555e"
+          "color": "#FFFFFF"
         },
         {
           "slug": "signal",
@@ -58,7 +58,7 @@
         {
           "slug": "button",
           "name": "Button",
-          "color": "#bd2933"
+          "color": "#FF001B"
         }
       ]
     },
@@ -68,7 +68,7 @@
         {
           "slug": "body",
           "name": "Radio Rubben system",
-          "fontFamily": "Inter, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+          "fontFamily": "Arial, Helvetica, system-ui, sans-serif"
         }
       ],
       "fontSizes": [
@@ -172,7 +172,7 @@
       "button": {
         "color": {
           "background": "var:preset|color|button",
-          "text": "var:preset|color|text"
+          "text": "var:preset|color|background"
         },
         "border": {
           "radius": "7px"

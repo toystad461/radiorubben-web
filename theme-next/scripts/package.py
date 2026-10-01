@@ -8,7 +8,7 @@ for name,version in packages.items():
  with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as z:
   for p in sorted(root.rglob('*')):
    if p.is_file() and not any(x.startswith('.') for x in p.relative_to(root).parts):
-    assert p.suffix.lower() in ['.php','.css','.js','.json','.md','.txt','.png','.webp', '.jpg'],str(p)
+    assert p.suffix.lower() in ['.php','.css','.js','.json','.md','.txt','.png','.webp', '.jpg','.svg'],str(p)
     z.write(p,p.relative_to(b));files.append(str(p.relative_to(root)))
  with zipfile.ZipFile(dest) as z: assert z.testzip() is None
  manifest.append({'file':dest.name,'bytes':dest.stat().st_size,'sha256':hashlib.sha256(dest.read_bytes()).hexdigest(),'files':len(files)})

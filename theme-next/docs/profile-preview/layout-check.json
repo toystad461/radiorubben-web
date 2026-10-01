@@ -1,0 +1,146 @@
+[
+  {
+    "width": 320,
+    "overflow": false,
+    "logo": [
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 98,
+        "height": 38.609375
+      },
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 194,
+        "height": 76.453125
+      },
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 240,
+        "height": 94.578125
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "background": "rgb(0, 0, 0)",
+    "button": [
+      {
+        "text": "rgb(0, 0, 0)",
+        "bg": "rgb(255, 0, 27)"
+      },
+      {
+        "text": "rgb(0, 0, 0)",
+        "bg": "rgb(255, 0, 27)"
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "logo": [
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 105.09375,
+        "height": 41.40625
+      },
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 240,
+        "height": 94.578125
+      },
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 240,
+        "height": 94.578125
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "background": "rgb(0, 0, 0)",
+    "button": [
+      {
+        "text": "rgb(0, 0, 0)",
+        "bg": "rgb(255, 0, 27)"
+      },
+      {
+        "text": "rgb(0, 0, 0)",
+        "bg": "rgb(255, 0, 27)"
+      }
+    ]
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "logo": [
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 157,
+        "height": 61.875
+      },
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 205.125,
+        "height": 80.828125
+      },
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 240,
+        "height": 94.578125
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "background": "rgb(0, 0, 0)",
+    "button": [
+      {
+        "text": "rgb(0, 0, 0)",
+        "bg": "rgb(255, 0, 27)"
+      },
+      {
+        "text": "rgb(0, 0, 0)",
+        "bg": "rgb(255, 0, 27)"
+      }
+    ]
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "logo": [
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/11-Liggende-transparent.svg",
+        "loaded": true,
+        "width": 217,
+        "height": 42.5625
+      },
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 240,
+        "height": 94.578125
+      },
+      {
+        "src": "http://preview.local/theme/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+        "loaded": true,
+        "width": 240,
+        "height": 94.578125
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "background": "rgb(0, 0, 0)",
+    "button": [
+      {
+        "text": "rgb(0, 0, 0)",
+        "bg": "rgb(255, 0, 27)"
+      },
+      {
+        "text": "rgb(0, 0, 0)",
+        "bg": "rgb(255, 0, 27)"
+      }
+    ]
+  }
+]

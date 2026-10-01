@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import re
 import subprocess
+import xml.etree.ElementTree as ET
 
 root = Path(__file__).resolve().parents[1]
 theme = root / 'radio-rubben-next'
@@ -30,5 +31,15 @@ for package in packages:
         assert not file.is_symlink(), str(file)
         if file.is_file():
             assert file.name not in ['wp-config.php', '.env', '.DS_Store'], str(file)
-            assert file.suffix.lower() in ['.php', '.css', '.js', '.json', '.md', '.txt', '.png', '.webp', '.jpg'], str(file)
+            assert file.suffix.lower() in ['.php', '.css', '.js', '.json', '.md', '.txt', '.png', '.webp', '.jpg', '.svg'], str(file)
+            if file.suffix.lower() == '.svg':
+                # Bundled logo outlines only; no scripts, external resources or embedded markup.
+                svg = ET.parse(file).getroot()
+                allowed_tags = {'svg', 'title', 'g', 'path'}
+                allowed_attributes = {'width', 'height', 'viewBox', 'transform', 'fill', 'fill-rule', 'd'}
+                for node in svg.iter():
+                    assert node.tag.startswith('{http://www.w3.org/2000/svg}'), str(file)
+                    assert node.tag.split('}')[-1] in allowed_tags, str(file)
+                    assert set(node.attrib) <= allowed_attributes, str(file)
+                    assert not any('url(' in value.lower() for value in node.attrib.values()), str(file)
 print(f'PASS: {len(php_files)} PHP files, JavaScript syntax, JSON, templates, child parent, presentation boundary and package file allowlist.')

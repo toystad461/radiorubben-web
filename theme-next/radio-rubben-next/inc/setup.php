@@ -19,9 +19,9 @@ function rr_theme_setup() {
 add_action( 'after_setup_theme', 'rr_theme_setup' );
 function rr_theme_assets() {
     $previous = array();
-    foreach ( array( 'theme', 'design-v13', 'member-hub', 'mobile-shell', 'components' ) as $style ) {
+    foreach ( array( 'theme', 'design-v13', 'member-hub', 'mobile-shell', 'components', 'brand-profile' ) as $style ) {
         $handle = 'rr-next-' . $style;
-        wp_enqueue_style( $handle, get_theme_file_uri( '/assets/css/' . $style . '.css' ), $previous, RR_THEME_VERSION );
+        wp_enqueue_style( $handle, get_theme_file_uri( '/assets/css/' . $style . '.css' ), $previous, 'brand-profile' === $style ? '2026.10.01.1' : RR_THEME_VERSION );
         $previous = array( $handle );
     }
     if ( is_front_page() ) {
