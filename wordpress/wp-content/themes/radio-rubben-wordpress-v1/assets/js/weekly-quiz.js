@@ -3,6 +3,14 @@
   const root = document.querySelector('#rr-weekly.rrq');
   if (!root || typeof rrwqConfig === 'undefined') return;
   const status = root.querySelector('.rrq-status'), play = root.querySelector('.rrq-play'), board = root.querySelector('.rrq-board');
+  // Vipps stores _wp_http_referer in its login session. Pass the quiz explicitly:
+  // in-app browsers and privacy settings can omit the HTTP Referer header.
+  play.addEventListener('click', event => {
+    const link = event.target.closest('a.continue-with-vipps');
+    if (!link || !play.contains(link) || typeof window.login_with_vipps !== 'function' || !rrwqConfig.returnTo) return;
+    event.preventDefault();
+    window.login_with_vipps('wordpress', {_wp_http_referer: rrwqConfig.returnTo});
+  });
   let state, answers = Array(20).fill(null), index = 0, tick, busy = false, serverNow = 0, syncedAt = 0;
   const el = (tag, text, cls) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (cls) n.className = cls; return n; };
   const duration = seconds => { const s = Math.max(0, Math.floor(seconds)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); };

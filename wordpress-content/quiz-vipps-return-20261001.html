@@ -1,0 +1,20 @@
+<!-- wp:html -->
+<script id="rr-quiz-vipps-return-20261001">
+(function () {
+  if (window.rrQuizVippsReturnHotfix) return;
+  window.rrQuizVippsReturnHotfix = true;
+  document.addEventListener('click', function (event) {
+    var target = event.target;
+    var link = target && target.closest ? target.closest('#rr-weekly.rrq .rrq-play a.continue-with-vipps') : null;
+    if (!link || typeof window.login_with_vipps !== 'function') return;
+    var returnTo = new URL('/quiz/', 'https://www.radiorubben.no');
+    var preview = new URLSearchParams(window.location.search).get('wpvibe_preview');
+    if (preview) returnTo.searchParams.set('wpvibe_preview', preview);
+    returnTo.hash = 'rr-weekly';
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    window.login_with_vipps('wordpress', {_wp_http_referer: returnTo.href});
+  }, true);
+})();
+</script>
+<!-- /wp:html -->

@@ -2,10 +2,10 @@ name: WordPress kontroll og publisering
 on:
   pull_request:
     branches: [main]
-    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', '.github/workflows/wordpress.yml']
+    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', 'scripts/tests/quiz-vipps-*', '.github/workflows/wordpress.yml']
   push:
     branches: [main]
-    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', '.github/workflows/wordpress.yml']
+    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', 'scripts/tests/quiz-vipps-*', '.github/workflows/wordpress.yml']
   workflow_dispatch:
     inputs:
       mode:
@@ -29,6 +29,8 @@ jobs:
         run: |
           php --version
           find wordpress -name '*.php' -print0 | xargs -0 -n1 php -l
+          php scripts/tests/quiz-vipps-return.php
+          node --test scripts/tests/quiz-vipps-request.cjs
           bash -n scripts/deploy-wordpress.sh
           bash -n scripts/deploy-wordpress-remote.sh
   deploy:
