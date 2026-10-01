@@ -9,7 +9,7 @@ function sanitize_text_field($text) { return trim(strip_tags((string)$text)); }
 function esc_html($text) { return htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8'); }
 function esc_attr($text) { return esc_html($text); }
 function esc_url($text) { return esc_html($text); }
-function wp_json_encode($value) { return json_encode($value); }
+function wp_json_encode($value, $flags = 0) { return json_encode($value, $flags); }
 function wp_date($format, $timestamp, $timezone) {
     return (new DateTimeImmutable('@'.$timestamp))->setTimezone($timezone)->format($format);
 }
@@ -52,6 +52,20 @@ try {
                 $case=$team.' '.($home?'home':'away').' '.($imported?'imported':'snapshot');
                 $match=rr_poll_next_match_data();
                 check($match['opponent']===$opponent, $case.': wrong opponent');
+                $share=rr_poll_next_match_share_data();
+                check(count($share['templates'])===4, $case.': missing social templates');
+                check(!str_contains($share['text'],'Jeg skal på kamp'), $case.': personal attendance as default');
+                foreach ($share['templates'] as $key=>$template) {
+                    check(str_contains($template['text'],$opponent), $case.': template missing opponent');
+                    check(str_contains($template['text'],'18:45'), $case.': template missing kickoff');
+                    check(str_contains($template['text'],'https://example.test/nestekamp/'), $case.': template missing link');
+                    check(!str_contains($template['text'],'møter Bremnes'), $case.': template self opponent');
+                    if (!$home) {
+                        check(!str_contains(strtolower($template['text']),'hjemmekamp'), $case.': away template says home');
+                        check(!str_contains($template['text'],'hjemmebane'), $case.': away template says home ground');
+                        check(!str_contains($template['text'],'Dagens Bremnesing'), $case.': away template invites voting');
+                    }
+                }
                 ob_start();
                 include $temp.'/bremnes-next-match.php';
                 $html=ob_get_clean();
@@ -62,6 +76,10 @@ try {
                 check(str_contains($html,'Seneste møte var '.$historyDate), $case.': missing history');
                 check(str_contains($html,$historyScore), $case.': wrong historical score');
                 check(!str_contains($html,'Vi har foreløpig ikke et tidligere møte'), $case.': false missing history');
+                check(str_contains($html,'id="rr-share-template"'), $case.': template selector missing');
+                foreach ($share['templates'] as $key=>$template) {
+                    check(str_contains($html,'value="'.$key.'"'), $case.': template option missing');
+                }
                 echo 'PASS '.$case.PHP_EOL;
                 $cases++;
             }

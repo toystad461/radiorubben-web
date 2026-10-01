@@ -27,6 +27,7 @@ get_header();
 .rr-next-history-list{margin:14px 0 0;padding:0;list-style:none}
 .rr-next-history-list li{padding:10px 0;border-top:1px solid #344054;color:#d7dfeb;font-size:14px}
 .rr-share-preview{margin:14px 0;padding:16px;border-radius:12px;background:#0d1522;white-space:pre-line;color:#dfe6ef;font-size:14px;line-height:1.55}
+.rr-share-label{display:block;margin:14px 0 7px;font-weight:700}.rr-share-template{width:100%;min-height:48px;padding:10px 12px;border:1px solid #586980;border-radius:10px;background:#0d1522;color:#fff;font:inherit}
 .rr-share-actions{display:flex;flex-wrap:wrap;gap:10px}
 .rr-share-actions button{min-height:48px;padding:11px 17px;border:1px solid #586980;border-radius:10px;background:#202b3e;color:#fff;font:inherit;font-weight:800;cursor:pointer}
 .rr-share-actions .rr-facebook{border-color:#f5cb45;background:#f5cb45;color:#151b24}
@@ -63,7 +64,8 @@ get_header();
     $rr_venue=sanitize_text_field($rr_next['venue']??'');
     $rr_comp=sanitize_text_field($rr_next['competition']??'');
     $rr_page_url=home_url('/nestekamp/');
-    $rr_share_text=(string)($rr_share['text']??('Jeg skal på kamp – bli med!'."\n".$rr_next['home'].' – '.$rr_next['away']."\n".'Kampstart: '.$rr_date.' kl. '.$rr_time.($rr_venue!==''?"\n".'Bane: '.$rr_venue:'')."\n".$rr_page_url));
+    $rr_share_text=(string)($rr_share['text']??('Kampinformasjon'."\n".$rr_next['home'].' – '.$rr_next['away']."\n".'Kampstart: '.$rr_date.' kl. '.$rr_time.($rr_venue!==''?"\n".'Bane: '.$rr_venue:'')."\n".$rr_page_url));
+    $rr_share_templates=(array)($rr_share['templates']??[]);
 
     $rr_history_file=__DIR__.'/bremnes-history-2026.php';
     $rr_history=is_readable($rr_history_file)?require $rr_history_file:[];
@@ -137,7 +139,15 @@ get_header();
 
   <section class="rr-next-section">
     <h2>Del kampen med venner</h2>
-    <div class="rr-share-preview"><?php echo esc_html($rr_share_text); ?></div>
+    <?php if ($rr_share_templates): ?>
+    <label class="rr-share-label" for="rr-share-template">Velg tekstmal</label>
+    <select class="rr-share-template" id="rr-share-template">
+      <?php foreach ($rr_share_templates as $rr_template_id=>$rr_template): ?>
+      <option value="<?php echo esc_attr($rr_template_id); ?>"><?php echo esc_html($rr_template['label']); ?></option>
+      <?php endforeach; ?>
+    </select>
+    <?php endif; ?>
+    <div class="rr-share-preview" id="rr-share-preview" aria-live="polite"><?php echo esc_html($rr_share_text); ?></div>
     <div class="rr-share-actions">
       <button type="button" class="rr-facebook" id="rr-facebook-share">Del på Facebook</button>
       <button type="button" id="rr-copy-share">Kopier delingstekst</button>
@@ -173,9 +183,17 @@ get_header();
       tick();setInterval(tick,1000);
     }
 
-    const shareText=<?php echo wp_json_encode($rr_share_text); ?>;
+    let shareText=<?php echo wp_json_encode($rr_share_text,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT); ?>;
+    const shareTemplates=<?php echo wp_json_encode($rr_share_templates,JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT); ?>;
     const shareUrl=<?php echo wp_json_encode($rr_page_url); ?>;
     const status=document.getElementById('rr-share-status');
+    document.getElementById('rr-share-template')?.addEventListener('change',event=>{
+      const template=shareTemplates[event.target.value];
+      if(!template||typeof template.text!=='string')return;
+      shareText=template.text;
+      document.getElementById('rr-share-preview').textContent=shareText;
+      if(status)status.textContent='';
+    });
     const copy=async()=>{
       try{await navigator.clipboard.writeText(shareText);if(status)status.textContent='Delingsteksten er kopiert.';return true;}
       catch(e){if(status)status.textContent='Kunne ikke kopiere automatisk. Marker teksten over og kopier den.';return false;}
