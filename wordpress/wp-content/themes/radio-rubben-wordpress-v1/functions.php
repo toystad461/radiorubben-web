@@ -2,6 +2,7 @@
 if (!defined('ABSPATH')) exit;
 
 define('RR_ONE_VERSION', '1.3.6');
+require_once get_template_directory() . '/inc/brand.php';
 require_once get_template_directory() . '/inc/weather.php';
 require_once get_template_directory() . '/inc/quiz-controls.php';
 require_once get_template_directory() . '/inc/weekly-quiz.php';
@@ -50,6 +51,10 @@ function rr_one_assets() {
     ]);
 }
 add_action('wp_enqueue_scripts', 'rr_one_assets');
+// Load after all existing shell styles, with its own cache version.
+add_action('wp_enqueue_scripts', function () {
+    wp_enqueue_style('rr-brand-profile', get_template_directory_uri() . '/assets/css/brand-profile.css', ['rr-one-design', 'rr-mobile-shell'], '2026.10.01.1');
+}, 30);
 
 function rr_one_customize($wp_customize) {
     $wp_customize->add_section('rr_radio', [
@@ -108,6 +113,7 @@ function rr_one_customize($wp_customize) {
 add_action('customize_register', 'rr_one_customize');
 
 function rr_one_logo_url() {
+    if (rr_brand_uses_profile_logos()) return rr_brand_logo_url();
     $custom_logo_id = get_theme_mod('custom_logo');
     if ($custom_logo_id) {
         $src = wp_get_attachment_image_src($custom_logo_id, 'full');
