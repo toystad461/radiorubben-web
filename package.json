@@ -8,7 +8,11 @@
     "dev": "npx --yes serve dist",
     "build": "node scripts/build.mjs",
     "check": "node scripts/check.mjs",
-    "test": "npm run check"
+    "test": "npm run check",
+    "test:quiz-share": "node --test tests/quiz-share.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
   },
   "engines": {
     "node": ">=22"

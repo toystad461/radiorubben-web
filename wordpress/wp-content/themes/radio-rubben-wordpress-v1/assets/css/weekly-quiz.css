@@ -25,3 +25,13 @@
 #rr-weekly .rrq-board th:nth-child(3),#rr-weekly .rrq-board td:nth-child(3){width:57px}
 #rr-weekly .rrq-board th:last-child,#rr-weekly .rrq-board td:last-child{width:49px}
 }.rrq table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}.rrq th,.rrq td{text-align:left;padding:13px 9px;border-bottom:1px solid #2b303a}.rrq td:nth-child(2){overflow-wrap:anywhere}.rrq th{font-size:14px;color:#afb5c0}.rrq details{margin-top:28px}.rrq summary{cursor:pointer;padding:15px 0;font-weight:700}.rrq-review{border-top:1px solid #2b303a;padding:18px 0}.rrq-review h4{font-size:18px}.rrq-review a{color:#ff9ba2}.page-id-496 #rr-live-quiz{scroll-margin-top:120px}@media(max-width:700px){.rrq-modes{grid-template-columns:1fr}.rrq th,.rrq td{padding:12px 5px}.rrq legend{font-size:20px}}
+/* Challenge sharing stays inside the weekly quiz; no changes to LIVE quiz. */
+#rr-weekly .rrq-challenge{margin:24px 0;padding:clamp(16px,3vw,24px);border:1px solid #7d3b43;border-radius:12px;background:#201820}
+#rr-weekly .rrq-challenge h3{margin:0 0 12px;font-size:clamp(21px,4vw,25px)}
+#rr-weekly .rrq-challenge-preview{line-height:1.6;overflow-wrap:anywhere}
+#rr-weekly .rrq-challenge .rrq-small{margin-bottom:0}
+#rr-weekly .rrq-challenge textarea{display:block;box-sizing:border-box;width:100%;margin-top:10px;padding:12px;border:1px solid #697182;border-radius:7px;background:#0b0d11;color:#fff;font:inherit;line-height:1.5;resize:vertical}
+#rr-weekly .rrq-challenge textarea:focus-visible{outline:3px solid #fff;outline-offset:3px}
+#rr-weekly .rrq-challenge [hidden]{display:none}
+#rr-weekly .rrq-challenge-notice{padding:14px 16px;border-left:3px solid #ff9299;background:#201820;line-height:1.6}
+@media(max-width:480px){#rr-weekly .rrq-challenge .rrq-nav button{width:100%}}

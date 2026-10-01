@@ -30,11 +30,70 @@
     state.board.forEach((r,i) => { const row = el('tr'); [i+1,r.name,r.score+'/20',duration(r.seconds)].forEach(v => row.append(el('td',String(v)))); body.append(row); });
     table.append(body); board.append(table);
   }
+  function challengeNotice() {
+    const params = new URLSearchParams(window.location.search);
+    const week = params.get('rrq_week'), revision = params.get('rrq_revision');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(week || '') || !/^[1-9]\d{0,5}$/.test(revision || '')) return;
+    const current = week === state.week && Number(revision) === Number(state.revision || 1);
+    play.append(el('p', current
+      ? 'Du er utfordret! Spill ukens quiz og se om du slår resultatet i invitasjonen. Klokken starter først når du trykker «Start quizen».'
+      : 'Denne utfordringen gjelder en annen quizuke eller utgave. Her kan du spille ukens gjeldende quiz; resultatene kan ikke sammenlignes direkte.', 'rrq-challenge-notice'));
+  }
+  function drawChallenge() {
+    // Use the canonical quiz route, never login, preview or tracking parameters.
+    const url = new URL(rrwqConfig.quiz || '/quiz/', window.location.origin);
+    url.search = ''; url.hash = 'rr-weekly';
+    url.searchParams.set('rrq_week', state.week);
+    url.searchParams.set('rrq_revision', state.revision || 1);
+    const edition = 'Uken fra ' + state.label + (state.revision > 1 ? ', utgave ' + state.revision : '');
+    const text = state.result
+      ? 'Jeg fikk ' + state.result.score + ' av 20 riktige på ' + duration(state.result.seconds) + ' i Ukens Rubben-quiz! Klarer du å slå meg? ' + edition + '.'
+      : 'Jeg utfordrer deg i Ukens Rubben-quiz! 20 spørsmål – hvor mange klarer du? ' + edition + '.';
+    const data = {title: 'Ukens Rubben-quiz – jeg utfordrer deg!', text, url: url.href};
+    const section = el('section', undefined, 'rrq-challenge');
+    section.setAttribute('aria-label', 'Utfordre en venn');
+    section.append(el('h3', 'Hvem vil du utfordre?'), el('p', text, 'rrq-challenge-preview'));
+    const actions = el('div', undefined, 'rrq-nav');
+    const message = el('p', '', 'rrq-small'); message.setAttribute('role', 'status');
+    const manual = el('div'); manual.hidden = true;
+    const label = el('label', 'Kopier teksten og lenken, og lim inn der du vil dele:');
+    const field = el('textarea'); field.readOnly = true; field.rows = 5;
+    field.value = text + '\n' + url.href; label.append(field); manual.append(label);
+    const showManual = () => { manual.hidden = false; field.focus(); field.select(); };
+    async function copyChallenge() {
+      try {
+        if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') throw new Error('clipboard unavailable');
+        await navigator.clipboard.writeText(field.value);
+        message.textContent = 'Utfordringen er kopiert. Lim den inn der du vil dele.';
+      } catch (_) {
+        message.textContent = 'Kopier utfordringen fra tekstfeltet nedenfor.';
+        showManual();
+      }
+    }
+    actions.append(button('Jeg utfordrer deg!', async () => {
+      message.textContent = '';
+      if (typeof navigator.share !== 'function') { await copyChallenge(); return; }
+      try {
+        // Keep this call in the user's click: sharing requires transient activation.
+        await navigator.share(data);
+        message.textContent = 'Utfordringen er sendt til valgt delingsapp.';
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        message.textContent = 'Delingsmenyen kunne ikke åpnes. Bruk «Kopier utfordringen» eller teksten nedenfor.';
+        showManual();
+      }
+    }), button('Kopier utfordringen', copyChallenge, 'rrq-secondary'));
+    section.append(actions, el('p', state.result
+      ? 'Du velger selv om du vil dele poengsummen og tiden din. Navn og svarfasit deles ikke. Deling endrer ikke valget ditt for topplisten.'
+      : 'Velg en app i mobilens delingsmeny, eller kopier utfordringen og lim den inn i et innlegg eller en melding.', 'rrq-small'), message, manual);
+    play.append(section);
+  }
   function render() {
     clearInterval(tick); play.replaceChildren(); drawBoard();
     status.textContent = 'Uken fra ' + state.label + (state.title ? ' · ' + state.title : '');
     if (state.revision > 1) play.append(el('p','Ny utgave: Quizen er nullstilt. Alle kan starte på nytt med 20 nye spørsmål på omtrent nivå 5/10.','rrq-small'));
     if (!state.ready) { play.append(el('p','Ukens spørsmål klargjøres. Kom gjerne tilbake litt senere.')); return; }
+    if (!state.started && !state.result) { challengeNotice(); drawChallenge(); }
     if (!state.loggedIn) {
       const template = document.getElementById('rrq-login-template');
       if (template) play.append(template.content.cloneNode(true));
@@ -71,6 +130,7 @@
   }
   function result() {
     const heading=el('h3',state.result.score+' av 20 riktige');heading.tabIndex=-1;play.append(heading,el('p','Tid: '+duration(state.result.seconds)+'. Dette er din tellende runde denne uken.'));
+    challengeNotice(); drawChallenge();
     if(state.result.public)play.append(button('Skjul meg fra topplisten',async()=>{await request('hide');render();},'rrq-secondary'));
     else play.append(el('p','Resultatet ditt vises ikke på den offentlige topplisten.'));
     const details=el('details'),summary=el('summary','Se fasit og kilder');details.append(summary);
