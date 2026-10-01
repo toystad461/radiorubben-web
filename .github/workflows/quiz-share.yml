@@ -1,0 +1,21 @@
+name: Quiz challenge sharing
+on:
+  pull_request:
+    branches: [main]
+    paths: ['wordpress/wp-content/themes/radio-rubben-wordpress-v1/**/weekly-quiz.*', 'tests/quiz-share.test.mjs', 'package*.json', '.github/workflows/quiz-share.yml']
+  push:
+    branches: [main]
+    paths: ['wordpress/wp-content/themes/radio-rubben-wordpress-v1/**/weekly-quiz.*', 'tests/quiz-share.test.mjs', 'package*.json', '.github/workflows/quiz-share.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:quiz-share
