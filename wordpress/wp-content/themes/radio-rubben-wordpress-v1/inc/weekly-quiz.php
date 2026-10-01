@@ -158,12 +158,18 @@ function rrwq_shortcode() {
     if (!rr_quiz_enabled('weekly')) return '';
     $base = get_template_directory_uri();
     wp_enqueue_style('rrwq',$base.'/assets/css/weekly-quiz.css',[],RR_ONE_VERSION);
-    wp_enqueue_script('rrwq',$base.'/assets/js/weekly-quiz.js',[],RR_ONE_VERSION,true);
+    wp_enqueue_script('rrwq',$base.'/assets/js/weekly-quiz.js',[],RR_ONE_VERSION.'-quiz-return-1',true);
     $ajax = admin_url('admin-ajax.php');
     if (isset($_GET['wpvibe_preview'])) $ajax=add_query_arg('wpvibe_preview',sanitize_text_field(wp_unslash($_GET['wpvibe_preview'])),$ajax);
-    wp_localize_script('rrwq','rrwqConfig',['ajax'=>$ajax,'login'=>wp_login_url(home_url('/quiz/')),'week'=>rrwq_week()['id']]);
+    $return_to = home_url('/quiz/');
+    if (isset($_GET['wpvibe_preview']) && is_string($_GET['wpvibe_preview'])) {
+        $return_to = add_query_arg('wpvibe_preview',sanitize_text_field(wp_unslash($_GET['wpvibe_preview'])),$return_to);
+    }
+    $return_to .= '#rr-weekly';
+    $login_url = wp_login_url($return_to);
+    wp_localize_script('rrwq','rrwqConfig',['ajax'=>$ajax,'login'=>$login_url,'returnTo'=>$return_to,'week'=>rrwq_week()['id']]);
     $vipps_login = shortcode_exists('continue-with-vipps') ? do_shortcode('[continue-with-vipps language="no"]') : '';
-    $login_template = '<template id="rrq-login-template"><p>Logg inn med Vipps for å spille. Du kommer tilbake hit etter innlogging. Klokken starter først når du trykker «Start quizen».</p>' . $vipps_login . '<p><a href="' . esc_url(wp_login_url(home_url('/quiz/'))) . '">Logg inn med brukernavn og passord</a></p></template>';
+    $login_template = '<template id="rrq-login-template"><p>Logg inn med Vipps for å spille. Du kommer tilbake hit etter innlogging. Klokken starter først når du trykker «Start quizen».</p>' . $vipps_login . '<p><a href="' . esc_url($login_url) . '">Logg inn med brukernavn og passord</a></p></template>';
     return '<nav class="rrq-modes" aria-label="Velg quiz"><a href="#rr-weekly"><small>SPILL NÅR DU VIL</small><strong>Ukens Rubben-quiz</strong><span>20 spørsmål · nivå ca. 5/10 · tidtaking</span></a><a href="#rr-live-quiz"><small>SAMMEN PÅ LUFTA</small><strong>LIVE-quizen</strong><span>Delta når studio åpner en runde.</span></a></nav><section id="rr-weekly" class="rrq" aria-labelledby="rrq-title"><p class="rr-eyebrow">20 SPØRSMÅL · NIVÅ CA. 5/10</p><h2 id="rrq-title">Ukens Rubben-quiz</h2><p>Ny quiz mandag kl. 00.00 norsk tid. Flest riktige svar vinner; ved lik poengsum avgjør kortest tid.</p><p>Én tellende runde per konto i ukens gjeldende quiz. Klokken starter når du trykker «Start quizen» og fortsetter hvis du lukker siden. Lever før ukebyttet.</p><div class="rrq-status" role="status">Laster ukens quiz …</div><div class="rrq-play"></div>' . $login_template . '<aside class="rrq-board" aria-label="Ukens topp ti"></aside><noscript>Du må slå på JavaScript for å spille.</noscript></section>';
 }
 add_shortcode('rr_weekly_competition','rrwq_shortcode');
