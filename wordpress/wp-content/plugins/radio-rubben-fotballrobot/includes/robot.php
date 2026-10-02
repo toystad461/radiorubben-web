@@ -9,6 +9,7 @@ final class Robot {
     public static function menu(): void { add_menu_page('Radio Rubbens Fotballrobot','Fotballrobot','manage_options','rr-fotballrobot',[self::class,'page'],'dashicons-edit-page',31); }
     public static function routes(): void {
         $permission=static fn()=>self::allowed();
+        register_rest_route('rr-fotballrobot/v1','/quality/(?P<id>[0-9]+)',['methods'=>'POST','permission_callback'=>static fn($r)=>self::allowed()&&current_user_can('edit_post',(int)$r['id']),'callback'=>static fn($r)=>self::response(static fn()=>Writer::recheck((int)$r['id'],(string)$r->get_param('hash')))]);
         register_rest_route('rr-fotballrobot/v1','/matches/(?P<id>[0-9]+)/write',['methods'=>'POST','permission_callback'=>$permission,'callback'=>static function($r){return self::response(static fn()=>Writer::generate((int)$r['id'],(string)$r->get_param('fact_hash'),(string)$r->get_param('angle')));}]);
         register_rest_route('rr-fotballrobot/v1','/review',['methods'=>'POST','permission_callback'=>$permission,'callback'=>static function($r){return self::response(static fn()=>Writer::review((string)$r->get_param('token')));}]);
         register_rest_route('rr-fotballrobot/v1','/matches/(?P<id>[0-9]+)',[
@@ -150,7 +151,7 @@ final class Robot {
             echo '</section><section class="rrfr-card" id="vinkel"><h2>Finn vinkelen</h2><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';self::formFields($id,'draft');
             echo '<input type="hidden" name="fact_hash" value="'.esc_attr($f['fact_hash']).'">';
             foreach($f['angles'] as $i=>$a) echo '<label class="rrfr-angle"><input type="radio" name="angle" value="'.esc_attr($a['id']).'" '.checked($i,0,false).'><span><strong>'.esc_html($a['title']).'</strong><small>'.esc_html($a['reason']).'</small></span></label>';
-            echo '<div id="referat"><h3>Skriv referat</h3><p>AI skriver referatet og gjør deretter en separat faktakontroll. Du gjennomleser utkastet før publisering. Eksisterende AI-utkast åpnes uten å bli overskrevet.</p><button type="button" id="rrfr-write" class="rrfr-primary" '.disabled($f['finished_confirmed'] && Writer::key()!=='',false,false).'>Skriv AI-referat</button><p id="rrfr-progress" role="status" aria-live="polite"></p><details><summary>Faktatekst uten AI</summary><button '.disabled($f['finished_confirmed'],false,false).'>Lag eller åpne faktatekst</button></details></div></form></section></main><aside><section class="rrfr-card"><h2>Kontroll og kilder</h2><p>'.esc_html($f['confirmation']).'</p>';
+            echo '<div id="referat"><h3>Skriv referat</h3><p>AI skriver referatet, kontrollerer fakta separat og språkvasker teksten. Endringer får ny faktakontroll. Du gjennomleser utkastet før publisering. Eksisterende AI-utkast åpnes uten å bli overskrevet.</p><button type="button" id="rrfr-write" class="rrfr-primary" '.disabled($f['finished_confirmed'] && Writer::key()!=='',false,false).'>Skriv AI-referat</button><p id="rrfr-progress" role="status" aria-live="polite"></p><details><summary>Faktatekst uten AI</summary><button '.disabled($f['finished_confirmed'],false,false).'>Lag eller åpne faktatekst</button></details></div></form></section></main><aside><section class="rrfr-card"><h2>Kontroll og kilder</h2><p>'.esc_html($f['confirmation']).'</p>';
             foreach($f['warnings'] as $w) echo '<p class="rrfr-notice">'.esc_html($w).'</p>';
             foreach($f['sources'] as $i=>$s) echo '<p><a href="'.esc_url($s['url']).'" target="_blank" rel="noopener">'.esc_html($s['provider']??($i===0?'Kampside':($i===1?$m['home']['name']:$m['away']['name']).' · lagside')).'</a><br><small>Hentet '.esc_html(wp_date('d.m.Y H:i',strtotime($s['fetched_at']))).'</small></p>';
             echo '<p class="rrfr-muted">Tabellplass beregnes ikke i første versjon. Manglende data utelates.</p><details><summary>Registrerte hendelser</summary><ul>';
@@ -162,3 +163,4 @@ final class Robot {
         echo '</ul></section></div>';
     }
 }
+

@@ -13,6 +13,9 @@ self::fields(get_option('rrfr_player_review_enabled_at',0)?'disable':'enable');e
 if($id)try{
     if(!current_user_can('edit_post',$id))throw new \RuntimeException('Ingen tilgang.');$s=self::state($id);$p=get_post($id);
     echo '<section class="rrfr-card"><h2>'.esc_html($p->post_title).'</h2><p><strong>'.esc_html($labels[$s['status']]??$s['status']).'</strong> · Versjon '.esc_html($s['version']).'</p>';
+    $quality=get_post_meta($id,PublicationGate::META,true);
+    echo '<p>Språkregler: '.esc_html($quality['rulesVersion']??'Ikke kontrollert').' · '.esc_html(PublicationGate::current($id,$p)?'Kvalitetskontroll godkjent':'Kvalitetskontroll kreves før publisering').'</p>';
+    foreach($quality['findings']??[] as $finding)echo '<p class="rrfr-notice">'.esc_html($finding).'</p>';
     if($s['test'])echo '<p class="rrfr-notice">TEST: Dette innlegget kan ikke publiseres. «Ja» tester bare godkjenningen.</p>';
     echo '<p>E-post: '.esc_html(self::mailLabel($s['mail']??'none')).'</p>';
     if(!empty($s['error']))echo '<p class="rrfr-notice">'.esc_html($s['error']).'</p>';
@@ -28,4 +31,5 @@ if($id)try{
     echo '</div></form><details><summary>Kommentarer og historikk</summary>';foreach($s['history'] as $h)echo '<p>'.esc_html($h['at'].' · '.$h['action'].' · '.$h['comment']).'</p>';echo '</details></section>';
 }catch(\Throwable $e){echo '<p class="rrfr-notice">'.esc_html($e->getMessage()).'</p>';}
 echo '<section class="rrfr-card"><h2>Forslag</h2><ul>';foreach(get_posts(['post_type'=>'post','post_status'=>['draft','pending','publish','private','future'],'numberposts'=>50,'meta_key'=>self::META]) as $p){$s=self::state($p->ID);echo '<li><a href="'.esc_url(self::url($p->ID)).'">'.esc_html($p->post_title).'</a> · '.esc_html($labels[$s['status']]??$s['status']).'</li>';}echo '</ul></section></div>';
+
 
