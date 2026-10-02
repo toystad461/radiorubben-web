@@ -1,0 +1,21 @@
+name: Fotballrobot språk og publiseringsgate
+on:
+  pull_request:
+    branches: [main, feature/fotballrobot-spillere]
+    paths: ['wordpress/wp-content/plugins/radio-rubben-fotballrobot/**', '.github/workflows/fotballrobot-quality.yml']
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: PHP-syntaks og alle isolerte plugin-tester
+        shell: bash
+        run: |
+          set -euo pipefail
+          plugin=wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          find "$plugin" -name '*.php' -print0 | xargs -0 -n1 php -l
+          for test in "$plugin"/tests/*.php; do php "$test"; done

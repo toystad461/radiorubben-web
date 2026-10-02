@@ -38,3 +38,10 @@ require_once __DIR__.'/includes/player-review.php';
 add_action('admin_enqueue_scripts', static function($hook) {
     if(strpos($hook,'rrfr-player-review')!==false) wp_enqueue_style('rrfr-admin',plugins_url('admin.css',__FILE__),[], '0.6.0');
 });
+
+
+// Quality checks cover classic/REST writes and the core scheduled-publication path.
+add_filter('wp_insert_post_data',[PublicationGate::class,'guard'],99,2);
+add_action('publish_future_post',[PublicationGate::class,'future'],9);
+add_action('add_meta_boxes_post',[PublicationGate::class,'box']);
+add_action('admin_notices',[PublicationGate::class,'notice']);

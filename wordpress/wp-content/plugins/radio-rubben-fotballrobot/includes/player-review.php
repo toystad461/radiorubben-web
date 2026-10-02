@@ -1,5 +1,6 @@
 <?php
 namespace RadioRubben\Fotballrobot;
+require_once __DIR__.'/publication-gate.php';
 
 /** Durable, human-approved publication. Links only open the authenticated review page. */
 final class PlayerReview {
@@ -65,6 +66,7 @@ final class PlayerReview {
     }
     private static function write(int $id,string $comment): void {
         $s=self::state($id);$p=get_post($id);$before=self::hash($p);
+        update_post_meta($id,PublicationGate::META,['rulesVersion'=>EditorialQuality::RULES_VERSION,'publishable'=>false,'findings'=>['Ny skrive- og kvalitetskontroll er ikke fullført.']]);
         try {
             $a=Writer::playerArticle($s['facts'],$comment,$s['article']??null);
             // Never overwrite a human edit made while the request was running.
@@ -74,6 +76,8 @@ final class PlayerReview {
             $body.='<p><small>Kilde: <a href="'.esc_url($s['facts']['source']).'">Fotball.no</a> · Hentet '.esc_html($s['facts']['fetched_at']).'</small></p>';
             $r=wp_update_post(['ID'=>$id,'post_title'=>($s['test']?'[TEST] ':'').$a['title'],'post_content'=>$body,'post_excerpt'=>$a['lead'],'post_category'=>[17]],true);
             if(is_wp_error($r))throw new \RuntimeException($r->get_error_message());
+            update_post_meta($id,PublicationGate::META,PublicationGate::bind($a['_quality'],['post_title'=>($s['test']?'[TEST] ':'').$a['title'],'post_content'=>$body,'post_excerpt'=>$a['lead']]));
+            unset($a['_quality']);
             $s['article']=$a;$s['status']='pending';$s['version']++;$s['hash']=self::hash(get_post($id));$s['mail']='none';unset($s['error']);self::put($id,$s);
         }catch(\Throwable $e){$s['status']='failed';$s['error']=$e->getMessage();self::put($id,$s);return;}
         self::notify($id);
@@ -110,10 +114,11 @@ final class PlayerReview {
             if($op==='revise'&&mb_strlen($comment)<5)throw new \RuntimeException('Beskriv endringen du ønsker.');
             if($op==='retry'&&$s['status']!=='failed')throw new \RuntimeException('Bare feilede skrivejobber kan prøves på nytt.');
             if($op==='resubmit'&&empty($s['article']))throw new \RuntimeException('Forslaget mangler en kontrollert tekst.');
-            $s['history'][]=['action'=>$op,'comment'=>$comment,'user'=>get_current_user_id(),'at'=>gmdate(DATE_ATOM),'version'=>$s['version'],'hash'=>$hash];
+            if($op==='approve'&&!PublicationGate::current($id,$p)) throw new \RuntimeException('Språk- og kvalitetskontroll mangler eller er utdatert. Kontroller lagret tekst i WordPress først.');
+            $s['history'][]=['action'=>$op,'comment'=>$comment,'user'=>get_current_user_id(),'at'=>gmdate(DATE_ATOM),'version'=>$s['version'],'hash'=>$hash,'rulesVersion'=>EditorialQuality::RULES_VERSION];
             $s['version']++;
             if($op==='approve'){
-                $s['status']=$s['test']?'test_approved':'publishing';self::put($id,$s);
+                $s['hash']=$hash;$s['status']=$s['test']?'test_approved':'publishing';self::put($id,$s);
                 if(!$s['test']){$r=wp_update_post(['ID'=>$id,'post_status'=>'publish'],true);if(is_wp_error($r)||get_post($id)->post_status!=='publish')throw new \RuntimeException('Publisering ble ikke bekreftet. Kontroller innlegget før nytt forsøk.');$s['status']='published';self::put($id,$s);}
             }elseif($op==='reject'){$s['status']='rejected';self::put($id,$s);}
             elseif(in_array($op,['revise','retry'],true)){$s['status']='writing';self::put($id,$s);self::write($id,$comment);}
@@ -146,3 +151,4 @@ add_action('admin_menu',[PlayerReview::class,'menu'],11);
 add_action('admin_post_rrfr_player_review',[PlayerReview::class,'action']);
 add_action('rrfr_players_tick',[PlayerReview::class,'tick'],20);
 add_filter('wp_insert_post_data',[PlayerReview::class,'guardTest'],10,2);
+
