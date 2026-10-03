@@ -6,6 +6,7 @@ require_once __DIR__.'/lineups.php';
 
 /** Shared writing pipeline; each match review request makes at most one model call. */
 final class Writer {
+    const DEFAULT_FEATURED_MEDIA = 812;
     public static function settings(int $id): void {
         echo '<section id="ai-oppsett" class="rrfr-card"><h2>AI-oppsett</h2><p>'.(self::key()!==''?'API-nøkkel er lagret.':'API-nøkkel mangler. Skriveknappen blir tilgjengelig når oppsettet er lagret.').'</p><details '.(self::key()===''?'open':'').'><summary>Tilkobling til OpenAI</summary><p>Opprett API-konto, aktiver betaling og lag en prosjektnøkkel hos <a href="https://platform.openai.com/" target="_blank" rel="noopener">OpenAI Platform</a>. Legg nøkkelen inn her, aldri i chatten. API-bruk faktureres av OpenAI.</p><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';
         wp_nonce_field('rrfr_action');
@@ -200,7 +201,7 @@ PROMPT;
             $body.='<a href="'.esc_url($f['match']['source']).'">fotball.no</a>';
             $body.='</small></p><!-- /wp:paragraph -->';
             $quality=PublicationGate::bind($review,['post_title'=>$a['title'],'post_content'=>$body,'post_excerpt'=>$a['lead']]);
-            $post=wp_insert_post(['post_type'=>'post','post_status'=>'draft','post_title'=>$a['title'],'post_content'=>$body,'post_excerpt'=>$a['lead'],'post_name'=>(!empty($state['test'])?'rr-robot-prove-ai-':'rubben-kamp-').$id,'post_category'=>[16,17,60,in_array(30365,[$f['match']['home']['id']??0,$f['match']['away']['id']??0],true)?61:62],'meta_input'=>['_thumbnail_id'=>773,'_rrfr_test_only'=>!empty($state['test']),'_rrfr_trial_match'=>!empty($state['test'])?$id:0,'_rrfr_ai_match'=>$id,'_rrfr_fact_snapshot'=>$f,'_rrfr_original_article'=>['title'=>$a['title'],'paragraphs'=>array_merge([$a['lead']],$a['paragraphs'])],'_rrfr_learning_used'=>$state['learning']??[],'_rrfr_ai_checks'=>$a['checks'],'_rrfr_ai_review'=>$review,PublicationGate::META=>$quality,'_rrfr_angle'=>$state['angle'],'_rrfr_model'=>get_option('rrfr_openai_model','gpt-6-astra')]],true);
+            $post=wp_insert_post(['post_type'=>'post','post_status'=>'draft','post_title'=>$a['title'],'post_content'=>$body,'post_excerpt'=>$a['lead'],'post_name'=>(!empty($state['test'])?'rr-robot-prove-ai-':'rubben-kamp-').$id,'post_category'=>[16,17,60,in_array(30365,[$f['match']['home']['id']??0,$f['match']['away']['id']??0],true)?61:62],'meta_input'=>['_thumbnail_id'=>self::DEFAULT_FEATURED_MEDIA,'_rrfr_test_only'=>!empty($state['test']),'_rrfr_trial_match'=>!empty($state['test'])?$id:0,'_rrfr_ai_match'=>$id,'_rrfr_fact_snapshot'=>$f,'_rrfr_original_article'=>['title'=>$a['title'],'paragraphs'=>array_merge([$a['lead']],$a['paragraphs'])],'_rrfr_learning_used'=>$state['learning']??[],'_rrfr_ai_checks'=>$a['checks'],'_rrfr_ai_review'=>$review,PublicationGate::META=>$quality,'_rrfr_angle'=>$state['angle'],'_rrfr_model'=>get_option('rrfr_openai_model','gpt-6-astra')]],true);
             if(is_wp_error($post)) throw new \RuntimeException('Kunne ikke lagre AI-utkastet.');
             delete_transient('rrfr_review_'.$token);
             return ['id'=>$post,'edit_url'=>get_edit_post_link($post,'raw'),'existing'=>false,'quality_passed'=>$review['publishable'],'findings'=>$review['findings']];
