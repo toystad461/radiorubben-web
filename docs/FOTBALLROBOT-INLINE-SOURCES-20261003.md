@@ -22,3 +22,13 @@ Promptrevisjon: `2026-10-03.2`. Eksisterende kvalitetsregelversjon beholdes slik
 `tests/inline-sources.php` dekker spiller- og kamp-HTML, ingress, tegnsett og escaping, kjent/ukjent kilde, tvetydige og overlappende utdrag, bevaring ved språkvask, ny faktakontroll etter lenkeendring, manuell HTML-kontroll og godkjenningshash. Kun simulerte kontrollsvar; ingen betalte AI-kall.
 
 Endringen aktiveres separat fra tidligere umergede funksjonsgrener, med kontroll av gamle filhasher, sikkerhetskopi og tilbakeføring ved feil.
+
+## Aktivert
+
+Aktivert 3. oktober 2026 kl. 23.01 norsk tid fra `59cbfbd6d82b97a8d3cf7f5f4456467710174484`. Fire kjøretidsfiler ble aktivert etter baselinekontroll og sikkerhetskopiering. Før-/etterkontroll viste uendrede spillerdata og spillerutkast. Live kontroll bekreftet klikkbar tekst, bevart kildeliste og fortsatt manuell sluttgodkjenning.
+
+Alle 14 PHP-testprogrammene og syntakskontrollen besto, inkludert 35 kontroller for kildelenker. Ingen artikkel ble generert, endret eller publisert, og ingen betalte AI-kall ble utført.
+
+- [Aktivering og kontroller](https://github.com/toystad461/radiorubben-web/actions/runs/37153585377)
+- [Integrasjonstest](https://github.com/toystad461/radiorubben-web/actions/runs/37153589700)
+- [Endringsforslag #43](https://github.com/toystad461/radiorubben-web/pull/43)
