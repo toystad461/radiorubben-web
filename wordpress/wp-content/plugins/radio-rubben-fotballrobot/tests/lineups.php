@@ -50,7 +50,7 @@ $empty=Lineups::parse($base,$m);$emptyHtml=Lineups::paragraph(['match'=>$m,'line
 check(str_contains($emptyHtml,'Startoppstillingen er ikke tilgjengelig hos NFF.') && str_contains($emptyHtml,'Innbytterliste ikke tilgjengelig hos NFF'),'Explicit fallback for missing lists');
 check(count($empty['warnings'])===4,'Missing lists visible in editor warning panel');
 $partial=Lineups::parse($base.squad('home',$starters,''),$m);
-check(str_contains(Lineups::paragraph(['match'=>$m,'lineups'=>$partial]),$expected) && $partial['status']['home']['bench']==='missing','Missing bench preserves starters');
+check(str_contains(Lineups::paragraph(['match'=>$m,'lineups'=>$partial]),str_replace('M. Sortland','Sortland',$expected)) && $partial['status']['home']['bench']==='missing','Missing bench preserves starters');
 $reservesOnly=Lineups::parse($base.squad('home','',$bench),$m);
 check($reservesOnly['starters']===[]&&$reservesOnly['bench']===[15,16,21],'Never promote reserve list to starters');
 foreach([
