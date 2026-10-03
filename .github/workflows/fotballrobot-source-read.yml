@@ -1,0 +1,48 @@
+name: Fotballrobot production source read
+on:
+  push:
+    branches: ['integrate/fotballrobot-090-quality']
+    paths: ['.github/workflows/fotballrobot-source-read.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: fotballrobot-source-read
+  cancel-in-progress: false
+jobs:
+  read:
+    if: github.repository == 'toystad461/radiorubben-web' && github.ref == 'refs/heads/integrate/fotballrobot-090-quality'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Read only the installed Fotballrobot source
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/fotballrobot-source"
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one 'set -eu; cd /run/webroots/r1417157/wp-content/plugins/radio-rubben-fotballrobot; test -f radio-rubben-fotballrobot.php; test -z "$(find . -type l -print -quit)"; find . -type f \( -name "*.php" -o -name "*.css" -o -name "*.js" -o -name "*.md" -o -name "*.txt" \) ! -iname "*config*" ! -iname "*secret*" ! -iname "*credential*" ! -path "./vendor/*" ! -path "./node_modules/*" -print0 | tar --null -T - -czf -' > "$RUNNER_TEMP/fotballrobot-source/source.tar.gz"
+          tar -tzf "$RUNNER_TEMP/fotballrobot-source/source.tar.gz"
+          sha256sum "$RUNNER_TEMP/fotballrobot-source/source.tar.gz" > "$RUNNER_TEMP/fotballrobot-source/SHA256SUMS"
+      - name: Keep source privately for integration
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fotballrobot-production-source
+          path: ${{ runner.temp }}/fotballrobot-source/
+          if-no-files-found: error
+          retention-days: 1
+      - name: Remove deployment key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
