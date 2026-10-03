@@ -1,5 +1,6 @@
 <?php
 namespace RadioRubben\Fotballrobot;
+require_once __DIR__.'/lineups.php';
 
 final class Robot {
     public static function allowed(): bool { return current_user_can('manage_options') && current_user_can('edit_posts'); }
@@ -10,7 +11,7 @@ final class Robot {
     public static function routes(): void {
         $permission=static fn()=>self::allowed();
         register_rest_route('rr-fotballrobot/v1','/quality/(?P<id>[0-9]+)',['methods'=>'POST','permission_callback'=>$permission,'callback'=>static function($r){return self::response(static fn()=>Writer::recheck((int)$r['id'],(string)$r->get_param('hash')));}]);
-        register_rest_route('rr-fotballrobot/v1','/automation',['methods'=>'GET','permission_callback'=>$permission,'callback'=>static fn()=>self::response(static fn()=>['version'=>'0.9.2','rules_version'=>EditorialQuality::RULES_VERSION,'delay_seconds'=>MatchJobs::DELAY,'enabled'=>!empty(get_option(MatchJobs::CONFIG,[])['enabled'])])]);
+        register_rest_route('rr-fotballrobot/v1','/automation',['methods'=>'GET','permission_callback'=>$permission,'callback'=>static fn()=>self::response(static fn()=>['version'=>'0.9.3','rules_version'=>EditorialQuality::RULES_VERSION,'delay_seconds'=>MatchJobs::DELAY,'enabled'=>!empty(get_option(MatchJobs::CONFIG,[])['enabled'])])]);
         register_rest_route('rr-fotballrobot/v1','/matches/(?P<id>[0-9]+)/queue',[
             ['methods'=>'GET','permission_callback'=>$permission,'callback'=>static fn($r)=>self::response(static fn()=>MatchJobs::publicState((int)$r['id']))],
             ['methods'=>'POST','permission_callback'=>$permission,'callback'=>static fn($r)=>self::response(static fn()=>MatchJobs::observe((int)$r['id'],$r->get_param('confirmed_finished')===true,(string)$r->get_param('source_url')))]
@@ -61,11 +62,9 @@ final class Robot {
                 if($forms[$side]['unresolved_count']) $warnings[]=$m[$side]['name'].': historikken har kamper uten entydig resultat; rekker er avgrenset.';
             } catch(\Throwable $e) { $forms[$side]=null; $warnings[]=$m[$side]['name'].': '.$e->getMessage(); }
         }
-        // Whitelist reusable match fields. Never expose poll state, voter identities or prize data.
-        $existing=get_option('rr_poll_match_'.$id,[]); $lineups=[];
-        if(($existing['home']??'')===$m['home']['name'] && ($existing['away']??'')===$m['away']['name']) {
-            foreach(['roster','starters','bench','away_roster','away_starters','away_bench'] as $field) if(isset($existing[$field]) && is_array($existing[$field])) $lineups[$field]=$existing[$field];
-        }
+        // Read lineups from this exact NFF response, independent of speaker/poll state.
+        $lineups=Lineups::parse($source['html'],$m);
+        $warnings=array_merge($warnings,$lineups['warnings']);
         $angles=Facts::angles($m,$forms);
         $payload=['version'=>'0.1.0','match'=>$m,'finished_confirmed'=>($finished||$confirmed)&&$m['score']!==null&&strtotime($m['kickoff'])<=time(),'confirmation'=>$finished?'Eksisterende kamparkiv':($confirmed?'Bekreftet av innlogget administrator':'Kampslutt må bekreftes'),'forms'=>$forms,'angles'=>$angles,'lineups'=>$lineups,'warnings'=>$warnings,'sources'=>$sources,'created_at'=>gmdate(DATE_ATOM), 'writing_brief'=>self::brief()];
         return FactStore::save($id,$payload);
