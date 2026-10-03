@@ -16,6 +16,7 @@ namespace {
     function is_wp_error($r){return false;}
     function get_current_user_id(){return 1;}
     function get_posts($q){foreach($GLOBALS['posts'] as $p)if(isset($q['name'])&&$p->post_name===$q['name'])return [$p];return [];}
+    function admin_url($p){return 'https://example.test/wp-admin/'.$p;}
     function get_edit_post_link($id,...$a){return 'edit/'.$id;}
     function check($v,$why){$GLOBALS['n']++;if(!$v)throw new RuntimeException($why);}
     function rejects($f){try{$f();}catch(RuntimeException $e){check(true,'rejected');return;}check(false,'Must reject');}

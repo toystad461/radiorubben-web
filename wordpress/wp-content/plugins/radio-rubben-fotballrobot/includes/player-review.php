@@ -3,6 +3,7 @@ namespace RadioRubben\Fotballrobot;
 require_once __DIR__.'/publication-gate.php';
 require_once __DIR__.'/editorial-notice.php';
 require_once __DIR__.'/player-monitor.php';
+require_once __DIR__.'/review-desk.php';
 
 /** Durable, human-approved publication. Links only open the authenticated review page. */
 final class PlayerReview {

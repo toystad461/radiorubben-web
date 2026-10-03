@@ -32,6 +32,7 @@ final class MatchJobs {
         if($p=self::existing($id)) {
             $out['post_id']=$p->ID;$out['post_status']=$p->post_status;
             $out['edit_url']=get_edit_post_link($p->ID,'raw');
+            $out['review_url']=admin_url('admin.php?page=rrfr-player-review&post_id='.(int)$p->ID);
             $out['quality_passed']=PublicationGate::current($p->ID,$p);
         }
         return $out+['match_id'=>$id,'delay_seconds'=>self::DELAY];
@@ -145,7 +146,7 @@ final class MatchJobs {
             if($s['status']==='running'&&time()-(int)$s['updated_at']>900)echo '<p>Arbeidet kan ha blitt avbrutt. Ingen automatisk ny skriving startes. Administrator må kontrollere jobben.</p>';
             if(!empty($s['due_at']))echo '<p>Tidligste start: '.esc_html(wp_date('d.m.Y H:i',$s['due_at'],new \DateTimeZone('Europe/Oslo'))).'</p>';
             if(!empty($s['error']))echo '<p role="status">'.esc_html($s['error']).'</p>';
-            if(!empty($s['post_id']))echo '<p><a href="'.esc_url(get_edit_post_link($s['post_id'],'raw')).'">Åpne referatet for gjennomlesing</a></p>';
+            if(!empty($s['post_id']))echo '<p><a href="'.esc_url(PlayerReview::url((int)$s['post_id'])).'">Les og godkjenn referatet</a></p>';
         }elseif($p=self::existing($id)){echo '<p>Denne kampen har allerede et referat og får ikke et nytt automatisk.</p>';}
         echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';wp_nonce_field('rrfr_match_jobs');
         echo '<input type="hidden" name="action" value="rrfr_match_jobs"><input type="hidden" name="match_id" value="'.esc_attr($id).'"><input type="hidden" name="operation" value="'.($enabled?'disable':'enable').'"><button>'.($enabled?'Stopp automatisk kampreferat':'Aktiver for nye kampslutt').'</button></form></section>';
