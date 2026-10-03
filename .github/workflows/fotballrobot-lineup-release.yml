@@ -1,0 +1,48 @@
+name: Release tested Bremnes lineup fix only
+on:
+  push:
+    branches: ['fix/fotballrobot-lineups']
+    paths: ['.github/workflows/fotballrobot-lineup-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/fix/fotballrobot-lineups'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Require exact tested candidate
+        run: |
+          set -euo pipefail
+          git diff --exit-code 097928615bdc900738b98b9be68e79f6f7e20a85 HEAD -- wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          bash -n scripts/deploy-fotballrobot-lineups.sh
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Release only four runtime files, with backup and rollback
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          candidate=097928615bdc900738b98b9be68e79f6f7e20a85
+          stage=".radiorubben-deploy/candidates/$candidate"
+          rsync -rltz scripts/deploy-fotballrobot-lineups.sh "$host:$stage/scripts/"
+          ssh "$host" "bash $stage/scripts/deploy-fotballrobot-lineups.sh $candidate"
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
