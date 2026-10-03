@@ -11,6 +11,9 @@ self::fields(get_option('rrfr_player_review_enabled_at',0)?'disable':'enable');e
 if($id)try{
     if(!current_user_can('edit_post',$id))throw new \RuntimeException('Ingen tilgang.');$s=self::state($id);$p=get_post($id);
     echo '<section class="rrfr-card"><h2>'.esc_html($p->post_title).'</h2><p><strong>'.esc_html($labels[$s['status']]??$s['status']).'</strong> · Versjon '.esc_html($s['version']).'</p>';
+    $quality=get_post_meta($id,PublicationGate::META,true);
+    echo '<p>Språkregler: '.esc_html($quality['rulesVersion']??'Ikke kontrollert').' · '.esc_html(PublicationGate::current($id,$p)?'Kvalitetskontroll godkjent':'Kvalitetskontroll kreves før publisering').'</p>';
+    foreach($quality['findings']??[] as $finding)echo '<p class="rrfr-notice">'.esc_html($finding).'</p>';
     if($s['test'])echo '<p class="rrfr-notice">TEST: Dette innlegget kan ikke publiseres. «Ja» tester bare godkjenningen.</p>';
     $mailLabels=['none'=>'Ikke sendt','sending'=>'Uavklart utsending – kontroller innboksen før nytt forsøk','accepted'=>'Levert til e-postsystemet; mottak i innboksen er ikke bekreftet','failed'=>'Sending feilet'];
     echo '<p>E-post: '.esc_html($mailLabels[$s['mail']]??$s['mail']).'</p>';

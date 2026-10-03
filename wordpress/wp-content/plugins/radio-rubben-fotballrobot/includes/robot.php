@@ -9,6 +9,12 @@ final class Robot {
     public static function menu(): void { add_menu_page('Radio Rubbens Fotballrobot','Fotballrobot','manage_options','rr-fotballrobot',[self::class,'page'],'dashicons-edit-page',31); }
     public static function routes(): void {
         $permission=static fn()=>self::allowed();
+        register_rest_route('rr-fotballrobot/v1','/quality/(?P<id>[0-9]+)',['methods'=>'POST','permission_callback'=>$permission,'callback'=>static function($r){return self::response(static fn()=>Writer::recheck((int)$r['id'],(string)$r->get_param('hash')));}]);
+        register_rest_route('rr-fotballrobot/v1','/automation',['methods'=>'GET','permission_callback'=>$permission,'callback'=>static fn()=>self::response(static fn()=>['version'=>'0.9.1','rules_version'=>EditorialQuality::RULES_VERSION,'delay_seconds'=>MatchJobs::DELAY,'enabled'=>!empty(get_option(MatchJobs::CONFIG,[])['enabled'])])]);
+        register_rest_route('rr-fotballrobot/v1','/matches/(?P<id>[0-9]+)/queue',[
+            ['methods'=>'GET','permission_callback'=>$permission,'callback'=>static fn($r)=>self::response(static fn()=>MatchJobs::publicState((int)$r['id']))],
+            ['methods'=>'POST','permission_callback'=>$permission,'callback'=>static fn($r)=>self::response(static fn()=>MatchJobs::observe((int)$r['id'],$r->get_param('confirmed_finished')===true,(string)$r->get_param('source_url')))]
+        ]);
         register_rest_route('rr-fotballrobot/v1','/matches/(?P<id>[0-9]+)/write',['methods'=>'POST','permission_callback'=>$permission,'callback'=>static function($r){return self::response(static function()use($r){MatchJobs::assertManual((int)$r['id']);return Writer::generate((int)$r['id'],(string)$r->get_param('fact_hash'),(string)$r->get_param('angle'));});}]);
         register_rest_route('rr-fotballrobot/v1','/review',['methods'=>'POST','permission_callback'=>$permission,'callback'=>static function($r){return self::response(static fn()=>Writer::review((string)$r->get_param('token')));}]);
         register_rest_route('rr-fotballrobot/v1','/matches/(?P<id>[0-9]+)',[
@@ -41,7 +47,7 @@ final class Robot {
         $source=self::fetch('match',$id); $m=Facts::match($source['html'],$id);
         if(!array_intersect([30365,48835],[$m['home']['id'],$m['away']['id']])) throw new \RuntimeException('Denne roboten dekker bare Bremnes herrer A og damer A.');
         $archive=get_option('rr_match_archive_'.$id,[]);
-        $finished=!empty($archive['state']['finished']);
+        $finished=MatchJobs::eligible($id,$archive)||MatchJobs::confirmed($id,$m);
         if($finished && isset($archive['score']['home'],$archive['score']['away']) && $m['score']!==[(int)$archive['score']['home'],(int)$archive['score']['away']]) throw new \RuntimeException('NFF-resultatet avviker fra kamparkivet. Kontroller før nytt utkast.');
         if($m['score']===null || strtotime($m['kickoff'])>time()) $confirmed=false;
         $forms=[]; $sources=[['url'=>$source['url'],'fetched_at'=>$source['fetched_at']]]; $warnings=[];
@@ -61,7 +67,7 @@ final class Robot {
             foreach(['roster','starters','bench','away_roster','away_starters','away_bench'] as $field) if(isset($existing[$field]) && is_array($existing[$field])) $lineups[$field]=$existing[$field];
         }
         $angles=Facts::angles($m,$forms);
-        $payload=['version'=>'0.1.0','match'=>$m,'finished_confirmed'=>($finished||$confirmed)&&$m['score']!==null,'confirmation'=>$finished?'Eksisterende kamparkiv':($confirmed?'Bekreftet av innlogget administrator':'Kampslutt må bekreftes'),'forms'=>$forms,'angles'=>$angles,'lineups'=>$lineups,'warnings'=>$warnings,'sources'=>$sources,'created_at'=>gmdate(DATE_ATOM), 'writing_brief'=>self::brief()];
+        $payload=['version'=>'0.1.0','match'=>$m,'finished_confirmed'=>($finished||$confirmed)&&$m['score']!==null&&strtotime($m['kickoff'])<=time(),'confirmation'=>$finished?'Eksisterende kamparkiv':($confirmed?'Bekreftet av innlogget administrator':'Kampslutt må bekreftes'),'forms'=>$forms,'angles'=>$angles,'lineups'=>$lineups,'warnings'=>$warnings,'sources'=>$sources,'created_at'=>gmdate(DATE_ATOM), 'writing_brief'=>self::brief()];
         return FactStore::save($id,$payload);
     }
     public static function brief(): string {
@@ -144,7 +150,7 @@ final class Robot {
             echo '</section><section class="rrfr-card" id="vinkel"><h2>Finn vinkelen</h2><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';self::formFields($id,'draft');
             echo '<input type="hidden" name="fact_hash" value="'.esc_attr($f['fact_hash']).'">';
             foreach($f['angles'] as $i=>$a) echo '<label class="rrfr-angle"><input type="radio" name="angle" value="'.esc_attr($a['id']).'" '.checked($i,0,false).'><span><strong>'.esc_html($a['title']).'</strong><small>'.esc_html($a['reason']).'</small></span></label>';
-            echo '<div id="referat"><h3>Skriv referat</h3><p>AI skriver referatet og gjør deretter en separat faktakontroll. Du gjennomleser utkastet før publisering. Eksisterende AI-utkast åpnes uten å bli overskrevet.</p><button type="button" id="rrfr-write" class="rrfr-primary" '.disabled($f['finished_confirmed'] && Writer::key()!=='',false,false).'>Skriv AI-referat</button><p id="rrfr-progress" role="status" aria-live="polite"></p><details><summary>Faktatekst uten AI</summary><button '.disabled($f['finished_confirmed'],false,false).'>Lag eller åpne faktatekst</button></details></div></form></section></main><aside><section class="rrfr-card"><h2>Kontroll og kilder</h2><p>'.esc_html($f['confirmation']).'</p>';
+            echo '<div id="referat"><h3>Skriv referat</h3><p>AI skriver referatet, kontrollerer fakta og språkvasker. Omskrevet tekst faktakontrolleres på nytt. Du gjennomleser utkastet før publisering. Eksisterende AI-utkast åpnes uten å bli overskrevet.</p><button type="button" id="rrfr-write" class="rrfr-primary" '.disabled($f['finished_confirmed'] && Writer::key()!=='',false,false).'>Skriv AI-referat</button><p id="rrfr-progress" role="status" aria-live="polite"></p><details><summary>Faktatekst uten AI</summary><button '.disabled($f['finished_confirmed'],false,false).'>Lag eller åpne faktatekst</button></details></div></form></section></main><aside><section class="rrfr-card"><h2>Kontroll og kilder</h2><p>'.esc_html($f['confirmation']).'</p>';
             foreach($f['warnings'] as $w) echo '<p class="rrfr-notice">'.esc_html($w).'</p>';
             foreach($f['sources'] as $i=>$s) echo '<p><a href="'.esc_url($s['url']).'" target="_blank" rel="noopener">'.esc_html($i===0?'Kampside':($i===1?$m['home']['name']:$m['away']['name']).' · lagside').'</a><br><small>Hentet '.esc_html(wp_date('d.m.Y H:i',strtotime($s['fetched_at']))).'</small></p>';
             echo '<p class="rrfr-muted">Tabellplass beregnes ikke i første versjon. Manglende data utelates.</p><details><summary>Registrerte hendelser</summary><ul>';
