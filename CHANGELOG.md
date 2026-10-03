@@ -5,6 +5,7 @@ Alle vesentlige endringer i Radio Rubben-løsningen dokumenteres her.
 ## [Unreleased]
 
 ### Forbedret
+- Fotballroboten kan lenke relevante tekstutdrag direkte til kontrollerte kilder. Lenkeendringer gjennomgår faktakontroll, og kildelisten nederst beholdes. Se [kildelenker](docs/FOTBALLROBOT-INLINE-SOURCES-20261003.md).
 - Fotballrobotens kamp- og spillerprompter har en felles Radio Rubben-profil og tydeligere nyhetsvinkel. Spilleromtaler holder fokus på spilleren; statistikkrettelser og gamle historier skal ikke presenteres som nye hendelser. Manuell sluttgodkjenning og separat faktakontroll er uendret. Se [skrivereglene](docs/FOTBALLROBOT-EDITORIAL-PROMPTS-20261003.md).
 
 ## [1.0.0] - 2026-09-22
