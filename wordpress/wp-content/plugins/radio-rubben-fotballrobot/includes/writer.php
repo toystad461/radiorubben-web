@@ -1,6 +1,7 @@
 <?php
 namespace RadioRubben\Fotballrobot;
 require_once __DIR__.'/publication-gate.php';
+require_once __DIR__.'/editorial-notice.php';
 
 /** Shared writing pipeline; each match review request makes at most one model call. */
 final class Writer {
@@ -53,10 +54,13 @@ PROMPT;
         try {
             update_post_meta($id,PublicationGate::META,['rulesVersion'=>EditorialQuality::RULES_VERSION,'publishable'=>false,'findings'=>['Ny kvalitetskontroll er ikke fullført.']]);
             $facts=PublicationGate::facts($id);
+            // Exclude only the exact publisher-approved leading disclosure from the review copy.
+            // The original HTML (including the disclosure) remains bound by PublicationGate::hash.
+            $reviewContent=EditorialNotice::reviewContent($post->post_content);
             // No shortcodes, embeds, content filters or learning examples are executed.
             $plain=static fn($v)=>trim(html_entity_decode(wp_strip_all_tags($v),ENT_QUOTES|ENT_HTML5,'UTF-8'));
             $article=['title'=>$plain($post->post_title),'lead'=>$plain($post->post_excerpt)?:$plain($post->post_title),
-                'paragraphs'=>[$plain(preg_replace('/<\/(?:p|div|aside|h[1-6])\s*>/i',"$0\n",$post->post_content))],'checks'=>[['claim'=>'Lagret redaksjonell tekst','support'=>'Kontroller alle påstander mot facts']]];
+                'paragraphs'=>[$plain(preg_replace('/<\/(?:p|div|aside|h[1-6])\s*>/i',"$0\n",$reviewContent))],'checks'=>[['claim'=>'Lagret redaksjonell tekst','support'=>'Kontroller alle påstander mot facts']]];
             $review=self::qualityReview($article,$facts,true);
             if(EditorialQuality::prose($review['article'])!==EditorialQuality::prose($article)) {
                 $review['suggestion']=EditorialQuality::prose($review['article']);$review['publishable']=false;
@@ -176,9 +180,7 @@ PROMPT;
                 return ['review_token'=>$token,'phase'=>$review['phase']];
             }
             if(!hash_equals(Robot::latest($id)['fact_hash'],$f['fact_hash'])) throw new \RuntimeException('Faktagrunnlaget ble endret under kontrollen. Skriv på nytt.');
-            $a=$review['article'];$body='<!-- wp:html -->
-<div class="rubben-ai-notice" style="font-size:14px;line-height:1.6;padding:12px 16px;margin-bottom:24px;border:1px solid #626570;border-radius:12px;background-color:#1b1e25;color:#e5e7eb;"><strong>AI-generert artikkel</strong><br>Utarbeidet med hjelp av kunstig intelligens og offentlige kilder. Redaksjonelt ansvar: Thomas Magne Sellevold-Øystad, Radio Rubben.</div>
-<!-- /wp:html -->';
+            $a=$review['article'];$body=EditorialNotice::BLOCK;
             foreach(array_merge([$a['lead']],$a['paragraphs']) as $p) $body.='<!-- wp:paragraph --><p>'.esc_html($p).'</p><!-- /wp:paragraph -->';
             $l=$f['lineups']??[];
             foreach(['home'=>'','away'=>'away_'] as $side=>$prefix) {
