@@ -1,0 +1,53 @@
+name: Validate approved notice fix against saved draft
+on:
+  push:
+    branches: ['fix/fotballrobot-approved-notice']
+    paths: ['.github/workflows/fotballrobot-notice-preflight.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  test:
+    if: github.ref == 'refs/heads/fix/fotballrobot-approved-notice'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: PHP lint and all isolated robot controls
+        run: |
+          set -euo pipefail
+          root=wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          find "$root" -name '*.php' -print0 | xargs -0 -n1 php -l
+          for test in run writer writer-flow editorial-quality staged-quality publication-gate player-review players learning report bootstrap match-jobs; do php "$root/tests/$test.php"; done
+          php -l scripts/fotballrobot-notice-preflight.php
+          git diff --check
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Check live baseline and review approved draft with isolated candidate code
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/candidates/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage/wordpress/wp-content/plugins/radio-rubben-fotballrobot $stage/scripts"
+          rsync -rltz wordpress/wp-content/plugins/radio-rubben-fotballrobot/ "$host:$stage/wordpress/wp-content/plugins/radio-rubben-fotballrobot/"
+          rsync -rltz scripts/fotballrobot-notice-preflight.php scripts/fotballrobot-notice-baseline.sha256 "$host:$stage/scripts/"
+          ssh "$host" "cd /run/webroots/r1417157/wp-content/plugins/radio-rubben-fotballrobot && sha256sum --check --quiet \$HOME/$stage/scripts/fotballrobot-notice-baseline.sha256"
+          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins=radio-rubben-fotballrobot eval-file $stage/scripts/fotballrobot-notice-preflight.php"
+          ssh "$host" "cd $stage/wordpress/wp-content/plugins/radio-rubben-fotballrobot && find . -type f ! -path './tests/*' -print0 | sort -z | xargs -0 sha256sum > \$HOME/$stage/notice-candidate.sha256"
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

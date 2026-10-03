@@ -10,7 +10,7 @@ final class Robot {
     public static function routes(): void {
         $permission=static fn()=>self::allowed();
         register_rest_route('rr-fotballrobot/v1','/quality/(?P<id>[0-9]+)',['methods'=>'POST','permission_callback'=>$permission,'callback'=>static function($r){return self::response(static fn()=>Writer::recheck((int)$r['id'],(string)$r->get_param('hash')));}]);
-        register_rest_route('rr-fotballrobot/v1','/automation',['methods'=>'GET','permission_callback'=>$permission,'callback'=>static fn()=>self::response(static fn()=>['version'=>'0.9.1','rules_version'=>EditorialQuality::RULES_VERSION,'delay_seconds'=>MatchJobs::DELAY,'enabled'=>!empty(get_option(MatchJobs::CONFIG,[])['enabled'])])]);
+        register_rest_route('rr-fotballrobot/v1','/automation',['methods'=>'GET','permission_callback'=>$permission,'callback'=>static fn()=>self::response(static fn()=>['version'=>'0.9.2','rules_version'=>EditorialQuality::RULES_VERSION,'delay_seconds'=>MatchJobs::DELAY,'enabled'=>!empty(get_option(MatchJobs::CONFIG,[])['enabled'])])]);
         register_rest_route('rr-fotballrobot/v1','/matches/(?P<id>[0-9]+)/queue',[
             ['methods'=>'GET','permission_callback'=>$permission,'callback'=>static fn($r)=>self::response(static fn()=>MatchJobs::publicState((int)$r['id']))],
             ['methods'=>'POST','permission_callback'=>$permission,'callback'=>static fn($r)=>self::response(static fn()=>MatchJobs::observe((int)$r['id'],$r->get_param('confirmed_finished')===true,(string)$r->get_param('source_url')))]

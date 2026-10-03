@@ -95,4 +95,49 @@ check(!G::current(1,$posts[1])&&$posts[1]==$before,'Copyedit transport error inv
 $queue=[response($yes),function()use($article){$GLOBALS['posts'][1]->post_content.=' Concurrent edit.';return response($article);}];
 rejects(fn()=>Writer::recheck(1,$hash),'Concurrent edit cannot receive stale approval');
 check(!isset($options['rrfr_quality_lock_1']),'Recheck lock released on failure');
+// The approved disclosure is publisher metadata; only its exact leading block is exempt.
+use RadioRubben\Fotballrobot\EditorialNotice as N;
+$body='<!-- wp:paragraph --><p>Bremnes vant 2–1 over Viggo den 25.09.2026.</p><!-- /wp:paragraph -->';
+check(N::reviewContent(N::BLOCK.$body)===$body,'Exact leading approved block removed from review copy');
+check(N::reviewContent(" \n".N::BLOCK.$body)===$body,'Only surrounding leading whitespace tolerated');
+$variants=[
+    str_replace('Thomas Magne','En annen person',N::BLOCK),
+    str_replace('Radio Rubben.</div>','Radio Rubben. Bremnes vant 9–0.</div>',N::BLOCK),
+    str_replace('</div>','<p>Bremnes vant 9–0.</p></div>',N::BLOCK),
+    str_replace('Redaksjonelt ansvar:','Gjennomgått og godkjent av',N::BLOCK),
+    str_replace('color:#e5e7eb;','display:none;',N::BLOCK),
+    '<div class="rubben-ai-notice">Bremnes vant 9–0.</div>',
+    '<!-- wp:html -->'.N::BLOCK,
+];
+foreach($variants as $variant)check(N::reviewContent($variant.$body)===$variant.$body,'Changed/untrusted notice remains fully reviewable');
+check(N::reviewContent($body.N::BLOCK)===$body.N::BLOCK,'A non-leading notice is not exempt');
+check(N::reviewContent(N::BLOCK.N::BLOCK.$body)===N::BLOCK.$body,'Only one exact block is excluded');
+check(N::reviewContent(N::BLOCK.'<div class="rubben-ai-notice">Bremnes vant 9–0.</div>'.$body)==='<div class="rubben-ai-notice">Bremnes vant 9–0.</div>'.$body,'Additional class-matching blocks stay reviewable');
+$posts[3]=(object)['ID'=>3,'post_type'=>'post','post_status'=>'draft','post_title'=>$article['title'],'post_excerpt'=>$article['lead'],'post_content'=>N::BLOCK."\n\n".$body];
+$meta[3]=['_rrfr_ai_match'=>123,'_rrfr_fact_snapshot'=>$facts];
+$before=clone $posts[3];$requests=[];
+$queue=[response($yes),response($article)];Writer::recheck(3,G::hash($posts[3]));
+check(G::current(3,$posts[3]),'Saved standard disclosure receives normal independent quality approval');
+check($posts[3]==$before&&$posts[3]->post_status==='draft','Recheck preserves the visible notice and never publishes');
+foreach($requests as $request){
+    $input=json_decode($request['input'],true);
+    check(!str_contains(json_encode($input['article']),'Redaksjonelt ansvar'),'Publisher notice excluded from both model inputs');
+    check(str_contains($input['article']['paragraphs'][0],'Bremnes vant 2–1'),'Match prose still reviewed');
+}
+$approvedNoticeReview=$meta[3][G::META];
+wp_update_post(['ID'=>3,'post_status'=>'publish']);check($posts[3]->post_status==='publish','Human publication works after quality approval');
+wp_update_post(['ID'=>3,'post_status'=>'draft']);
+wp_update_post(['ID'=>3,'post_content'=>str_replace('Thomas Magne','En annen person',$before->post_content),'post_status'=>'publish']);
+check($posts[3]->post_status==='draft','Changing even the exempt notice invalidates the full stored-content hash');
+$requests=[];$queue=[response(['approved'=>false,'issues'=>['Ubekreftet redaksjonelt navn']])];
+Writer::recheck(3,G::hash($posts[3]));
+check(!G::current(3,$posts[3]),'Altered notice is not automatically approved');
+check(str_contains(json_decode($requests[0]['input'],true)['article']['paragraphs'][0],'En annen person'),'Altered notice actually reaches the fact reviewer');
+$posts[3]=clone $before;$posts[3]->post_content.='<p>Bremnes vant 9–0.</p>';
+$requests=[];$queue=[response(['approved'=>false,'issues'=>['Feil resultat']])];Writer::recheck(3,G::hash($posts[3]));
+check(!G::current(3,$posts[3]),'Approved notice cannot exempt false match claims');
+check(str_contains(json_decode($requests[0]['input'],true)['article']['paragraphs'][0],'9–0'),'False score actually reaches reviewer');
+$posts[3]=clone $before;$meta[3][G::META]=$approvedNoticeReview;$meta[3]['_rrfr_test_only']=true;
+wp_update_post(['ID'=>3,'post_status'=>'publish']);check($posts[3]->post_status==='draft','Exact disclosure never bypasses test-only publication block');
+
 echo "$count publication controls passed; mocked WordPress and AI, no publication\n";
