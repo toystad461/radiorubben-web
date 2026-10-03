@@ -1,6 +1,8 @@
 <?php
 namespace RadioRubben\Fotballrobot;
 require_once __DIR__.'/publication-gate.php';
+require_once __DIR__.'/editorial-notice.php';
+require_once __DIR__.'/player-monitor.php';
 
 /** Durable, human-approved publication. Links only open the authenticated review page. */
 final class PlayerReview {
@@ -45,9 +47,7 @@ final class PlayerReview {
             $a=Writer::playerArticle($s['facts'],$comment,$s['article']??null);
             // Never overwrite a human edit made while the request was running.
             if(self::hash(get_post($id))!==$before||get_post($id)->post_status!=='draft')throw new \RuntimeException('Artikkelen ble endret under skriving. Teksten din er beholdt.');
-            $body='<p><small>'.($s['test']?'TEST – skal ikke publiseres. ':'').'Utkast fra Fotballroboten, basert på offentlige opplysninger fra Fotball.no.</small></p>';
-            foreach(array_merge([$a['lead']],$a['paragraphs']) as $ptext)$body.='<p>'.esc_html($ptext).'</p>';
-            $body.='<p><small>Kilde: <a href="'.esc_url($s['facts']['source']).'">Fotball.no</a> · Hentet '.esc_html($s['facts']['fetched_at']).'</small></p>';
+            $body=self::body($a,$s['facts'],$s['test']);
             $r=wp_update_post(['ID'=>$id,'post_title'=>($s['test']?'[TEST] ':'').$a['title'],'post_content'=>$body,'post_excerpt'=>$a['lead'],'post_category'=>[17]],true);
             if(is_wp_error($r))throw new \RuntimeException($r->get_error_message());
             update_post_meta($id,PublicationGate::META,PublicationGate::bind($a['_quality'],['post_title'=>($s['test']?'[TEST] ':'').$a['title'],'post_content'=>$body,'post_excerpt'=>$a['lead']]));
@@ -55,6 +55,17 @@ final class PlayerReview {
             $s['article']=$a;$s['status']='pending';$s['version']++;$s['hash']=self::hash(get_post($id));$s['mail']='none';unset($s['error']);self::put($id,$s);
         }catch(\Throwable $e){$s['status']='failed';$s['error']=$e->getMessage();self::put($id,$s);return;}
         self::notify($id);
+    }
+    public static function body(array $article,array $facts,bool $test=false): string {
+        $block=static fn($html)=>"<!-- wp:paragraph -->\n<p>".$html."</p>\n<!-- /wp:paragraph -->\n";
+        $body=EditorialNotice::BLOCK."\n";
+        if($test)$body.=$block('<strong>TEST – skal ikke publiseres.</strong>');
+        foreach(array_merge([$article['lead']],$article['paragraphs']) as $text)$body.=$block(esc_html($text));
+        $sources=[$facts['source']];
+        foreach($facts['events']??[] as $event)if(!empty($event['source']))$sources[]=$event['source'];
+        $links=[];
+        foreach(array_unique($sources) as $url)$links[]='<a href="'.esc_url($url).'">'.esc_html(preg_replace('/^www\./','',parse_url($url,PHP_URL_HOST)??'')).'</a>';
+        return $body.$block('<small style="font-size:13px;line-height:1.5;">Kilder: '.implode(', ',$links).'</small>');
     }
     public static function test(int $player): int {
         if(!Robot::allowed())throw new \RuntimeException('Ingen tilgang.');
@@ -64,15 +75,21 @@ final class PlayerReview {
     }
     public static function tick(): void {
         $since=get_option('rrfr_player_review_enabled_at',0);if(!$since)return;
-        // One proposal per run, grouping observations from the same player revision.
+        // One proposal per run across both sources; oldest unhandled observation first.
+        $candidates=PlayerMonitor::candidates();
         foreach(Players::ids() as $id){$s=Players::state((int)$id);if(!$s['enabled'])continue;$groups=[];
             foreach($s['events'] as $e)if($e['status']==='new'&&strtotime($e['detected_at'])>=$since)$groups[$e['detected_at']][]=$e;
             foreach($groups as $at=>$events){
                 $key='events:'.$id.':'.$at;
-                $found=get_posts(['post_type'=>'post','post_status'=>['draft','pending','publish','private','future','trash'],'meta_key'=>'_rrfr_review_key','meta_value'=>$key,'numberposts'=>1]);if($found)continue;
-                try{self::create($key,['type'=>'events','events'=>$events,'source'=>PlayerFacts::url($s['fiks_id']),'fetched_at'=>$at]);}catch(\Throwable $e){update_option('rrfr_review_queue_error',$e->getMessage(),false);}return;
+                if(PlayerMonitor::review($key))continue;
+                $candidates[]=['key'=>$key,'at'=>$at,'facts'=>['type'=>'events','events'=>$events,'source'=>PlayerFacts::url($s['fiks_id']),'fetched_at'=>$at]];
             }
         }
+        usort($candidates,static fn($a,$b)=>(strtotime($a['at'])<=>strtotime($b['at']))?:strcmp($a['key'],$b['key']));
+        if(!$candidates)return;
+        $next=$candidates[0];
+        try{self::create($next['key'],$next['facts']);delete_option('rrfr_review_queue_error');}
+        catch(\Throwable $e){update_option('rrfr_review_queue_error',$e->getMessage(),false);}
     }
     public static function decide(int $id,int $version,string $hash,string $op,string $comment): void {
         if(!Robot::allowed()||!current_user_can('edit_post',$id))throw new \RuntimeException('Ingen tilgang.');

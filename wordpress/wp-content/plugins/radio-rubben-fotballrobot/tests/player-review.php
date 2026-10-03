@@ -1,7 +1,8 @@
 <?php
 namespace RadioRubben\Fotballrobot {
  class MicrosoftMail {static function send($subject,$body){return \wp_mail(PlayerReview::TO,$subject,$body,PlayerReview::headers());}}
- class Players {static function ids(){return [];}}
+ class Players {static function ids(){return array_keys($GLOBALS['profiles']??[]);}static function state($id){if(!isset($GLOBALS['profiles'][$id]))throw new \RuntimeException('Unknown player');return $GLOBALS['profiles'][$id];}}
+ class PlayerFacts {static function url($id){return 'https://www.fotball.no/fotballdata/person/profil/?fiksId='.$id;}}
  class Robot {static function allowed(){return $GLOBALS['allowed'];}}
  class Writer {static function playerArticle($f,$c,$p){$GLOBALS['writes']++;if($GLOBALS['write_fail'])throw new \RuntimeException('Provider failed');return ['_quality'=>['rulesVersion'=>'1.0.0','factsHash'=>EditorialQuality::hash($f),'publishable'=>true,'languageStatus'=>'completed','findings'=>[]],'title'=>'Tiril med mål for Brann','lead'=>'Et kontrollert sammendrag.','paragraphs'=>['Registrerte opplysninger.'],'checks'=>[['claim'=>'Test','support'=>'facts']]];}}
 }
@@ -11,6 +12,8 @@ use RadioRubben\Fotballrobot\PlayerReview as R;
 $options=[];$posts=[];$meta=[];$next=1;$mail=[];$writes=0;$write_fail=false;$mail_ok=true;$allowed=true;$publish=true;$count=0;
 function check($v,$why){global $count;$count++;if(!$v)throw new RuntimeException($why);}
 function rejects($fn,$why){try{$fn();}catch(Throwable $e){check(true,$why);return;}check(false,$why);}
+function register_rest_route($ns,$path,$route){$GLOBALS['routes'][$path]=$route;}function wp_next_scheduled($hook){return time()+100;}
+function update_option($k,$v,...$args){$GLOBALS['options'][$k]=$v;return true;}
 function add_action(...$a){}function add_filter(...$a){}function get_option($k,$d=false){return $GLOBALS['options'][$k]??$d;}
 function add_option($k,$v,...$a){if(isset($GLOBALS['options'][$k]))return false;$GLOBALS['options'][$k]=$v;return true;}
 function delete_option($k){unset($GLOBALS['options'][$k]);}
@@ -59,5 +62,37 @@ $write_fail=true;$id3=R::create('fail:1',$f,false);check(R::state($id3)['status'
 $s=R::state($id3);rejects(fn()=>R::decide($id3,$s['version'],R::hash(get_post($id3)),'resubmit',''),'No blank failed text sent for approval');
 $write_fail=false;$mail_ok=false;$id4=R::create('mail:fail',$f,true);check(R::state($id4)['mail']==='failed','Mail failure visible');$s=R::state($id4);$mail_ok=true;R::decide($id4,$s['version'],R::hash(get_post($id4)),'mail','');check(R::state($id4)['mail']==='accepted','Explicit mail retry');
 $options['rrfr_review_lock_'.$id4]=time();rejects(fn()=>R::decide($id4,R::state($id4)['version'],R::hash(get_post($id4)),'approve',''),'Concurrent actions blocked');
+$profiles=[1011=>['name'=>'Tiril Elisabeth Sellevold-Øystad','fiks_id'=>3942773,'enabled'=>true,'events'=>[],'last_checked'=>null,'error'=>null]];
+$input=['fiks_id'=>3942773,'url'=>'https://www.brann.no/nyheter/eksempel?utm_source=test#x','title'=>'Et kontrollert testtreff','identity_note'=>'Fullt navn og klubb stemmer med profilen.','facts'=>['Kontrollert offentlig fotballopplysning i egne ord.'],'public_read'=>true,'published_at'=>gmdate(DATE_ATOM,time()-3600),'checked_at'=>gmdate(DATE_ATOM),'event_date'=>null];
+$monitor=RadioRubben\Fotballrobot\PlayerMonitor::class;
+$allowed=false;rejects(fn()=>$monitor::ingest(1011,$input),'Source ingest requires authorization');$allowed=true;
+rejects(fn()=>$monitor::ingest(1011,array_replace($input,['fiks_id'=>4])),'Reject wrong FIKS identity');
+rejects(fn()=>$monitor::ingest(1011,array_replace($input,['public_read'=>false])),'Unread source refused');
+rejects(fn()=>$monitor::ingest(1011,array_replace($input,['url'=>'http://www.brann.no/news'])),'Insecure source refused');
+rejects(fn()=>$monitor::ingest(1011,array_replace($input,['url'=>'https://127.0.0.1/news'])),'Private address refused');
+rejects(fn()=>$monitor::ingest(1011,array_replace($input,['facts'=>['<script>alert(1)</script>']])),'HTML facts refused');
+rejects(fn()=>$monitor::ingest(1011,array_replace($input,['checked_at'=>gmdate(DATE_ATOM,time()-200000)])),'Stale research refused');
+rejects(fn()=>$monitor::ingest(1011,array_replace($input,['event_date'=>'2026-02-30'])),'Invalid event date refused');
+$profiles[1011]['enabled']=false;rejects(fn()=>$monitor::ingest(1011,$input),'Paused player refused');$profiles[1011]['enabled']=true;
+$n=$writes;$receipt=$monitor::ingest(1011,$input);check($receipt['created']&&$writes===$n,'Intake queues without a model call or publication');
+$source=$receipt['source'];check($source['url']==='https://www.brann.no/nyheter/eksempel','Tracking and fragment removed');
+$again=$monitor::ingest(1011,array_replace($input,['url'=>'https://www.brann.no/nyheter/eksempel/','facts'=>['Different text']]));
+check(!$again['created']&&$again['source']['facts']===$input['facts'],'Canonical retry cannot overwrite evidence');
+R::tick();check($writes===$n,'Disabled auto-proposals retain inbox without generation');
+$options['rrfr_player_review_enabled_at']=time()-100;
+$profiles[1011]['events']=[['kind'=>'lineup','id'=>'sample','status'=>'new','detected_at'=>gmdate(DATE_ATOM,time()-60),'source'=>'https://www.fotball.no/fotballdata/kamp/?fiksId=123']];
+R::tick();check($writes===$n+1,'Only oldest NFF observation handled first');
+check(count($monitor::candidates())===1,'News remains queued for next tick');
+R::tick();check($writes===$n+2,'News enters same quality and approval flow');
+$review=$monitor::review($monitor::key(1011,$source['id']));$newsId=$review['id'];
+check($review['post_status']==='draft'&&$review['status']==='pending','News stays draft awaiting approval');
+check(str_starts_with(get_post($newsId)->post_content,RadioRubben\Fotballrobot\EditorialNotice::BLOCK),'Player draft starts with canonical AI disclosure');
+check(str_contains(get_post($newsId)->post_content,'<!-- wp:paragraph -->')&&str_contains(get_post($newsId)->post_content,'>brann.no</a>'),'Player draft has paragraph blocks and actual source domain');
+R::tick();check($writes===$n+2,'Repeat tick never duplicates NFF or news drafts');
+$GLOBALS['posts'][$newsId]->post_content='Human edit';$GLOBALS['posts'][$newsId]->post_status='trash';
+$again=$monitor::ingest(1011,$input);R::tick();check(!$again['created']&&$writes===$n+2&&get_post($newsId)->post_content==='Human edit'&&get_post($newsId)->post_status==='trash','Retry preserves human edits and trash');
+$write_fail=true;$monitor::ingest(1011,array_replace($input,['url'=>'https://www.brann.no/nyheter/second']));R::tick();$write_fail=false;R::tick();check($writes===$n+3,'Failed news generation is not retried automatically');
+$status=$monitor::status();check($status['engine']==='radio-rubben-fotballrobot'&&count($status['players'])===1&&count($status['players'][0]['news'])===2,'Combined status retains source receipts and reviews');
+$monitor::routes();foreach($routes as $route){foreach(isset($route['methods'])?[$route]:$route as $r)check($r['permission_callback']===[RadioRubben\Fotballrobot\Robot::class,'allowed'],'Every monitor route requires admin access');}
 echo "$count approval checks passed; mocked existing Microsoft mail transport\n";
 }
