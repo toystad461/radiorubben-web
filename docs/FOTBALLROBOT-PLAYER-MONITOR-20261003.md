@@ -39,4 +39,13 @@ Existing player approval tests extended for source authorization, exact player i
 
 Selective release from verified 0.9.4 PHP hashes only, with code backup and rollback. Read-only live checks confirm the five profiles, source routes, existing proposal configuration and manual-approval mode. A fingerprint check verifies player state and existing proposal text/meta are unchanged. No live test email or fabricated news item is created.
 
-Deployment and consolidation results will be appended after verification.
+## Verified result
+
+- Live 0.9.5 deployed from `bf8d586af88f370732a2aa0c424c4f799c9106c9` on 2026-10-03 at approximately 18:30 UTC.
+- Full integration CI passed: https://github.com/toystad461/radiorubben-web/actions/runs/37144420456 . Selective release passed: https://github.com/toystad461/radiorubben-web/actions/runs/37144418125 . Player approval/source tests: 57 checks passed; NFF player tests: 51 checks passed; publication controls: 52 checks passed.
+- Live GET confirms engine, version, automatic proposals enabled, manual approval required, five active profiles, no queue error and next existing cron at 18:56:45 UTC. State/proposal fingerprint unchanged across deployment.
+- The existing Tiril research task `6aac6cc9f4e88191a79aa38a966df0c2` is now «Samle spillernyheter til Fotballroboten», with its existing daily schedule preserved and all five profiles included. It submits only new, read, verified facts to the native source inbox.
+- Lasse task `6aac71c93c94819190bac358eaf44d1b` and Troy/Sander task `6aac711052a48191ac9ecfb94cdbb34f` are confirmed paused after the replacement was enabled. A-team draft preparation task remains active and unchanged.
+- Existing source condition: Lasse's last NFF collection failed; prior facts are retained and the native next scheduled rotation retries collection. One old Lasse proposal has a failed notification; subsequent review notifications were accepted by Microsoft. No mail was resent or proposal rewritten during this integration.
+- No fabricated live test source or historical news import was created. Source intake/queue/generation lifecycle was verified in isolated tests; live status/routes and preservation were verified against WordPress.
+
