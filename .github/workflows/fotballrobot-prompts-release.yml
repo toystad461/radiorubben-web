@@ -1,0 +1,52 @@
+name: Test and release editorial prompts
+on:
+  push:
+    branches: ['fix/fotballrobot-editorial-prompts']
+    paths: ['.github/workflows/fotballrobot-prompts-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/fix/fotballrobot-editorial-prompts'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Test writing and editorial safeguards
+        run: |
+          set -euo pipefail
+          root=wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          find "$root" -name '*.php' -print0 | xargs -0 -n1 php -l
+          for test in run lineups writer writer-flow editorial-quality staged-quality publication-gate player-review players learning report bootstrap match-jobs; do php "$root/tests/$test.php"; done
+          php -l scripts/fotballrobot-prompts-check.php
+          bash -n scripts/deploy-fotballrobot-prompts.sh
+          git diff --check
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Activate only the verified writer file
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/candidates/$GITHUB_SHA"
+          ssh "$host" "mkdir -p $stage/scripts"
+          rsync -rltz wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/writer.php "$host:$stage/writer.php"
+          rsync -rltz scripts/fotballrobot-prompts-check.php scripts/fotballrobot-monitor-check.php scripts/fotballrobot-monitor-fingerprint.php scripts/deploy-fotballrobot-prompts.sh "$host:$stage/scripts/"
+          ssh "$host" "bash $stage/scripts/deploy-fotballrobot-prompts.sh $GITHUB_SHA"
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
