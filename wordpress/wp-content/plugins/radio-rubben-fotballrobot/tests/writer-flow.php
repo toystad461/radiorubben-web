@@ -56,4 +56,29 @@ $before=$calls;$again=Writer::generate(123,'hash','angle');ok($again['existing']
 $posts=[];$meta[1]['_rrfr_payload']['finished_confirmed']=false;rejects(fn()=>Writer::generate(123,'hash','angle'));ok($calls===$before);
 $meta[1]['_rrfr_payload']=$f;$options['rrfr_ai_lock_123']=time();rejects(fn()=>Writer::generate(123,'hash','angle'));ok($calls===$before);
 unset($options['rrfr_ai_lock_123']);$queue=[['status'=>429,'body'=>'private provider error']];rejects(fn()=>Writer::generate(123,'hash','angle'));ok(!isset($options['rrfr_ai_lock_123']));
+// Exercise the real player writer with provider stubs: comments never become review facts.
+$playerFacts=['kind'=>'public_news','player'=>['fiks_id'=>3909887,'name'=>'Lasse Nathaniel Høgmo Breivik'],'news'=>['facts'=>['Lasse Nathaniel Høgmo Breivik scoret i Åsanes 6–4-seier.'],'event_date'=>'2026-09-26']];
+$playerArticle=['title'=>'Breivik scoret i målrik Åsane-seier','lead'=>'Lasse Nathaniel Høgmo Breivik scoret da Åsane vant 6–4.','paragraphs'=>['Kampen ble spilt 26. september.'],'checks'=>[['claim'=>'Breivik scoret','support'=>'news.facts[0]']]];
+$polished=$playerArticle;$polished['paragraphs']=['Åsane vant kampen 26. september.'];
+$comment='Mer journalistisk formidling. Kommentar-markør.';
+$previous=$playerArticle;$previous['paragraphs']=['Tidligere tekst-markør uten kildeverdi.'];
+$before=$calls;$postCount=count($posts);
+$queue=[response($playerArticle),response(['approved'=>true,'issues'=>[]]),response($polished),response(['approved'=>true,'issues'=>[]])];
+$playerResult=Writer::playerArticle($playerFacts,$comment,$previous);
+ok($calls===$before+4 && count($posts)===$postCount);
+ok($requests[$before]['instructions']===Writer::playerPrompt());
+$playerInput=json_decode($requests[$before]['input'],true);
+ok($playerInput['facts']===$playerFacts && $playerInput['editor_comment']===$comment && $playerInput['previous_article']===$previous);
+foreach([$before+1,$before+2,$before+3] as $i) {
+    $reviewInput=json_decode($requests[$i]['input'],true);
+    ok($reviewInput['facts']===$playerFacts && !isset($reviewInput['editor_comment']) && !isset($reviewInput['previous_article']));
+    ok(strpos($requests[$i]['input'],'Kommentar-markør')===false && strpos($requests[$i]['input'],'Tidligere tekst-markør')===false);
+}
+ok(json_decode($requests[$before+3]['input'],true)['article']['paragraphs']===$polished['paragraphs']);
+ok($playerResult['paragraphs']===$polished['paragraphs'] && $playerResult['_quality']['publishable']===true);
+ok($playerResult['_quality']['rulesVersion']==='1.0.0');
+// New prose cannot inherit approval if the independent recheck rejects it.
+$queue=[response($playerArticle),response(['approved'=>true,'issues'=>[]]),response($polished),response(['approved'=>false,'issues'=>['Omskrivingen inneholder en påstand uten dekning.']])];
+$blockedPlayer=Writer::playerArticle($playerFacts,$comment);
+ok($blockedPlayer['_quality']['publishable']===false && count($posts)===$postCount);
 echo "OK: $n flow controls with mocked provider; no paid calls\n";
