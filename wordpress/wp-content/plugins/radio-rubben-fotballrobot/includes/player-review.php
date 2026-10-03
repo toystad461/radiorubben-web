@@ -60,7 +60,7 @@ final class PlayerReview {
         $block=static fn($html)=>"<!-- wp:paragraph -->\n<p>".$html."</p>\n<!-- /wp:paragraph -->\n";
         $body=EditorialNotice::BLOCK."\n";
         if($test)$body.=$block('<strong>TEST – skal ikke publiseres.</strong>');
-        foreach(array_merge([$article['lead']],$article['paragraphs']) as $text)$body.=$block(esc_html($text));
+        foreach(InlineSources::paragraphs($article,$facts) as $html)$body.=$block($html);
         $sources=[$facts['source']];
         foreach($facts['events']??[] as $event)if(!empty($event['source']))$sources[]=$event['source'];
         $links=[];
