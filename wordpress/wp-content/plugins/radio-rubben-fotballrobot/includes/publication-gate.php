@@ -42,7 +42,10 @@ final class PublicationGate {
         // The player's existing explicit approval action must have approved this exact revision.
         if(is_array($s)&&$s) return empty($s['test'])&&in_array($s['status']??'',['publishing','published'],true)
             &&hash_equals($s['hash']??'',PlayerReview::hash((object)$post));
-        return true; // Match articles still need WordPress's manual Publish action/capability.
+        $decision=get_post_meta($id,'_rrfr_editor_decision',true);
+        if(is_array($decision)&&($decision['status']??'')==='publishing')
+            return hash_equals($decision['hash']??'',PlayerReview::hash((object)$post));
+        return true; // Match articles still need an explicit manual Publish action/capability.
     }
     public static function guard(array $data,array $postarr): array {
         $id=(int)($postarr['ID']??0);

@@ -19,7 +19,17 @@ jobs:
           set -euo pipefail
           root=wordpress/wp-content/plugins/radio-rubben-fotballrobot
           find "$root" -name '*.php' -print0 | xargs -0 -n1 php -l
-          for test in run lineups writer writer-flow inline-sources editorial-quality staged-quality publication-gate player-review players learning report bootstrap match-jobs; do
+          for test in run lineups writer writer-flow inline-sources editorial-quality staged-quality publication-gate player-review review-desk players learning report bootstrap match-jobs; do
             php "$root/tests/$test.php"
           done
           git diff --check
+      - name: Mobile reading and approval states
+        env:
+          RRFR_RENDER_DIR: ${{ runner.temp }}/rrfr-render
+          RRFR_PLAYWRIGHT: ${{ runner.temp }}/rrfr-ui/node_modules/playwright
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          set -euo pipefail
+          php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/review-desk.php
+          npm install --prefix "$RUNNER_TEMP/rrfr-ui" --no-audit --no-fund playwright@1.62.1
+          node scripts/review-desk-visual.cjs
