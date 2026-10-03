@@ -1,4 +1,5 @@
 name: Prepare requested player example draft
+# Preserve the edited example while correcting its verified fact-packet structure.
 on:
   push:
     branches: ['feat/fotballrobot-player-monitor']
