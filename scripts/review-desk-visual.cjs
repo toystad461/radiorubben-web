@@ -10,6 +10,7 @@ const fs=require('fs');
     await page.goto('file://'+process.env.RRFR_RENDER_DIR+'/'+name+'.html');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
     if(overflow)throw new Error(name+' overflows at '+width);
+    if(name!=='queue'&&!(await page.locator('.rrfr-review-prose').innerText()).trim())throw new Error('Article text missing');
     const approve=page.locator('button[value="approve"]');
     if(name==='ready'&&await approve.isDisabled())throw new Error('Ready approval disabled');
     if(name==='blocked'&&!(await approve.isDisabled()))throw new Error('Blocked approval enabled');

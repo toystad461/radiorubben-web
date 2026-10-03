@@ -21,7 +21,7 @@ function delete_option($k){unset($GLOBALS['options'][$k]);}
 function update_post_meta($id,$k,$v){$GLOBALS['meta'][$id][$k]=$v;}
 function get_post_meta($id,$k,...$a){return $GLOBALS['meta'][$id][$k]??'';}
 function get_post($id){return isset($GLOBALS['posts'][$id])?clone $GLOBALS['posts'][$id]:null;}
-function wp_insert_post($v,...$a){global $next;$id=$next++;$GLOBALS['posts'][$id]=(object)(['ID'=>$id,'post_excerpt'=>'','post_content'=>'']+$v);foreach($v['meta_input']??[] as $k=>$m)update_post_meta($id,$k,$m);return $id;}
+function wp_insert_post($v,...$a){global $next;$id=$next++;$GLOBALS['posts'][$id]=(object)(['ID'=>$id]+$v+['post_excerpt'=>'','post_content'=>'']);foreach($v['meta_input']??[] as $k=>$m)update_post_meta($id,$k,$m);return $id;}
 function wp_update_post($v,...$a){if(!empty($GLOBALS['beforeUpdate'])){$f=$GLOBALS['beforeUpdate'];unset($GLOBALS['beforeUpdate']);$f($v['ID']);}$v=RadioRubben\Fotballrobot\PublicationGate::guard(R::guardTest($v+(array)get_post($v['ID']),$v),$v);foreach($v as $k=>$val)$GLOBALS['posts'][$v['ID']]->$k=$val;return $v['ID'];}
 function get_posts($q){return array_values(array_filter($GLOBALS['posts'],fn($p)=>!array_key_exists('meta_value',$q)||get_post_meta($p->ID,$q['meta_key'])===$q['meta_value']));}
 function is_wp_error($r){return false;}function esc_html($v){return htmlspecialchars((string)$v);}function esc_url($v){return htmlspecialchars($v);}
@@ -68,7 +68,7 @@ rejects(fn()=>D::decide($player,$stale,'approve'),'Player replay refused');
 $matchFacts=['match'=>['id'=>123,'home'=>['name'=>'Bremnes','id'=>30365],'away'=>['name'=>'Eksempel','id'=>2],'score'=>[2,1],'kickoff'=>'2026-10-03T15:00:00+02:00'],'finished_confirmed'=>true];
 $match=wp_insert_post(['post_type'=>'post','post_status'=>'draft','post_title'=>'Bremnes vant med kampens siste mål','post_content'=>RadioRubben\Fotballrobot\EditorialNotice::BLOCK.'<p>Bremnes vant 2–1 mot Eksempel lørdag. Dette er konstruert testinnhold for godkjenningssiden.</p><p>Et kontrollert kampreferat med korte avsnitt og kildelenker gjør teksten lett å lese på mobil.</p><p><strong>Bremnes:</strong> Eksempel, Eksempel. <small>(Innbyttere: Eksempel)</small></p><p><small>Kilder: <a href="https://www.fotball.no/fotballdata/kamp/?fiksId=123">fotball.no</a></small></p>','post_excerpt'=>'Testinngress.','meta_input'=>['_rrfr_ai_match'=>123,'_rrfr_fact_snapshot'=>$matchFacts,'_thumbnail_id'=>812]]);
 bindQuality($match);$m=D::model($match);check($m['can_approve']&&!$m['player'],'Match draft uses same reading desk');
-$html=renderArticle($match);check(str_contains($html,'Illustrasjon. Viser ikke den aktuelle kampen.')&&str_contains($html,'<figure'),'Selected image and caption preserved');fixture('ready',$html);
+$html=renderArticle($match);check(str_contains($html,'konstruert testinnhold')&&str_contains($html,'AI-generert artikkel'),'Stored prose and disclosure are rendered');check(str_contains($html,'Illustrasjon. Viser ikke den aktuelle kampen.')&&str_contains($html,'<figure'),'Selected image and caption preserved');fixture('ready',$html);
 $token=token($match);$matchFacts['match']['score']=[3,1];
 check(!D::model($match)['can_approve'],'Changed facts invalidate match quality');rejects(fn()=>D::decide($match,$token,'approve'),'Changed facts refused at action');
 $matchFacts['match']['score']=[2,1];bindQuality($match);
