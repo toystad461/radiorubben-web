@@ -22,3 +22,13 @@ Automatiske tester kan kontrollere flyten, ikke garantere den journalistiske kva
 
 ## Aktivering
 Endringen leveres separat fra tidligere umergede funksjonsgrener. En eventuell aktivering må erstatte bare forfatterfilen, med kontroll av eksisterende filhash, sikkerhetskopi og tilbakeføring ved feil. Hele grenen skal ikke distribueres til produksjon.
+
+## Aktivert 3. oktober 2026
+
+Skrivereglene ble aktivert kl. 21.35 norsk tid fra commit `1a8bddef1d64777ba70b88716e5a1a13585c6f7f`. Bare `includes/writer.php` ble erstattet, etter kontroll av gammel filhash og sikkerhetskopiering. Før-/etterkontrollen bekreftet uendrede lagrede spillerdata og spillerutkast. Fem aktive FIKS-profiler og krav om manuell sluttgodkjenning ble kontrollert på nytt.
+
+Alle 13 PHP-testprogrammene og syntakskontrollen besto. Ingen betalte AI-kall, prøveomskrivinger eller artikkelpubliseringer ble utført.
+
+- [Aktivering og kontroller](https://github.com/toystad461/radiorubben-web/actions/runs/37148398186)
+- [Integrasjonstest](https://github.com/toystad461/radiorubben-web/actions/runs/37148401431)
+- [Endringsforslag #42](https://github.com/toystad461/radiorubben-web/pull/42)
