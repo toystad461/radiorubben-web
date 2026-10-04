@@ -62,8 +62,8 @@ final class PlayerReview {
         $body=EditorialNotice::BLOCK."\n";
         if($test)$body.=$block('<strong>TEST – skal ikke publiseres.</strong>');
         foreach(InlineSources::paragraphs($article,$facts) as $html)$body.=$block($html);
-        $sources=[$facts['source']];
-        foreach($facts['events']??[] as $event)if(!empty($event['source']))$sources[]=$event['source'];
+        if($video=MediaSources::videoBlock($facts))$body.=$block($video);
+        $sources=InlineSources::urls($facts);
         $links=[];
         foreach(array_unique($sources) as $url)$links[]='<a href="'.esc_url($url).'">'.esc_html(preg_replace('/^www\./','',parse_url($url,PHP_URL_HOST)??'')).'</a>';
         return $body.$block('<small style="font-size:13px;line-height:1.5;">Kilder: '.implode(', ',$links).'</small>');
