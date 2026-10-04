@@ -10,7 +10,7 @@ root=/run/webroots/r1417157
 wp=(/usr/local/bin/wp --path="$root" --skip-themes --user=toystad)
 [[ ! -e "$root/.maintenance" ]]
 [[ $("${wp[@]}" option get home) == https://www.radiorubben.no ]]
-[[ $("${wp[@]}" plugin get radio-rubben-fotballrobot --field=version) == 0.9.9 ]]
+[[ $("${wp[@]}" plugin get radio-rubben-fotballrobot --field=version) == 0.10.0 ]]
 mkdir "$release_state/lock" || { echo 'Another release is running'; exit 3; }
 trap 'rmdir "$release_state/lock"' EXIT
 mkdir "$backup"

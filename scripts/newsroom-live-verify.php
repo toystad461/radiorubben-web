@@ -14,6 +14,7 @@ if(($delivery['state']??'')==='unknown'&&($delivery['requestedStatus']??'')==='d
 // Exercise exactly one normal bounded preparation job. It never approves, publishes or sends mail.
 try{$job=ReviewDigest::worker('tick');echo wp_json_encode(['preparation'=>$job])."\n";}catch(Throwable $e){echo "PREPARATION_REQUIRES_ATTENTION\n";}
 $cards=[];foreach(studio_board_active(studio_board_read())as$i)if(studio_web_is_news($i)){
-    $card=studio_newsroom_card($i);$cards[]=['id'=>$i['id'],'title'=>$card['title'],'status'=>$card['status'],'reasons'=>$card['reasons'],'sourceUrl'=>$card['sourceUrl'],'originalRead'=>$card['originalRead'],'sourceBytes'=>strlen($i['web']['check']['source']['text']??''),'sourceFetchedAt'=>$card['sourceFetchedAt'],'hasReadMore'=>str_contains(studio_web_html(array_replace($i,['web'=>$i['web']??['intro'=>'','body'=>'']])),'Les hele saken hos NRK'),'delivery'=>$i['web']['delivery']['state']??'none'];
+    $card=studio_newsroom_card($i);$cards[]=['id'=>$i['id'],'title'=>$card['title'],'status'=>$card['status'],'reasons'=>$card['reasons'],'sourceUrl'=>$card['sourceUrl'],'originalRead'=>$card['originalRead'],'sourceBytes'=>strlen($i['web']['check']['source']['text']??''),'sourceFetchedAt'=>$card['sourceFetchedAt'],'hasReadMore'=>str_contains(studio_web_html(array_replace($i,['web'=>array_replace(['intro'=>'','body'=>''],$i['web']??[])])),'Les hele saken hos NRK'),'delivery'=>$i['web']['delivery']['state']??'none'];
 }
 echo wp_json_encode(['studio_cards'=>$cards,'digest'=>ReviewDigest::status(),'scheduled'=>['prepare'=>wp_next_scheduled('rrfr_newsroom_prepare'),'digest'=>wp_next_scheduled('rrfr_newsroom_digest')]],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE)."\n";
+echo "NEWSROOM_LIVE_VERIFIED\n";

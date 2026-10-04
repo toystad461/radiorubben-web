@@ -1,4 +1,4 @@
-name: Selective newsroom release
+name: Preserve drafts after incomplete source review
 on:
   push:
     branches: ['feat/newsroom-digest']
@@ -45,13 +45,11 @@ jobs:
           stage=".radiorubben-deploy/newsroom/$GITHUB_SHA"
           mkdir -p release/scripts/release-artifacts
           cp scripts/newsroom-{install,postflight,connect,activate}.php scripts/newsroom-release.json scripts/deploy-newsroom.sh release/scripts/
-          cp scripts/release-artifacts/studio-09ead0c.json release/scripts/release-artifacts/
+          cp scripts/release-artifacts/studio-0e2cd72.json release/scripts/release-artifacts/
           php -r '$m=json_decode(file_get_contents("scripts/newsroom-release.json"),true);foreach($m["after"] as $p=>$h)if(str_starts_with($p,"wp-content/")){@mkdir(dirname("release/runtime/".$p),0700,true);copy("wordpress/".$p,"release/runtime/".$p);}'
           ssh "$host" "umask 077; mkdir -p $stage"
           rsync -rltz release/ "$host:$stage/"
           ssh "$host" "bash $stage/scripts/deploy-newsroom.sh $GITHUB_SHA"
-          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file $stage/scripts/newsroom-connect.php"
-          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file $stage/scripts/newsroom-activate.php"
       - name: Remove runner SSH key
         if: always()
         run: rm -f ~/.ssh/id_ed25519
