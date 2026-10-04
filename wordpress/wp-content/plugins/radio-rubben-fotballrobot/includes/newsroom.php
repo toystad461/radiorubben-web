@@ -31,7 +31,8 @@ final class Newsroom {
             'meta_query'=>['relation'=>'OR',['key'=>PlayerReview::META,'compare'=>'EXISTS'],['key'=>'_rrfr_ai_match','compare'=>'EXISTS'],['key'=>'_rrfr_trial_match','compare'=>'EXISTS']]];
         $posts=array_merge(get_posts($query),get_posts(array_replace($query,['post_status'=>['publish'],'numberposts'=>30])));
         foreach($posts as $p){if(!current_user_can('edit_post',$p->ID))continue;$card=self::card((int)$p->ID);if($card)$items[]=$card;}
-        return ['version'=>self::VERSION,'items'=>$items,'notification'=>ReviewDigest::status()];
+        try{$studioReady=count(ReviewDigest::worker('queue')['items']);}catch(\Throwable $e){$studioReady=null;}
+        return ['version'=>self::VERSION,'items'=>$items,'notification'=>ReviewDigest::status(),'studioQueueReady'=>$studioReady];
     }
     public static function decide(array $input): array {
         if(!Robot::allowed()||!current_user_can('publish_posts'))throw new \RuntimeException('Ingen publiseringstilgang.');

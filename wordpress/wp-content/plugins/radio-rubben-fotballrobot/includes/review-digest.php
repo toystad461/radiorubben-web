@@ -36,21 +36,22 @@ final class ReviewDigest {
     }
     public static function worker(string $mode): array {
         if(!in_array($mode,['tick','queue'],true))throw new \RuntimeException('Ugyldig jobb.');
-        $file=ABSPATH.'studio-private/app/newsroom-worker.php';$php=PHP_BINDIR.'/php';
-        if(!is_file($file)||!is_executable($php)||!function_exists('proc_open'))throw new \RuntimeException('Studio-jobben er ikke tilgjengelig.');
-        $process=proc_open([$php,$file,$mode],[0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes);
-        if(!is_resource($process))throw new \RuntimeException('Studio-jobben kunne ikke starte.');
-        fclose($pipes[0]);stream_set_blocking($pipes[1],false);stream_set_blocking($pipes[2],false);$out='';$start=time();$exit=-1;
-        try{
-            while(true){$out.=stream_get_contents($pipes[1]);stream_get_contents($pipes[2]);$status=proc_get_status($process);
-                if(strlen($out)>1000000||time()-$start>150){proc_terminate($process);throw new \RuntimeException('Studio-jobben ble avbrutt.');}
-                if(!$status['running']){$exit=$status['exitcode'];break;}usleep(100000);
-            }
-            $out.=stream_get_contents($pipes[1]);
-        }finally{fclose($pipes[1]);fclose($pipes[2]);proc_close($process);}
-        $result=json_decode($out,true);
-        if($exit!==0||!is_array($result))throw new \RuntimeException('Studio-jobben må kontrolleres i nyhetsdesken.');
-        return $result;
+        // Run the same private PHP modules inside WP cron; shared hosting need not allow proc_open.
+        $root=ABSPATH.'studio-private';
+        if(!is_readable($root.'/app/newsroom.php'))throw new \RuntimeException('Studio-jobben er ikke tilgjengelig.');
+        require_once $root.'/app/newsroom.php';
+        if(STUDIO_NEWSROOM_VERSION!=='2026-10-04.1')throw new \RuntimeException('Studio-jobbens versjon må kontrolleres.');
+        if($mode==='queue'){
+            $result=['version'=>STUDIO_NEWSROOM_VERSION,'items'=>[]];
+            foreach(\studio_board_active(\studio_board_read())as$item)if(\studio_web_is_news($item)&&\studio_newsroom_card($item)['status']==='ready')
+                $result['items'][]=['key'=>'studio:'.$item['id'].':'.\studio_web_approval_hash($item)];
+            return $result;
+        }
+        require_once $root.'/app/config.php';
+        require_once $root.'/app/integrations/NewsDesk.php';
+        require_once $root.'/app/producer.php';
+        if(function_exists('set_time_limit'))@set_time_limit(150);
+        return \studio_newsroom_tick(\newsdesk_all($root.'/config'),\load_config());
     }
     public static function tick(): void {
         if(!get_option('rrfr_newsroom_enabled',false))return;

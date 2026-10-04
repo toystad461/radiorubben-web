@@ -2,7 +2,7 @@
 namespace RadioRubben\Fotballrobot {
  class Robot {static function allowed(){return $GLOBALS['allowed'];}}
  class PlayerReview {const META='player';}
- class ReviewDigest {static function status(){return ['mode'=>'digest'];}}
+ class ReviewDigest {static function status(){return ['mode'=>'digest'];}static function worker($mode){return ['items'=>[]];}}
  class ReviewDesk {static function decide(...$args){$GLOBALS['decisions'][]=$args;if($args[1]!==str_repeat('a',64))throw new \RuntimeException('Stale token');}}
 }
 namespace {
