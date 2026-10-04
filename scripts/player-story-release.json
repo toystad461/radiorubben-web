@@ -1,0 +1,18 @@
+{
+  "source_base": "83a0fbb59dfd01145c0a2293add068d4cf42a6fd",
+  "before": {
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-review.php": "e173f665fda874467b2feec697a21c1f33723d09ee0f1e8a585874adaf8963d1",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/writer.php": "8692fb8f29ffdf30081c3511b98ccdc0c304fc3d2162e943315aad57765949e9",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/review-desk.php": "32e88b8b1355ddcdb9bc171a63e7d8be3a937a78bb3641c0b6587b5c4cc542c7",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-monitor.php": "fce3a65c2cd19dc17f358ef6947d81c266d1eb3442f9532ba0848fae4a876114",
+    "wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php": "d2dc92be337f8c63dd92111f26c9201ffac98174cf2fafd3ce785b42637c3fd1"
+  },
+  "after": {
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-review.php": "4c3552f17c16083e65547f5b4ee7b6eb65a8cfc17deefc65c6c325250eb24f32",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/writer.php": "2ea6ffd35cc50c1336716c4c7040c78e6727e71cb43c0a7bf4232ab1d238ebe7",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-corrections.php": "9692538fe8f641c38b9f37a5e4de428b023500b93f40973670dee1eef8912bbf",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/review-desk.php": "7b617fe1690f88a089f103a84bfa64d82f898178e871941a17dbaed2e5f2e1b9",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-monitor.php": "c80789b4e5a594caf7d77adbc8f778b19cd1af30e601a1d79ef861c2f1303aee",
+    "wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php": "33614cec80da3bd4845107c11c81926868444bc47f955b49b5399aedbcbd205b"
+  }
+}

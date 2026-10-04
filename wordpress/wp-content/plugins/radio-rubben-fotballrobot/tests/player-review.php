@@ -4,7 +4,7 @@ namespace RadioRubben\Fotballrobot {
  class Players {static function ids(){return array_keys($GLOBALS['profiles']??[]);}static function state($id){if(!isset($GLOBALS['profiles'][$id]))throw new \RuntimeException('Unknown player');return $GLOBALS['profiles'][$id];}}
  class PlayerFacts {static function url($id){return 'https://www.fotball.no/fotballdata/person/profil/?fiksId='.$id;}}
  class Robot {static function allowed(){return $GLOBALS['allowed'];}}
- class Writer {static function playerArticle($f,$c,$p){$GLOBALS['writes']++;if($GLOBALS['write_fail'])throw new \RuntimeException('Provider failed');return ['_quality'=>['rulesVersion'=>'1.0.0','factsHash'=>EditorialQuality::hash($f),'publishable'=>true,'languageStatus'=>'completed','findings'=>[]],'title'=>'Tiril med mål for Brann','lead'=>'Et kontrollert sammendrag.','paragraphs'=>['Registrerte opplysninger.'],'checks'=>[['claim'=>'Test','support'=>'facts']]];}}
+ class Writer {static function validate($a){return $a;}static function qualityReview($a,$f){return ['article'=>$a,'rulesVersion'=>'1.0.0','factsHash'=>EditorialQuality::hash($f),'publishable'=>empty($GLOBALS['correctionFail']),'languageStatus'=>'completed','findings'=>empty($GLOBALS['correctionFail'])?[]:['Rejected fact']];}static function playerArticle($f,$c,$p){$GLOBALS['writes']++;if($GLOBALS['write_fail'])throw new \RuntimeException('Provider failed');return ['_quality'=>['rulesVersion'=>'1.0.0','factsHash'=>EditorialQuality::hash($f),'publishable'=>true,'languageStatus'=>'completed','findings'=>[]],'title'=>'Tiril med mål for Brann','lead'=>'Et kontrollert sammendrag.','paragraphs'=>['Registrerte opplysninger.'],'checks'=>[['claim'=>'Test','support'=>'facts']]];}}
 }
 namespace {
 require __DIR__.'/../includes/player-review.php';
@@ -19,9 +19,11 @@ function add_option($k,$v,...$a){if(isset($GLOBALS['options'][$k]))return false;
 function delete_option($k){unset($GLOBALS['options'][$k]);}
 function update_post_meta($id,$k,$v){$GLOBALS['meta'][$id][$k]=$v;}
 function get_post_meta($id,$k,...$a){return $GLOBALS['meta'][$id][$k]??'';}
+function wp_attachment_is_image($id){return !in_array($id,$GLOBALS['missingImages']??[],true);}
+function set_post_thumbnail($id,$media){update_post_meta($id,'_thumbnail_id',$media);return true;}
 function get_post($id){return isset($GLOBALS['posts'][$id])?clone $GLOBALS['posts'][$id]:null;}
 function wp_insert_post($v,...$a){global $next;$id=$next++;$GLOBALS['posts'][$id]=(object)(['ID'=>$id,'post_excerpt'=>'','post_content'=>'']+$v);foreach($v['meta_input']??[] as $k=>$m)update_post_meta($id,$k,$m);return $id;}
-function wp_update_post($v,...$a){$v=RadioRubben\Fotballrobot\PublicationGate::guard(R::guardTest($v+(array)get_post($v['ID']),$v),$v);foreach($v as $k=>$val)$GLOBALS['posts'][$v['ID']]->$k=$val;return $v['ID'];}
+function wp_update_post($v,...$a){if(!empty($GLOBALS['failNextUpdate'])){$GLOBALS['failNextUpdate']=false;throw new RuntimeException('Write failed');}$v=RadioRubben\Fotballrobot\PublicationGate::guard(R::guardTest($v+(array)get_post($v['ID']),$v),$v);foreach($v as $k=>$val)$GLOBALS['posts'][$v['ID']]->$k=$val;return $v['ID'];}
 function get_posts($q){return array_values(array_filter($GLOBALS['posts'],fn($p)=>!array_key_exists('meta_value',$q)||get_post_meta($p->ID,$q['meta_key'])===$q['meta_value']));}
 function is_wp_error($r){return false;}function esc_html($v){return htmlspecialchars((string)$v);}function esc_url($v){return htmlspecialchars($v);}
 function wp_unslash($v){return $v;}function set_transient(...$a){}
@@ -36,6 +38,9 @@ $f=['source'=>'https://www.fotball.no/fotballdata/person/profil/?fiksId=3942773'
 $silent=R::create('silent:1',$f,false,false);
 check(get_post($silent)->post_status==='draft' && count($mail)===0,'Explicit silent draft sends no message');
 check(R::state($silent)['status']==='pending','Silent draft still needs manual approval');
+check(get_post_meta($silent,'_thumbnail_id',true)===813,'New player story uses neutral football artwork');
+update_post_meta($silent,'_thumbnail_id',900);R::ensureImage($silent);check(get_post_meta($silent,'_thumbnail_id',true)===900,'Selected image survives rewriting');
+$missingImages=[900];rejects(fn()=>R::ensureImage($silent),'Unavailable selected image is visible as a failure');$missingImages=[];
 wp_update_post(['ID'=>$silent,'post_status'=>'publish']);check(get_post($silent)->post_status==='draft','Silent draft retains publication gate');
 $writes=0;
 putenv('RRFR_REVIEW_FROM_EMAIL=approved-sender@example.org');putenv('RRFR_REVIEW_FROM_APPROVED=1');

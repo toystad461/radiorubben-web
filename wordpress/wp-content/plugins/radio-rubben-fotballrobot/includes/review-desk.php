@@ -117,6 +117,7 @@ final class ReviewDesk {
     }
     public static function article(int $id,array $m,array $ready=[]): void {
         $p=$m['post'];$s=$m['state'];$quality=get_post_meta($id,PublicationGate::META,true);
+        if($m['status']==='published'&&class_exists(PlayerCorrections::class))PlayerCorrections::render($id);
         echo '<section class="rrfr-card rrfr-reading"><p class="rrfr-badge">'.esc_html(self::label($m)).'</p><h2 class="rrfr-story-title">'.esc_html($p->post_title).'</h2>';
         if($m['status']==='published')echo '<p><a href="'.esc_url(get_permalink($id)).'">Se den publiserte artikkelen →</a></p>';
         if(!$m['quality']&&$p->post_status==='draft') {

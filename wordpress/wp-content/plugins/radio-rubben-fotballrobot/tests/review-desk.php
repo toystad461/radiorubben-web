@@ -20,6 +20,8 @@ function add_option($k,$v,...$a){if(isset($GLOBALS['options'][$k]))return false;
 function delete_option($k){unset($GLOBALS['options'][$k]);}
 function update_post_meta($id,$k,$v){$GLOBALS['meta'][$id][$k]=$v;}
 function get_post_meta($id,$k,...$a){return $GLOBALS['meta'][$id][$k]??'';}
+function wp_attachment_is_image($id){return !in_array($id,$GLOBALS['missingImages']??[],true);}
+function set_post_thumbnail($id,$media){update_post_meta($id,'_thumbnail_id',$media);return true;}
 function get_post($id){return isset($GLOBALS['posts'][$id])?clone $GLOBALS['posts'][$id]:null;}
 function wp_insert_post($v,...$a){global $next;$id=$next++;$GLOBALS['posts'][$id]=(object)(['ID'=>$id]+$v+['post_excerpt'=>'','post_content'=>'']);foreach($v['meta_input']??[] as $k=>$m)update_post_meta($id,$k,$m);return $id;}
 function wp_update_post($v,...$a){if(!empty($GLOBALS['beforeUpdate'])){$f=$GLOBALS['beforeUpdate'];unset($GLOBALS['beforeUpdate']);$f($v['ID']);}$v=RadioRubben\Fotballrobot\PublicationGate::guard(R::guardTest($v+(array)get_post($v['ID']),$v),$v);foreach($v as $k=>$val)$GLOBALS['posts'][$v['ID']]->$k=$val;return $v['ID'];}

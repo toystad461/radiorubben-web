@@ -12,6 +12,17 @@ final class PlayerReview {
     const TO='thomas.sellevold-oystad@radiorubben.no';
     const FROM='fotballrobot@radiorubben.no';
     const META='_rrfr_player_review';
+    const DEFAULT_FEATURED_MEDIA=813; // Radio Rubben Fotball, without a club logo.
+    public static function ensureImage(int $id): void {
+        // Respect an editor-selected image. Never replace it during a rewrite.
+        $selected=(int)get_post_meta($id,'_thumbnail_id',true);
+        if($selected) {
+            if(!wp_attachment_is_image($selected))throw new \RuntimeException('Hovedbildet er ikke tilgjengelig. Velg et nytt bilde før godkjenning.');
+            return;
+        }
+        if(!wp_attachment_is_image(self::DEFAULT_FEATURED_MEDIA)||!set_post_thumbnail($id,self::DEFAULT_FEATURED_MEDIA))
+            throw new \RuntimeException('Fotballbildet mangler. Velg et hovedbilde før godkjenning.');
+    }
     public static function menu(): void {add_submenu_page('rr-fotballrobot','Artikler til godkjenning','Artikler til godkjenning','manage_options','rrfr-player-review',[self::class,'page']);}
     public static function url(int $id=0): string {return admin_url('admin.php?page=rrfr-player-review'.($id?'&post_id='.$id:''));}
     public static function hash($p): string {return hash('sha256',$p->post_title."\n".$p->post_content."\n".$p->post_excerpt);}
@@ -39,6 +50,7 @@ final class PlayerReview {
         $s=self::state($id);$p=get_post($id);$before=self::hash($p);
         update_post_meta($id,PublicationGate::META,['rulesVersion'=>EditorialQuality::RULES_VERSION,'publishable'=>false,'findings'=>['Ny skrive- og kvalitetskontroll er ikke fullført.']]);
         try {
+            self::ensureImage($id);
             $a=Writer::playerArticle($s['facts'],$comment,$s['article']??null);
             // Never overwrite a human edit made while the request was running.
             if(self::hash(get_post($id))!==$before||get_post($id)->post_status!=='draft')throw new \RuntimeException('Artikkelen ble endret under skriving. Teksten din er beholdt.');
