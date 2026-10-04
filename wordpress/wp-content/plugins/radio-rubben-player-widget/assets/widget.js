@@ -5,11 +5,11 @@
     document.querySelectorAll('.rrpw-mini').forEach(tile => {
       const status=tile.querySelector('.rrpw-mini-status');
       if (Number(tile.dataset.cardExpires)>0 && Number(tile.dataset.cardExpires)<=now) {
-        status.textContent='Kampdata uavklart'; status.classList.remove('is-confirmed');
-        tile.querySelector('.rrpw-mini-fixture').textContent='Last siden for ny kampstatus';
+        status.textContent=''; status.hidden=true; status.classList.remove('is-confirmed');
+        tile.querySelector('.rrpw-mini-fixture').replaceChildren(); tile.dataset.kickoff='0';
         tile.querySelector('.rrpw-mini-links')?.remove();
       } else if (status.classList.contains('is-confirmed') && Number(status.dataset.lineupExpires)<=now) {
-        status.textContent='Tropp uavklart'; status.classList.remove('is-confirmed');
+        status.textContent=''; status.hidden=true; status.classList.remove('is-confirmed');
       }
       const media=tile.querySelector('.rrpw-mini-media');
       if (media && [...media.querySelectorAll('[data-expires]')].some(a=>Number(a.dataset.expires)<=now)) {
@@ -23,6 +23,11 @@
         if(img.complete&&!img.naturalWidth)img.hidden=true;
         else img.addEventListener('error',()=>{img.hidden=true;},{once:true});
       });
+    });
+    document.querySelectorAll('.rrpw-strip').forEach(strip=>{
+      const tiles=[...strip.querySelectorAll('.rrpw-mini')];
+      const sorted=[...tiles].sort((a,b)=>(Number(a.dataset.kickoff)||Infinity)-(Number(b.dataset.kickoff)||Infinity));
+      if(sorted.some((tile,i)=>tile!==tiles[i]))sorted.forEach(tile=>strip.append(tile));
     });
     document.querySelectorAll('.rrpw').forEach(card => {
       if (Number(card.dataset.cardExpires) <= now) {

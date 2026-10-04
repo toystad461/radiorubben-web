@@ -2,6 +2,10 @@
 
 Alle vesentlige endringer i Radio Rubben-løsningen dokumenteres her.
 
+## Oppdatering – 2026-10-04
+
+- Spillerkamper 1.2.0: automatisk inkludering av godkjente aktive Bømlo-spillere, registrerte lag i nåværende klubb og nærmeste kamp til venstre. Spillere uten kamp står til høyre uten merknad. Ukjent troppsstatus skjules. Eksisterende MyGame-lenker beholdes.
+
 ## Publisert – 2026-10-04
 
 - Spillerkamper 1.1.0: kompakt spillerrekke med sideveis blaing på mobil, sammenleggbar overskrift, ett kort per valgt spiller, nøytralt ikon når spillerbilde mangler og egen MyGame-lenke til verifisert kampside. TV 2-lenken vises fortsatt bare når den er bekreftet separat. Ingen tidsberegnet «Spiller nå».

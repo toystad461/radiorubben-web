@@ -1,6 +1,6 @@
-# Radio Rubben – spillerkamper 1.1.0
+# Radio Rubben – spillerkamper 1.2.0
 
-Standardvisningen er nå en kompakt, sammenleggbar spillerrekke med vannrett blaing på mobil. Alle eksplisitt valgte og aktive spillere vises én gang, også når de ikke har en kamp i sjudagersvinduet. Spillerbildet fra profilens fremhevede bilde brukes dersom det finnes; ellers vises et nøytralt spillerikon. Det hentes ingen portrettbilder automatisk fra andre nettsteder. Kortet bruker første- og etternavn visuelt og fullt navn som tilgjengelig etikett.
+Standardvisningen er nå en kompakt, sammenleggbar spillerrekke med vannrett blaing på mobil. Alle aktive spillere som er valgt eksplisitt eller godkjent i Bømlo-listen vises én gang. Godkjenning krever samsvar mellom person-ID og spillerprofil; ventende og avviste kandidater tas ikke med. Manuelt fulgte medlemmer av gruppen `bomlo-away` tas også med. Årets lag i profilen kombineres med eksisterende ekstra lag, og lagets klubb må stemme med registrert klubb. Spillerne sorteres stigende etter nærmeste kamp, med stabile navnetreff ved samme avspark. Spillere uten bekreftet kamp står til høyre uten merknad. Ukjent tropp har ingen etikett. Spillerbildet fra profilens fremhevede bilde brukes dersom det finnes; ellers vises et nøytralt spillerikon. Det hentes ingen portrettbilder automatisk fra andre nettsteder. Kortet bruker første- og etternavn visuelt og fullt navn som tilgjengelig etikett.
 
 `[rr_spillerkamper]` viser spillerrekken; `player="3942773"` avgrenser til én person. Den tidligere store visningen er fortsatt tilgjengelig med `[rr_spillerkamper layout="cards" limit="3"]`. `limit` gjelder bare store kampkort. MyGame-knappen åpner en bekreftet kampside også når en konkret TV 2-sending ennå ikke er tilgjengelig. Identitet, avspark og planlagt status må fortsatt stemme med NFF. «TV 2» vises som en egen lenke når sendings-ID-en er bekreftet. Ingen klokkeslett brukes til å hevde at spilleren spiller nå.
 
@@ -8,11 +8,15 @@ Den kompakte oppdateringen har 13 egne kontroller i tillegg til de 63 eksisteren
 
 Viser kommende kamper for valgte lokale spillere med den godkjente Radio Rubben-profilen, bekreftede MyGame-lenker og separat troppsstatus. Ingen video bygges inn. Se-knappen åpner den konkrete TV 2 Play-sendingen; abonnement håndteres der.
 
+## Oppdatering 1.2.0
+
+15 egne kontroller dekker automatisk godkjenning, flere lag, sortering, flyttet kamp, gamle klubber, pausing og identitetsvern. Oppdateringen bruker `deploy-player-widget-roster.sh`, med kontrollsum mot 1.1.0 og sikkerhetskopi av seks berørte runtime-filer utenfor webrot. Ingen tema- eller sideinnholdsendring. Manglende godkjente NFF-profiler fylles gjennom Fotballrobotens egen `Players::refresh`; godkjenninger og manuelle widgetvalg endres ikke. Nærmeste kamp per spiller prioriteres ved kildeinnhenting.
+
 ## Installasjon og plassering
 
 1. Installer kun denne pluginmappen på WordPress og aktiver pluginen. PHP 8.0+, DOM og mbstring kreves.
 2. Åpne **Innstillinger → Radio Rubben – spillerkamper**. Spillerlisten leses fra den eksisterende Fotballroboten (`rr_robot_player` og `rrfr_player_{id}`); ingen av disse dataene endres.
-3. Velg spillerne som skal vises offentlig, velg lag-ID-er og slå på kampoversikten. Det er bevisst ingen automatisk publisering av alle private spillerprofiler ved aktivering.
+3. Slå på kampoversikten. Godkjente aktive Bømlo-spillere og deres registrerte lag følger automatisk med. Bruk manuelle valg for ekstra spillere eller lag. Andre private profiler tas ikke med. Pause en spiller i spillerlisten for å fjerne vedkommende.
 4. Klikk «Oppdater neste runde», eller vent på WP-Cron. Hver runde behandler ett lag og inntil to kamper. Forhåndsvisningen står på samme innstillingsside.
 5. Legg en **Kortkode**-blokk på ønsket side: `[rr_spillerkamper]`. Bruk `[rr_spillerkamper layout="cards" limit="3"]` for store kampkort eller `[rr_spillerkamper player="3942773"]` for én NFF-person-ID. Alternativt velges **Radio Rubben – spillerkamper** under Utseende → Widgeter.
 
@@ -34,19 +38,19 @@ Lag 35897 fanges ikke av Tirils daværende sesongstatistikk; det velges derfor e
 
 ## Datakontroll
 
-- Terminlisten må inneholde det valgte laget. Klubb-ID fra lagsiden må finnes i spillerens sist registrerte klubbtilknytning. Manglende eller endret klubb gjør at kortet holdes tilbake. Statistikk er forslag til lagvalg, ikke automatisk lagpåmelding.
+- Terminlisten må inneholde det valgte laget. Klubb-ID fra lagsiden må finnes i spillerens sist registrerte klubbtilknytning. Manglende eller endret klubb gjør at kortet holdes tilbake. Årets statistikk gir kandidatlag; bare lag i registrert klubb brukes, uten å antyde uttak.
 - Kampene dedupliseres på NFF-kamp-ID, og flere fulgte spillere samles i ett kampkort. Kortkodefilteret bruker NFF-person-ID. Pausede, fjernede eller ikke valgte spillere tas umiddelbart ut av ny rendering.
 - MyGame-oppslag bruker `https://kampoversikt.mygame.no/match/fiks-no{kamp-ID}`. En HTTP 200 eller en eksisterende kampside er utilstrekkelig.
 - Før «Se på TV 2 Play» vises, må nøyaktig én `SportsEvent` ha samme hjemmelag, bortelag og avspark som NFF, status `EventScheduled` og én entydig HTTPS `/gpid/{UUID}`-lenke på `play.tv2.no` med `utm_content=fiks-no{samme kamp-ID}`. Det er en bekreftet sendingslenke, ikke en test av videoavspilling eller lovnad om at kameraet sender.
 - Parseren bruker observerte offentlige HTML-kontrakter, ikke et dokumentert MyGame-API. Endret format, navneavvik, omberamming, ugyldig URL, manglende lenke eller kildefeil gir «Sending ikke bekreftet».
-- Tropp vurderes separat med NFF-person-ID i riktig kamp og start-/reserveoverskrift. Ukjent, duplisert, strøket eller gammel oppføring gir «Tropp ikke bekreftet». Ingen automatisk påstand om deltakelse, kampresultat eller LIVE-status.
+- Tropp vurderes separat med NFF-person-ID i riktig kamp og start-/reserveoverskrift. Ukjent, duplisert, strøket eller gammel oppføring skjules i den kompakte visningen; store kampkort beholder «Tropp ikke bekreftet». Ingen automatisk påstand om deltakelse, kampresultat eller LIVE-status.
 - Klubblogoer godtas kun fra MyGames observerte klubbmedieadresse og må kunne kobles til riktig lagnavn i kampens HTML. Ved fravær eller bildefeil vises en initial. Radio Rubben-logoen er fra brukerens logopakke, 30.09.2026, uendret SVG uten verdilinje.
 
 ## Drift og feilhåndtering
 
 Innhenting skjer bare i bakgrunnsjobben eller etter administratorens «Oppdater neste runde». En sidevisning gjør ingen kildeforespørsler. Femminutters WP-Cron behandler maks ett lag (tidligst hvert 15. minutt) og to kamp-par per runde: maks fem forespørsler med fem sekunders tidsgrense, ingen redirects og 2 MB responsgrense. Flere lag fordeles på senere runder. WP-Cron krever trafikk eller en allerede konfigurert serverjobb; installasjonen oppretter ikke en ekstern automasjon.
 
-Terminliste blir ugyldig etter seks timer eller umiddelbart etter et mislykket nytt oppslag. Sending og tropp må være kontrollert de siste 30 minuttene. Matchdetaljer er ugyldige når terminlistens kampdata endrer seg. Ved mislykket ny kontroll slettes tidligere positive bekreftelser. Bare kamper fra de siste tre timene til sju dager fremover vises, og ferdige/avlyste/utsatte kamper filtreres bort. Ved passert avspark står «Kampstart passert», aldri en tidsberegnet LIVE-status.
+Terminliste blir ugyldig etter seks timer eller umiddelbart etter et mislykket nytt oppslag. Sending og tropp må være kontrollert de siste 30 minuttene. Matchdetaljer er ugyldige når terminlistens kampdata endrer seg. Ved mislykket ny kontroll slettes tidligere positive bekreftelser. Kamper eldre enn tre timer skjules; nærmeste planlagte kamp kan ligge mer enn sju dager frem i tid, og ferdige/avlyste/utsatte kamper filtreres bort. Ved passert avspark står «Kampstart passert», aldri en tidsberegnet LIVE-status.
 
 Fullsidecache kan ellers holde på tidligere HTML. **Unnta siden fra fullsidecache, eller bruk maksimalt 60 sekunders cache og tøm cache når spillere slås av eller fjernes.** Med JavaScript aktivt håndheves de absolutte utløpstidene også på allerede åpne eller mellomlagrede sider, hvert 30. sekund og ved tilbakeknappen. Uten JavaScript gjelder serverrenderingens siste status til neste sidehenting. Nettleseren gjør ingen nye API-kall.
 
@@ -58,7 +62,7 @@ Innstillinger krever administrator og nonce. Foreldede adminskjemaer avvises. Ba
 
 `tests/preview.php` produserer en lokal layoutprøve uten WordPress. Dato/tid tilpasses kjøringen; prøven publiserer ingenting. `scripts/player-widget-ui.cjs` kontrollerer 320/360/736/1100 px, bilder, lenke, detaljfelt og utløpte data. Klubblogo-fixturene er nedskalerte kopier av de to offentlige logoene som den observerte MyGame-siden bruker: `fiks-no3302.png` og `fiks-no781.png`. Ingen nettverk, video, e-post eller AI-kall brukes i testene.
 
-## Publisert på Radio Rubben 4. oktober 2026
+## Førstegangsinstallasjon på Radio Rubben 4. oktober 2026
 
 Versjon 1.0.1 ble installert og aktivert selektivt fra `ed33789911f21a0e11edff732cf71c8ed8c36199`, etter brukerens publiseringsgodkjenning. Produksjonsjobben er [37199403512](https://github.com/toystad461/radiorubben-web/actions/runs/37199403512). Main er ikke flettet eller bredt publisert, og Fotballrobotens kode/spillerdata er uendret.
 

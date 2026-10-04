@@ -2,13 +2,13 @@
 /**
  * Plugin Name: Radio Rubben – spillerkamper
  * Description: Kampkort for lokale spillere med kontrollerte MyGame-lenker og separat troppsstatus.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Requires PHP: 8.0
  * Author: Radio Rubben
  */
 namespace RadioRubben\PlayerWidget;
 if (!defined('ABSPATH')) exit;
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 const FILE = __FILE__;
 require_once __DIR__.'/includes/sources.php';
 require_once __DIR__.'/includes/service.php';

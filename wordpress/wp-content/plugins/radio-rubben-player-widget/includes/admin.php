@@ -34,7 +34,7 @@ final class Admin {
         $notice = get_transient('rrpw_notice_'.get_current_user_id()); delete_transient('rrpw_notice_'.get_current_user_id());
         echo '<div class="wrap"><h1>Radio Rubben – spillerkamper</h1>';
         if ($notice) echo '<div class="notice notice-info"><p>'.esc_html($notice).'</p></div>';
-        echo '<p>Velg spillerne som skal vises offentlig, og lagene vi skal hente kamper for. Lagene kontrolleres mot spillerens registrerte klubb. Tidligere klubber og private notater vises ikke.</p>';
+        echo '<p>Godkjente, aktive Bømlo-spillere tas automatisk med fra spillerlisten. Årets registrerte lag hentes automatisk og kontrolleres mot spillerens nåværende klubb. Spillerne sorteres etter nærmeste kamp. Her kan du legge til ekstra spillere og lag. Pause en spiller i spillerlisten for å skjule vedkommende.</p>';
         if (!$profiles) echo '<div class="notice notice-warning"><p>Ingen spillerprofiler funnet. Legg dem til under Fotballroboten → Spillere jeg følger.</p></div>';
         echo '<form action="'.esc_url(admin_url('admin-post.php')).'" method="post"><input type="hidden" name="action" value="rrpw_save"><input type="hidden" name="revision" value="'.(int)$s['revision'].'">';
         wp_nonce_field('rrpw_save');
@@ -42,10 +42,10 @@ final class Admin {
         foreach ($profiles as $id=>$p) {
             $configured = $s['players'][$id] ?? null;
             $teams = $configured['teams'] ?? array_keys($p['teams']);
-            echo '<fieldset style="max-width:760px;background:#fff;border:1px solid #ccd0d4;padding:16px;margin:16px 0"><legend><strong>'.esc_html($p['name']).'</strong></legend><p><label><input type="checkbox" name="players['.(int)$id.'][show]" value="1" '.checked((bool)$configured,true,false).' '.disabled(!$p['enabled'],true,false).'> Vis i kampwidgeten'.(!$p['enabled']?' (spilleroppfølging er pauset)':'').'</label></p>';
+            echo '<fieldset style="max-width:760px;background:#fff;border:1px solid #ccd0d4;padding:16px;margin:16px 0"><legend><strong>'.esc_html($p['name']).'</strong></legend><p><label><input type="checkbox" name="players['.(int)$id.'][show]" value="1" '.checked((bool)$configured,true,false).' '.disabled(!$p['enabled'],true,false).'> Ta med som ekstra spiller'.(!$p['enabled']?' (spilleroppfølging er pauset)':'').'</label></p>';
             echo '<p><label>Lag-ID-er, atskilt med komma<br><input class="large-text" name="players['.(int)$id.'][teams]" value="'.esc_attr(implode(', ',$teams)).'" aria-describedby="rrpw-hint-'.(int)$id.'"></label></p>';
             $hints = []; foreach ($p['teams'] as $tid=>$name) $hints[] = $name.' ('.$tid.')';
-            echo '<p class="description" id="rrpw-hint-'.(int)$id.'">Fra årets spillerstatistikk: '.esc_html(implode(', ',$hints) ?: 'Ingen lag registrert ennå.').'. Du kan legge til andre lag i samme klubb.</p>';
+            echo '<p class="description" id="rrpw-hint-'.(int)$id.'">Fra årets spillerstatistikk: '.esc_html(implode(', ',$hints) ?: 'Ingen lag registrert ennå.').'. Årets lag følger automatisk med. Du kan legge til andre lag i samme klubb.</p>';
             foreach ($teams as $tid) if (isset($cache['teams'][$tid])) {
                 $t = $cache['teams'][$tid];
                 $problem = $t['error'] ?? ((!in_array($t['club_id']??0,$p['clubs'],true)) ? 'Laget tilhører ikke spillerens registrerte klubb og vises ikke.' : null);

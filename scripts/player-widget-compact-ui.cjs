@@ -17,10 +17,11 @@ const fs=require('node:fs');
   if(width===360||width===1280)await page.screenshot({path:'player-widget-compact-'+width+'.png'});
   await page.locator('.rrpw-compact>summary').click();assert.equal(await page.locator('.rrpw-strip').isVisible(),false);await page.locator('.rrpw-compact>summary').click();
  }
- const first=page.locator('.rrpw-mini').first();
+ const first=page.locator('.rrpw-mini[data-player-id="1011"]');
  await first.locator('[data-expires]').evaluateAll(els=>els.forEach(el=>el.dataset.expires='1'));
  await first.locator('[data-lineup-expires]').evaluate(el=>el.dataset.lineupExpires='1');await page.evaluate(()=>dispatchEvent(new Event('pageshow')));
- assert.equal(await first.locator('.rrpw-mygame,.rrpw-mini-watch').count(),0);assert.equal(await first.locator('.is-confirmed').count(),0);
+ assert.equal(await first.locator('.rrpw-mygame,.rrpw-mini-watch').count(),0);assert.equal(await first.locator('.is-confirmed').count(),0);assert.equal(await first.locator('.rrpw-mini-status').isVisible(),false);
  await first.evaluate(el=>el.dataset.cardExpires='1');await page.evaluate(()=>dispatchEvent(new Event('pageshow')));assert.equal(await first.locator('a').count(),0);assert.ok(await first.isVisible(),'Player remains after fixture expiry');
+ assert.ok(!/Tropp uavklart|Ingen kommende kamp|Kampdata uavklart/.test(await page.locator('.rrpw-compact').innerText()));
  assert.deepEqual(errors,[]);await browser.close();console.log('Compact layout, horizontal scroll, collapse and source expiry passed at four widths');
 })().catch(e=>{console.error(e);process.exit(1)});

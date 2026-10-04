@@ -17,6 +17,7 @@ jobs:
           find wordpress/wp-content/plugins/radio-rubben-player-widget -name '*.php' -print0 | xargs -0 -n1 php -l
           php wordpress/wp-content/plugins/radio-rubben-player-widget/tests/run.php
           php wordpress/wp-content/plugins/radio-rubben-player-widget/tests/compact.php
+          php wordpress/wp-content/plugins/radio-rubben-player-widget/tests/roster.php
           node --check wordpress/wp-content/plugins/radio-rubben-player-widget/assets/widget.js
           php wordpress/wp-content/plugins/radio-rubben-player-widget/tests/preview.php > wordpress/wp-content/plugins/radio-rubben-player-widget/tests/preview.html
           php wordpress/wp-content/plugins/radio-rubben-player-widget/tests/compact-preview.php > wordpress/wp-content/plugins/radio-rubben-player-widget/tests/compact-preview.html

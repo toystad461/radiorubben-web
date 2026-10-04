@@ -49,3 +49,5 @@
 .rrpw-compact .rrpw-scroll-hint{font-size:10px;line-height:1.4;text-align:right;color:#888d9a;padding:0 16px 10px;margin:0}
 @media(max-width:600px){.rrpw-compact>summary{padding:12px 14px;min-height:50px}.rrpw-compact .rrpw-compact-title{font-size:17px}.rrpw-compact .rrpw-mini{flex-basis:152px;padding:0 10px}.rrpw-home-compact{padding-top:16px;padding-bottom:16px}}
 @container(max-width:400px){.rrpw .rrpw-brand{padding:17px 18px}.rrpw-main{padding:21px 18px 15px}.rrpw-brand>span{max-width:125px;letter-spacing:.6px}.rrpw-match{grid-template-columns:minmax(0,1fr) 86px minmax(0,1fr);gap:5px}.rrpw-kickoff strong{font-size:30px}.rrpw-crest{width:62px;height:62px}.rrpw .rrpw-crest img{width:46px;height:46px}.rrpw-team>strong{font-size:15px}.rrpw-top{margin-bottom:24px}}
+
+.rrpw-compact .rrpw-mini-status[hidden]{display:none}
