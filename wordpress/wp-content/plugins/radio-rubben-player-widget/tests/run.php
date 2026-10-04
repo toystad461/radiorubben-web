@@ -76,6 +76,7 @@ check($before===$options && count($calls)===$beforeCalls,'Rendering never fetche
 check(str_contains($markup,'Se på TV 2 Play'),'Verified CTA');
 check(!str_contains($markup,'PRIVATE NOTE'),'Private data absent');
 check(count(App::cards(3584397))===1 && App::cards(999)===[],'Individual player filter');
+$posts=[1011];check(count(App::cards()[0]['players'])===1,'Deleted player post excluded even if old option survives');$posts=[1011,1013];
 $options[App::CACHE]['matches'][8989882]['stream_checked_at']=$now-App::FRESH-1;
 $options[App::CACHE]['matches'][8989882]['lineup_checked_at']=$now-App::FRESH-1;
 $markup=View::shortcode();

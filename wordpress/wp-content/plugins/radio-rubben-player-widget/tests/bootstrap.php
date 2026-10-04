@@ -10,6 +10,7 @@ namespace {
     function add_option($k,$v,...$args) { global $options; if (isset($options[$k])) return false; $options[$k]=$v; return true; }
     function delete_option($k) { global $options; unset($options[$k]); }
     function get_posts($args) { global $posts; return $posts; }
+    function get_post($id) { global $posts; return in_array($id,$posts,true) ? (object)['post_type'=>'rr_robot_player','post_status'=>'private'] : null; }
     function current_user_can($cap) { global $admin; return $admin; }
     function wp_date($format,$time=null,$tz=null) {
         $text=(new DateTimeImmutable('@'.($time??time())))->setTimezone($tz??new DateTimeZone('Europe/Oslo'))->format($format);

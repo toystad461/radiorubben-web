@@ -8,9 +8,12 @@ final class Service {
     public const TEAM_FRESH = 21600;
     public static function settings(): array { return get_option(self::SETTINGS, ['revision'=>0,'enabled'=>false,'players'=>[]]); }
     public static function cache(): array { return get_option(self::CACHE, ['teams'=>[],'matches'=>[]]); }
-    public static function profiles(): array {
+    public static function profiles(?array $ids = null): array {
         $out = [];
-        foreach (get_posts(['post_type'=>'rr_robot_player','post_status'=>'private','numberposts'=>100,'fields'=>'ids','orderby'=>'ID','order'=>'ASC']) as $id) {
+        $ids = $ids ?? get_posts(['post_type'=>'rr_robot_player','post_status'=>'private','numberposts'=>100,'fields'=>'ids','orderby'=>'ID','order'=>'ASC']);
+        foreach ($ids as $id) {
+            $post = get_post((int)$id);
+            if (!$post || $post->post_type !== 'rr_robot_player' || $post->post_status !== 'private') continue;
             $s = get_option('rrfr_player_'.(int)$id);
             if (!is_array($s) || empty($s['fiks_id']) || empty($s['name'])) continue;
             $teams = [];
@@ -78,7 +81,7 @@ final class Service {
         $lock = wp_generate_uuid4();
         if (!add_option('rrpw_refresh_lock', ['token'=>$lock,'at'=>time()], '', false)) return;
         try {
-            $cache = self::cache(); $profiles = self::profiles(); $now = time(); $teamIds = [];
+            $cache = self::cache(); $profiles = self::profiles(array_keys($s['players'])); $now = time(); $teamIds = [];
             foreach (self::selected($s, $profiles) as $p) foreach ($p['selected_teams'] as $id) $teamIds[$id] = $id;
             uasort($teamIds, static fn($a,$b)=>(($cache['teams'][$a]['attempted_at']??0)<=>($cache['teams'][$b]['attempted_at']??0)) ?: ($a<=>$b));
             // One team and up to two match pairs per job: at most five bounded HTTP requests.
@@ -115,7 +118,7 @@ final class Service {
     public static function cards(int $player = 0, int $limit = 1): array {
         $s = self::settings(); if (!$s['enabled']) return [];
         $cache = self::cache(); $now = time(); $cards = [];
-        foreach (self::candidates($s,self::profiles(),$cache,$now) as $id=>$c) {
+        foreach (self::candidates($s,self::profiles(array_keys($s['players'])),$cache,$now) as $id=>$c) {
             if ($player && !isset($c['players'][$player])) continue;
             $r = $cache['matches'][$id] ?? [];
             // Schedule changes invalidate old stream and lineup confirmations immediately.
