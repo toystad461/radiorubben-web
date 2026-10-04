@@ -76,3 +76,9 @@ fungerte. Arbeidet utvider ikke HTTP-tilgang eller filrettigheter. Worker og
 publiseringsgater beholdes; siste vellykkede kjøring registreres i status.
 Runtime: `a253cfa3c41aa175cdceebc6ce46e8c5cd4d7b76`, full CI
 37237908379/37237905651. Release: `05eca254c7ad3d071f021925bf94de5fd8e1342b`.
+
+Bekreftet ordinær bakgrunnskjøring 04.10.2026 kl. 21:59:09 UTC / 23:59:09 Oslo:
+`rrfr_newsroom_last_prepare` returnerte `state: prepared`. WordPress sin cron-test
+bekreftet fungerende oppstart (HTTP 200); `DISABLE_WP_CRON` er ikke satt.
+Dette er en faktisk planlagt klargjøring gjennom WordPress, i tillegg til
+manuell UI-kontroll. Ingen automatisk artikkelpublisering er aktivert.
