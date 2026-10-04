@@ -71,7 +71,7 @@ check(App::candidates($settings,$oldId,$cache,$now)===[],'Reused local profile I
 $cache['matches'][8989882]=['match'=>$m,'stream'=>$stream,'stream_checked_at'=>$now,'lineup_checked_at'=>$now,'roles'=>[3942773=>'starter']];
 $options[App::CACHE]=$cache;
 $cards=App::cards();check(count($cards)===1 && $cards[0]['players'][3942773]['role']==='starter','Fresh lineup rendered');
-$before=$options;$beforeCalls=count($calls);$markup=View::shortcode();
+$before=$options;$beforeCalls=count($calls);$markup=View::shortcode(['layout'=>'cards']);
 check($before===$options && count($calls)===$beforeCalls,'Rendering never fetches or changes data');
 check(str_contains($markup,'Se på TV 2 Play'),'Verified CTA');
 check(!str_contains($markup,'PRIVATE NOTE'),'Private data absent');
@@ -79,17 +79,17 @@ check(count(App::cards(3584397))===1 && App::cards(999)===[],'Individual player 
 $posts=[1011];check(count(App::cards()[0]['players'])===1,'Deleted player post excluded even if old option survives');$posts=[1011,1013];
 $options[App::CACHE]['matches'][8989882]['stream_checked_at']=$now-App::FRESH-1;
 $options[App::CACHE]['matches'][8989882]['lineup_checked_at']=$now-App::FRESH-1;
-$markup=View::shortcode();
+$markup=View::shortcode(['layout'=>'cards']);
 check(!str_contains($markup,'href="https://play.tv2.no/gpid/'),'Expired CTA removed');
 check(str_contains($markup,'Sending ikke bekreftet') && str_contains($markup,'Tropp ikke bekreftet'),'Honest unknown states');
 $options[App::CACHE]=$cache;$options[App::CACHE]['teams'][35897]['matches'][8989882]['kickoff']=gmdate(DATE_ATOM,$now+7200);
 check(App::cards()[0]['stream']===null && App::cards()[0]['players'][3942773]['role']===null,'Rescheduling invalidates previous confirmations');
 $options[App::CACHE]=$cache;
 $options['rrfr_player_1011']['name']='<script>alert(1)</script>';
-check(!str_contains(View::shortcode(),'<script>alert'),'Player name escaped');
+check(!str_contains(View::shortcode(['layout'=>'cards']),'<script>alert'),'Player name escaped');
 $options['rrfr_player_1011']=$source;
 $options[App::CACHE]['teams'][35897]['matches'][8989882]['home']['name']='<img src=x onerror=alert(1)>';
-check(!str_contains(View::shortcode(),'<img src=x'),'Team name escaped');
+check(!str_contains(View::shortcode(['layout'=>'cards']),'<img src=x'),'Team name escaped');
 // Full refresh with fixed transports. No network is used by the test.
 $localDate=wp_date('d.m.Y',$now+3600);$localTime=wp_date('H:i',$now+3600);
 $iso=gmdate('Y-m-d\TH:i:00.000\Z',$now+3600);

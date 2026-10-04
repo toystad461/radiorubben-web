@@ -1,4 +1,10 @@
-# Radio Rubben – spillerkamper 1.0.1
+# Radio Rubben – spillerkamper 1.1.0
+
+Standardvisningen er nå en kompakt, sammenleggbar spillerrekke med vannrett blaing på mobil. Alle eksplisitt valgte og aktive spillere vises én gang, også når de ikke har en kamp i sjudagersvinduet. Spillerbildet fra profilens fremhevede bilde brukes dersom det finnes; ellers vises et nøytralt spillerikon. Det hentes ingen portrettbilder automatisk fra andre nettsteder. Kortet bruker første- og etternavn visuelt og fullt navn som tilgjengelig etikett.
+
+`[rr_spillerkamper]` viser spillerrekken; `player="3942773"` avgrenser til én person. Den tidligere store visningen er fortsatt tilgjengelig med `[rr_spillerkamper layout="cards" limit="3"]`. `limit` gjelder bare store kampkort. MyGame-knappen åpner en bekreftet kampside også når en konkret TV 2-sending ennå ikke er tilgjengelig. Identitet, avspark og planlagt status må fortsatt stemme med NFF. «TV 2» vises som en egen lenke når sendings-ID-en er bekreftet. Ingen klokkeslett brukes til å hevde at spilleren spiller nå.
+
+Den kompakte oppdateringen har 13 egne kontroller i tillegg til de 63 eksisterende, samt mobil/desktop-kontroll av høyde, vannrett blaing, sammenfolding og utløpte kilde-/troppsdata. Førstegangsinstallasjonen nedenfor er historikk; 1.1.0 rulles ut med `deploy-player-widget-compact.sh`, som tar backup og kontrollerer 1.0.1-filene før den bytter kun widgetens egne filer.
 
 Viser kommende kamper for valgte lokale spillere med den godkjente Radio Rubben-profilen, bekreftede MyGame-lenker og separat troppsstatus. Ingen video bygges inn. Se-knappen åpner den konkrete TV 2 Play-sendingen; abonnement håndteres der.
 

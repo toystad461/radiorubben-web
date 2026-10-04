@@ -98,6 +98,11 @@ final class Sources {
         return 'https://play.tv2.no'.$u['path'];
     }
     public static function stream(string $html, array $match): array {
+        $result = self::mygame($html, $match);
+        if (!$result['url']) throw new \RuntimeException('Ingen entydig sendingslenke for denne kampen.');
+        return $result;
+    }
+    public static function mygame(string $html, array $match): array {
         $x = self::dom($html); $events = [];
         foreach ($x->query('//script[@type="application/ld+json"]') as $s) {
             $d = json_decode($s->textContent, true);
@@ -109,7 +114,6 @@ final class Sources {
         if (($event['eventStatus'] ?? '') !== 'https://schema.org/EventScheduled') throw new \RuntimeException('MyGame-kampen er ikke bekreftet planlagt.');
         $links = [];
         foreach ($x->query('//a[@href]') as $a) if ($url = self::tv2Url($a->getAttribute('href'), $match['id'])) $links[$url] = $url;
-        if (count($links) !== 1) throw new \RuntimeException('Ingen entydig sendingslenke for denne kampen.');
         // Only exact official club image URLs. Never accept arbitrary remote media.
         $logos = [];
         foreach ($x->query('//img[@src]') as $img) {
@@ -119,6 +123,6 @@ final class Sources {
                 foreach (['home','away'] as $side) if ($label === self::normalized($match[$side]['name'])) $logos[$side] = $src;
             }
         }
-        return ['url'=>reset($links), 'source'=>self::url('stream', $match['id']), 'logos'=>$logos];
+        return ['url'=>count($links) === 1 ? reset($links) : null, 'source'=>self::url('stream', $match['id']), 'logos'=>$logos];
     }
 }

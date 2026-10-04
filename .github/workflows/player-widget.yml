@@ -1,7 +1,7 @@
 name: Spillerkamp-widget
 on:
   pull_request:
-    paths: ['wordpress/wp-content/plugins/radio-rubben-player-widget/**', 'scripts/player-widget-ui.cjs', '.github/workflows/player-widget.yml']
+    paths: ['wordpress/wp-content/plugins/radio-rubben-player-widget/**', 'scripts/player-widget-ui.cjs', 'scripts/player-widget-compact-ui.cjs', '.github/workflows/player-widget.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -16,13 +16,16 @@ jobs:
         run: |
           find wordpress/wp-content/plugins/radio-rubben-player-widget -name '*.php' -print0 | xargs -0 -n1 php -l
           php wordpress/wp-content/plugins/radio-rubben-player-widget/tests/run.php
+          php wordpress/wp-content/plugins/radio-rubben-player-widget/tests/compact.php
           node --check wordpress/wp-content/plugins/radio-rubben-player-widget/assets/widget.js
           php wordpress/wp-content/plugins/radio-rubben-player-widget/tests/preview.php > wordpress/wp-content/plugins/radio-rubben-player-widget/tests/preview.html
+          php wordpress/wp-content/plugins/radio-rubben-player-widget/tests/compact-preview.php > wordpress/wp-content/plugins/radio-rubben-player-widget/tests/compact-preview.html
       - name: Mobil, desktop og utdaterte mellomlagre
         run: |
           npm install --prefix /tmp/rrpw-ui --no-audit --no-fund playwright@1.56.1
           /tmp/rrpw-ui/node_modules/.bin/playwright install chromium --with-deps --only-shell
           NODE_PATH=/tmp/rrpw-ui/node_modules node scripts/player-widget-ui.cjs
+          NODE_PATH=/tmp/rrpw-ui/node_modules node scripts/player-widget-compact-ui.cjs
       - name: Visuelle kontrollbilder
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

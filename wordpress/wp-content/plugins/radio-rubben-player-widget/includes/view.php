@@ -13,8 +13,8 @@ final class View {
     }
     public static function homepage(): void {
         if (!get_option('rrpw_homepage_enabled', false) || !Service::settings()['enabled']) return;
-        echo '<section class="rr-section rr-wrap rrpw-home" id="bomlo-spillere" aria-labelledby="rrpw-home-title"><div class="rr-section-head"><div><p class="rr-eyebrow">FOTBALL</p><h2 id="rrpw-home-title">Bømlo-spillere på banen</h2><p>Følg kampene til lokale spillere ute i klubbene.</p></div><a class="rr-btn-outline" href="'.esc_url(home_url('/sport/#bomlo-spillere')).'">Flere kamper →</a></div>';
-        echo self::shortcode(['limit'=>2]);
+        echo '<section class="rr-wrap rrpw-home rrpw-home-compact" id="bomlo-spillere" aria-label="Bømlo-spillere ute">';
+        echo self::shortcode();
         echo '</section>';
     }
     public static function assets(): void {
@@ -22,7 +22,8 @@ final class View {
         wp_enqueue_script('rr-player-widget', plugins_url('assets/widget.js', FILE), [], VERSION, true);
     }
     public static function shortcode($attrs = []): string {
-        $a = shortcode_atts(['player'=>0,'limit'=>1], (array)$attrs, 'rr_spillerkamper');
+        $a = shortcode_atts(['player'=>0,'limit'=>1,'layout'=>'compact'], (array)$attrs, 'rr_spillerkamper');
+        if ($a['layout'] !== 'cards') return Compact::render(absint($a['player']));
         $cards = Service::cards(absint($a['player']), (int)$a['limit']);
         if (!$cards) return '<div class="rrpw-empty" role="status">Ingen bekreftede kommende kamper å vise akkurat nå.</div>';
         return '<div class="rrpw-list">'.implode('', array_map([self::class,'card'], $cards)).'</div>';

@@ -54,7 +54,7 @@ final class Admin {
             echo '</fieldset>';
         }
         submit_button('Lagre spiller- og lagvalg'); echo '</form>';
-        echo '<h2>Bruk widgeten</h2><p>Sett inn en Kortkode-blokk på ønsket side: <code>[rr_spillerkamper]</code>. Flere kort: <code>[rr_spillerkamper limit="3"]</code>. Én spiller: <code>[rr_spillerkamper player="3942773"]</code>. Den finnes også som «Radio Rubben – spillerkamper» under Utseende → Widgeter.</p>';
+        echo '<h2>Bruk widgeten</h2><p>Sett inn en Kortkode-blokk på ønsket side: <code>[rr_spillerkamper]</code>. Store kampkort: <code>[rr_spillerkamper layout="cards" limit="3"]</code>. Standardvisningen er en kompakt spillerrekke. Én spiller: <code>[rr_spillerkamper player="3942773"]</code>. Den finnes også som «Radio Rubben – spillerkamper» under Utseende → Widgeter.</p>';
         echo '<h2>Oppdatering</h2><p>Siste kjøring: '.esc_html(!empty($cache['last_run']) ? wp_date('d.m.Y H:i',$cache['last_run']) : 'Ikke kjørt').'. Hver runde henter ett lag og inntil to kamper. WP-Cron er avhengig av trafikk eller en serverstyrt cronjobb.</p>';
         if (get_option('rrpw_refresh_lock')) echo '<p>En oppdatering kjører eller ble avbrutt. «Oppdater neste runde» frigjør en foreldet lås etter fem minutter.</p>';
         echo '<form action="'.esc_url(admin_url('admin-post.php')).'" method="post"><input type="hidden" name="action" value="rrpw_refresh">';wp_nonce_field('rrpw_refresh');submit_button('Oppdater neste runde','secondary');echo '</form>';

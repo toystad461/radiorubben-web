@@ -34,7 +34,9 @@ namespace {
     function wp_unique_id($prefix) { static $id=0; return $prefix.(++$id); }
     function wp_enqueue_style(...$args) {}
     function wp_enqueue_script(...$args) {}
+    function get_the_post_thumbnail_url(...$args) { return false; }
     require __DIR__.'/../includes/sources.php';
     require __DIR__.'/../includes/service.php';
     require __DIR__.'/../includes/view.php';
+    require __DIR__.'/../includes/compact.php';
 }

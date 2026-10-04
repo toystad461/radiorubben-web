@@ -101,7 +101,7 @@ final class Service {
                 if (($cache['matches'][$id]['attempted_at'] ?? 0) > $now-300) continue;
                 if ($work++ >= 2) break;
                 $r = ['match'=>$c['match'],'attempted_at'=>$now,'stream'=>null,'roles'=>[],'stream_checked_at'=>0,'lineup_checked_at'=>0,'errors'=>[]];
-                try { $r['stream'] = Sources::stream(Sources::fetch('stream',$id),$c['match']); $r['stream_checked_at'] = time(); }
+                try { $r['stream'] = Sources::mygame(Sources::fetch('stream',$id),$c['match']); $r['stream_checked_at'] = time(); }
                 catch (\Throwable $e) { $r['errors'][] = 'MyGame: '.$e->getMessage(); }
                 try { $r['roles'] = Sources::lineup(Sources::fetch('match',$id),$c['match'],array_keys($c['players'])); $r['lineup_checked_at'] = time(); }
                 catch (\Throwable $e) { $r['errors'][] = 'Tropp: '.$e->getMessage(); }
