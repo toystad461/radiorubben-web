@@ -1,0 +1,63 @@
+name: Selectively publish player widget
+on:
+  push:
+    branches: ['feat/bomlo-player-match-widget']
+    paths: ['.github/workflows/player-widget-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate widget and release scripts
+        run: |
+          set -euo pipefail
+          root=wordpress/wp-content/plugins/radio-rubben-player-widget
+          find "$root" -name '*.php' -print0 | xargs -0 -n1 php -l
+          for f in scripts/player-widget-*.php; do php -l "$f"; done
+          bash -n scripts/deploy-player-widget.sh
+          php "$root/tests/run.php"
+          php "$root/tests/preview.php" > "$root/tests/preview.html"
+          node --check scripts/player-widget-live-ui.cjs
+          npm install --prefix /tmp/rrpw-ui --no-audit --no-fund playwright@1.56.1
+          /tmp/rrpw-ui/node_modules/.bin/playwright install chromium --with-deps --only-shell
+          NODE_PATH=/tmp/rrpw-ui/node_modules node scripts/player-widget-ui.cjs
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Install only the widget and one homepage insertion
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/candidates/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage/scripts $stage/plugin"
+          rsync -rltz --exclude=tests --exclude=README.md --exclude=.gitignore wordpress/wp-content/plugins/radio-rubben-player-widget/ "$host:$stage/plugin/"
+          rsync -rltz scripts/player-widget-configure.php scripts/player-widget-home-patch.php scripts/player-widget-target.sha256 scripts/deploy-player-widget.sh "$host:$stage/scripts/"
+          ssh "$host" "bash $stage/scripts/deploy-player-widget.sh $GITHUB_SHA"
+      - name: Verify live layout and cache headers
+        run: NODE_PATH=/tmp/rrpw-ui/node_modules node scripts/player-widget-live-ui.cjs
+      - name: Live screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: player-widget-live
+          path: player-widget-live-*.png
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

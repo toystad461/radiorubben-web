@@ -2,6 +2,19 @@
 
 Alle vesentlige endringer i Radio Rubben-løsningen dokumenteres her.
 
+## Oppdatering – 2026-10-04
+
+- Spillerkamper 1.2.0: automatisk inkludering av godkjente aktive Bømlo-spillere, registrerte lag i nåværende klubb og nærmeste kamp til venstre. Spillere uten kamp står til høyre uten merknad. Ukjent troppsstatus skjules. Eksisterende MyGame-lenker beholdes.
+
+## Publisert – 2026-10-04
+
+- Spillerkamper 1.1.0: kompakt spillerrekke med sideveis blaing på mobil, sammenleggbar overskrift, ett kort per valgt spiller, nøytralt ikon når spillerbilde mangler og egen MyGame-lenke til verifisert kampside. TV 2-lenken vises fortsatt bare når den er bekreftet separat. Ingen tidsberegnet «Spiller nå».
+
+- Egen WordPress-plugin for Bømlo-spillernes kamper: godkjent Radio Rubben-utforming, lagvalg per spiller, kontrollert MyGame/TV 2 Play-lenke og separat troppsstatus.
+- Kortkode og vanlig WordPress-widget, bakgrunnsinnhenting og automatiske sperrer mot utdaterte sendingslenker.
+- Spillerkamper 1.0.1 publisert selektivt på forsiden (to kort) og Sport-siden (inntil seks kort), med fem spillere og fire kontrollerte lag. Ferske NFF/MyGame-oppslag fra webhotellet bestod, inkludert dagens Brann 2-kamp og Tirils oppføring som innbytter.
+- Sidene med kampoversikt unntas fra fullsidecache. Fotballroboten er uendret; aktiv forside fikk ett avgrenset widget-hook med sikkerhetskopi. Publisering fra ed33789911f21a0e11edff732cf71c8ed8c36199; GitHub PR #45 er fortsatt åpen uten bred main-deploy.
+
 ## [1.0.0] - 2026-09-22
 
 ### Lagt til

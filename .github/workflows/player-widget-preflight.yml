@@ -1,0 +1,42 @@
+name: Player widget production preflight
+on:
+  push:
+    branches: ['feat/bomlo-player-match-widget']
+    paths: ['.github/workflows/player-widget-preflight.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Read production sources and placement
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/candidates/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage/scripts $stage/plugin/includes"
+          rsync -rltz wordpress/wp-content/plugins/radio-rubben-player-widget/includes/sources.php "$host:$stage/plugin/includes/"
+          rsync -rltz scripts/player-widget-preflight.php "$host:$stage/scripts/"
+          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes eval-file $stage/scripts/player-widget-preflight.php"
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
