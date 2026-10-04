@@ -1,0 +1,51 @@
+name: Publish player news filter
+on:
+  push:
+    branches: ['fix/player-news-filter']
+    paths: ['.github/workflows/player-news-filter-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Test filter, source parsing and publication gates
+        run: |
+          set -euo pipefail
+          robot=wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          while read -r hash path; do php -l "$robot/$path"; done < scripts/player-news-filter-target.sha256
+          php -l scripts/player-news-filter-check.php
+          bash -n scripts/deploy-player-news-filter.sh
+          for test in run lineups writer writer-flow inline-sources editorial-quality staged-quality publication-gate player-review review-desk player-news-filter players candidates-media learning report bootstrap match-jobs; do php "$robot/tests/$test.php"; done
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Deploy six player files with backup and read-only checks
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/player-news-filter/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage/scripts $stage/plugin/includes"
+          awk '{print $2}' scripts/player-news-filter-target.sha256 > /tmp/player-news-filter-files.txt
+          rsync -rltz --files-from=/tmp/player-news-filter-files.txt wordpress/wp-content/plugins/radio-rubben-fotballrobot/ "$host:$stage/plugin/"
+          rsync -rltz scripts/player-news-filter-check.php scripts/player-news-filter-baseline.sha256 scripts/player-news-filter-target.sha256 scripts/deploy-player-news-filter.sh "$host:$stage/scripts/"
+          ssh "$host" "bash $stage/scripts/deploy-player-news-filter.sh $GITHUB_SHA"
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
