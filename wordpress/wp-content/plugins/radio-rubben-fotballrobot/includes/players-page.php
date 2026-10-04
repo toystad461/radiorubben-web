@@ -9,6 +9,7 @@ $base=admin_url('admin.php?page=rr-fotballrobot-players'); $post=admin_url('admi
 $s=$selected??['name'=>'','fiks_id'=>'','club_note'=>'','note'=>'','group'=>'','enabled'=>true,'watch'=>array_keys(self::KINDS)];
 echo '<div class="wrap rrfr"><header><p class="rrfr-eyebrow">RADIO RUBBEN · FOTBALLROBOTEN</p><h1>Spillere jeg følger</h1><p>Lokale spillere. Nye kamper. Historier å følge opp.</p></header>';
 if($notice) echo '<p class="rrfr-notice" role="status">'.esc_html($notice).'</p>';
+echo '<p><a class="button" href="'.esc_url(PlayerCandidates::url()).'">Spillere ute – vurder nye kandidater</a></p>';
 echo '<div class="rrfr-grid"><main><section class="rrfr-card"><h2>'.($id?'Rediger spiller':'Legg til spiller').'</h2><form method="post" action="'.esc_url($post).'">';
 self::fields('save',$id);
 foreach(['name'=>'Navn','fiks'=>'Fotball.no-lenke eller FIKS-ID','club_note'=>'Nåværende klubb (manuelt notat)'] as $key=>$label) echo '<p><label>'.esc_html($label).'<br><input class="regular-text" name="'.esc_attr($key).'" value="'.esc_attr($s[$key==='fiks'?'fiks_id':$key]).'" '.($key!=='club_note'?'required':'').' '.($key==='fiks'&&$id?'readonly':'').'></label></p>';

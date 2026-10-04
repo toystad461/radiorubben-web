@@ -1,5 +1,6 @@
 <?php
 namespace RadioRubben\Fotballrobot;
+require_once __DIR__.'/media-sources.php';
 
 /** Private source inbox. Research collects public facts; this plugin owns drafting and approval. */
 final class PlayerMonitor {
@@ -31,6 +32,11 @@ final class PlayerMonitor {
         try{$date=new \DateTimeImmutable($value);$errors=\DateTimeImmutable::getLastErrors();if($errors&&($errors['warning_count']||$errors['error_count']))throw new \RuntimeException('Ugyldig dato.');}catch(\Throwable $e){throw new \RuntimeException('Oppgi en gyldig dato med tidssone.');}
         return gmdate(DATE_ATOM,$time);
     }
+    public static function checked($value): string {
+        $date=self::timestamp($value);
+        if(strtotime($date)<time()-172800)throw new \RuntimeException('Les kilden på nytt før innlegging; kontrollen er eldre enn to døgn.');
+        return $date;
+    }
     public static function ingest(int $id,array $input): array {
         if(!Robot::allowed())throw new \RuntimeException('Ingen tilgang.');
         $player=Players::state($id);
@@ -45,11 +51,9 @@ final class PlayerMonitor {
         $published=$input['published_at']??null;
         if(is_string($published)&&preg_match('/^\d{4}-\d{2}-\d{2}$/',$published)){if(!strtotime($published)||gmdate('Y-m-d',strtotime($published))!==$published||$published>gmdate('Y-m-d'))throw new \RuntimeException('Ugyldig publiseringsdato.');}
         else $published=self::timestamp($published);
-        $checked=self::timestamp($input['checked_at']??null);
-        if(strtotime($checked)<time()-172800)throw new \RuntimeException('Les kilden på nytt før innlegging; kontrollen er eldre enn to døgn.');
-        $facts=$input['facts']??null;
-        if(!is_array($facts)||array_keys($facts)!==range(0,count($facts)-1)||count($facts)<1||count($facts)>6)throw new \RuntimeException('Oppgi ett til seks kontrollerte fakta i egne ord.');
-        $facts=array_map(static fn($v)=>self::text($v,350),$facts);
+        $checked=self::checked($input['checked_at']??null);
+        $facts=MediaSources::facts($input['facts']??null);
+        $media=MediaSources::validate($input,$url);
         $eventDate=$input['event_date']??null;
         if($eventDate!==null&&(!is_string($eventDate)||!preg_match('/^\d{4}-\d{2}-\d{2}$/',$eventDate)||!strtotime($eventDate)||gmdate('Y-m-d',strtotime($eventDate))!==$eventDate))throw new \RuntimeException('Hendelsesdato må være ÅÅÅÅ-MM-DD, eller null når ukjent.');
         $lock='rrfr_source_lock_'.$id;
@@ -58,7 +62,7 @@ final class PlayerMonitor {
             $all=self::sources($id);
             if(isset($all[$key]))return self::receipt($id,$all[$key],false);
             if(count($all)>=2000)throw new \RuntimeException('Kildeinnboksen må arkiveres manuelt før flere treff lagres.');
-            $source=['id'=>$key,'url'=>$url,'title'=>$title,'published_at'=>$published,'checked_at'=>$checked,'event_date'=>$eventDate,'identity_note'=>$identity,'facts'=>$facts,'received_at'=>gmdate(DATE_ATOM),'added_by'=>get_current_user_id()];
+            $source=['id'=>$key,'url'=>$url,'title'=>$title,'published_at'=>$published,'checked_at'=>$checked,'event_date'=>$eventDate,'identity_note'=>$identity,'facts'=>$facts,'received_at'=>gmdate(DATE_ATOM),'added_by'=>get_current_user_id()]+$media;
             $all[$key]=$source;
             if(!update_option('rrfr_player_sources_'.$id,$all,false)&&get_option('rrfr_player_sources_'.$id)!==$all)throw new \RuntimeException('Kilden kunne ikke lagres. Les tilbake før nytt forsøk.');
             return self::receipt($id,$source,true);
@@ -84,7 +88,7 @@ final class PlayerMonitor {
             $players[]=['id'=>(int)$id,'fiks_id'=>$s['fiks_id'],'name'=>$s['name'],'enabled'=>$s['enabled'],'last_checked'=>$s['last_checked'],'error'=>$s['error'],'warnings'=>$s['snapshot']['warnings']??[],'news'=>array_slice($news,0,100),'news_total'=>count($news),'reviews'=>array_values($reviews)];
         }
         $next=wp_next_scheduled('rrfr_players_tick');
-        return ['version'=>'0.9.5','engine'=>'radio-rubben-fotballrobot','automatic_proposals'=>(bool)get_option('rrfr_player_review_enabled_at',0),'publication'=>'manual_approval_required','next_check'=>$next?gmdate(DATE_ATOM,$next):null,'queue_error'=>get_option('rrfr_review_queue_error',null),'players'=>$players];
+        return ['version'=>'0.9.6','engine'=>'radio-rubben-fotballrobot','features'=>['candidate_approval','verified_video','supporting_sources'],'automatic_proposals'=>(bool)get_option('rrfr_player_review_enabled_at',0),'publication'=>'manual_approval_required','next_check'=>$next?gmdate(DATE_ATOM,$next):null,'queue_error'=>get_option('rrfr_review_queue_error',null),'players'=>$players];
     }
     public static function routes(): void {
         register_rest_route('rr-fotballrobot/v1','/player-monitor',['methods'=>'GET','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn()=>Robot::response(static fn()=>self::status())]);

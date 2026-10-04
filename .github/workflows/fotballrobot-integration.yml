@@ -19,7 +19,7 @@ jobs:
           set -euo pipefail
           root=wordpress/wp-content/plugins/radio-rubben-fotballrobot
           find "$root" -name '*.php' -print0 | xargs -0 -n1 php -l
-          for test in run lineups writer writer-flow inline-sources editorial-quality staged-quality publication-gate player-review review-desk players learning report bootstrap match-jobs; do
+          for test in run lineups writer writer-flow inline-sources editorial-quality staged-quality publication-gate player-review review-desk players candidates-media learning report bootstrap match-jobs; do
             php "$root/tests/$test.php"
           done
           git diff --check

@@ -22,7 +22,10 @@ final class InlineSources {
     /** Only source fields with known provenance, never arbitrary strings in source prose. */
     public static function urls(array $facts): array {
         $urls=[$facts['source']??null,$facts['match']['source']??null];
-        if(($facts['type']??'')==='public_news')$urls[]=$facts['news']['url']??null;
+        if(($facts['type']??'')==='public_news'){
+            $urls[]=$facts['news']['url']??null;
+            foreach($facts['news']['supporting_sources']??[] as $s)if(is_array($s))$urls[]=$s['url']??null;
+        }
         foreach($facts['sources']??[] as $s)if(is_array($s))$urls[]=$s['url']??null;
         foreach($facts['events']??[] as $e)if(is_array($e)){
             $urls[]=$e['source']??null;
@@ -38,7 +41,8 @@ final class InlineSources {
     public static function validate(array $article,?array $facts=null): void {
         if(!array_key_exists('inline_sources',$article))return;
         $links=$article['inline_sources'];
-        if(!is_array($links)||!array_is_list($links)||count($links)>4)throw new \RuntimeException('Ugyldige kildelenker.');
+        // Generation schema allows four spans; a saved article may also contain the system video link.
+        if(!is_array($links)||!array_is_list($links)||count($links)>5)throw new \RuntimeException('Ugyldige kildelenker.');
         $used=[];$urls=$facts===null?null:self::urls($facts);
         foreach($links as $link){
             if(!is_array($link)||count($link)!==3||!isset($link['paragraph'],$link['text'],$link['source_url'])
