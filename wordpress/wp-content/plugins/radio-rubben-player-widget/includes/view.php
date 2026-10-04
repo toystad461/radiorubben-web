@@ -2,6 +2,21 @@
 namespace RadioRubben\PlayerWidget;
 
 final class View {
+    public static function cachePolicy(): void {
+        $post = get_queried_object();
+        $home = is_front_page() && get_option('rrpw_homepage_enabled', false);
+        $embedded = is_singular() && $post instanceof \WP_Post && has_shortcode($post->post_content, 'rr_spillerkamper');
+        if (!$home && !$embedded) return;
+        if (!defined('DONOTCACHEPAGE')) define('DONOTCACHEPAGE', true);
+        nocache_headers();
+        do_action('litespeed_control_set_nocache', 'Spillerkamper trenger fersk kamp- og troppsstatus.');
+    }
+    public static function homepage(): void {
+        if (!get_option('rrpw_homepage_enabled', false) || !Service::settings()['enabled']) return;
+        echo '<section class="rr-section rr-wrap rrpw-home" id="bomlo-spillere" aria-labelledby="rrpw-home-title"><div class="rr-section-head"><div><p class="rr-eyebrow">FOTBALL</p><h2 id="rrpw-home-title">Bømlo-spillere på banen</h2><p>Følg kampene til lokale spillere ute i klubbene.</p></div><a class="rr-btn-outline" href="'.esc_url(home_url('/sport/#bomlo-spillere')).'">Flere kamper →</a></div>';
+        echo self::shortcode(['limit'=>2]);
+        echo '</section>';
+    }
     public static function assets(): void {
         wp_enqueue_style('rr-player-widget', plugins_url('assets/widget.css', FILE), [], VERSION);
         wp_enqueue_script('rr-player-widget', plugins_url('assets/widget.js', FILE), [], VERSION, true);
