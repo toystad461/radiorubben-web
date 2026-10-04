@@ -8,5 +8,6 @@
   "schedule": "* * * * *",
   "autoDeploy": "no",
   "buildCommand": "node --check scripts/player-minute-pulse.mjs",
-  "startCommand": "node scripts/player-minute-pulse.mjs"
+  "startCommand": "node scripts/player-minute-pulse.mjs",
+  "workspaceId": "tea-dap3fsn40ujc73beb1jg"
 }

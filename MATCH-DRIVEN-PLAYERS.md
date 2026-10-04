@@ -30,8 +30,10 @@ Release commit `8083fe324521ac208d9304dfb096b75d5a71134e`, successful Action `37
 
 Article 1091, “Tiril debuterte i 2. divisjon for Brann 2”, is a draft with completed quality review and no email sent. Categories: Sport, Fotball, Damer. It links directly to the verified NFF match and profile. Manual approval remains required.
 
-## External scheduler ready for workspace selection
+## External scheduler: workspace confirmed, Git access required
 
-`scripts/player-minute-render.json` contains the proposed Render create arguments, without a workspace ID. `scripts/player-minute-pulse.mjs` triggers the existing WordPress cron URL, then checks the public widget heartbeat; it reports HTTP failures and a heartbeat older than five minutes. No credentials or added dependencies. Auto-deploy is disabled. Render's published minimum is $1/month per cron job; actual compute is charged by active seconds (https://render.com/docs/cronjobs).
+`scripts/player-minute-render.json` contains the proposed Render create arguments and the user-confirmed Thomas workspace ID. `scripts/player-minute-pulse.mjs` triggers the existing WordPress cron URL, then checks the public widget heartbeat; it reports HTTP failures and a heartbeat older than five minutes. No credentials or added dependencies. Auto-deploy is disabled. Render's published minimum is $1/month per cron job; actual compute is charged by active seconds (https://render.com/docs/cronjobs).
 
-Not created: Render exposes two workspaces and explicitly requires the user to confirm which workspace to use. Do not infer/select a workspace from account ownership. Once confirmed, inspect existing services to avoid duplicate cron jobs, create or update only the intended service, then verify at least two scheduled runs and fresh WordPress heartbeat. The pulse does not guarantee upstream NFF freshness.
+On 4 October 2026 at 17:51 Oslo, the user confirmed Thomas’s workspace (`tea-dap3fsn40ujc73beb1jg`). The service inventory was empty. Creation with the committed configuration returned HTTP 400: repository URL invalid or unfetchable, for the private `toystad461/radiorubben-web` repository. A follow-up service inventory was still empty; no cron job was created.
+
+Next: connect the correct GitHub account to Render and grant the Render GitHub App access to this repository. Do not make the repository public or switch workspaces to work around missing access. Workspace selection and creation are already authorized; do not ask again. Once access is connected, inspect existing services, retry creation with the saved configuration, and verify at least two scheduled runs plus fresh WordPress heartbeat. The pulse does not guarantee upstream NFF freshness.
