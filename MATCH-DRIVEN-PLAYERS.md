@@ -23,3 +23,15 @@ Upstream delay is separate from polling frequency. No exact one-minute freshness
 Regression tests cover card-only profile rows, wrong IDs, conflicting team rows, exact substitutions, dismissal, finished and stale states, 75-minute scheduling, deduplication across players, interval suppression, and silent drafts retaining publication gates. Browser tests cover minute refresh and mobile state preservation. Deployment checks exact baseline/target fingerprints, backs up only changed files, uses maintenance during replacement, requires a completion marker, refreshes Torbjørn through the owning plugin and verifies 12 public players.
 
 The debut script re-reads exact match 8989882 and player 3942773, requires final 0–3, the 90th-minute entry event and one career tournament appearance before creating an idempotent, silent, quality-reviewed draft. Publication remains manual.
+
+## Production verification, 4 October 2026
+
+Release commit `8083fe324521ac208d9304dfb096b75d5a71134e`, successful Action `37213226425`. All 234 PHP assertions and browser checks passed. Selective deployment completed at 15:31 UTC. Postflight verified 12 approved players, Torbjørn's Hødd team/club, the 60-second widget event and 300-second profile queue. Public REST readback showed Torbjørn's Hødd–Egersund fixture on 11 October at 17:00 Oslo, NFF 8986801, in the sorted strip. No unwanted unknown-squad/no-fixture notices.
+
+Article 1091, “Tiril debuterte i 2. divisjon for Brann 2”, is a draft with completed quality review and no email sent. Categories: Sport, Fotball, Damer. It links directly to the verified NFF match and profile. Manual approval remains required.
+
+## External scheduler ready for workspace selection
+
+`scripts/player-minute-render.json` contains the proposed Render create arguments, without a workspace ID. `scripts/player-minute-pulse.mjs` triggers the existing WordPress cron URL, then checks the public widget heartbeat; it reports HTTP failures and a heartbeat older than five minutes. No credentials or added dependencies. Auto-deploy is disabled. Render's published minimum is $1/month per cron job; actual compute is charged by active seconds (https://render.com/docs/cronjobs).
+
+Not created: Render exposes two workspaces and explicitly requires the user to confirm which workspace to use. Do not infer/select a workspace from account ownership. Once confirmed, inspect existing services to avoid duplicate cron jobs, create or update only the intended service, then verify at least two scheduled runs and fresh WordPress heartbeat. The pulse does not guarantee upstream NFF freshness.
