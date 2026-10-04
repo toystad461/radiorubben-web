@@ -1,4 +1,4 @@
-name: Preserve drafts after incomplete source review
+name: Activate immutable source evidence references
 on:
   push:
     branches: ['feat/newsroom-digest']
@@ -45,7 +45,7 @@ jobs:
           stage=".radiorubben-deploy/newsroom/$GITHUB_SHA"
           mkdir -p release/scripts/release-artifacts
           cp scripts/newsroom-{install,postflight,connect,activate}.php scripts/newsroom-release.json scripts/deploy-newsroom.sh release/scripts/
-          cp scripts/release-artifacts/studio-0e2cd72.json release/scripts/release-artifacts/
+          cp scripts/release-artifacts/studio-5fdee8e.json release/scripts/release-artifacts/
           php -r '$m=json_decode(file_get_contents("scripts/newsroom-release.json"),true);foreach($m["after"] as $p=>$h)if(str_starts_with($p,"wp-content/")){@mkdir(dirname("release/runtime/".$p),0700,true);copy("wordpress/".$p,"release/runtime/".$p);}'
           ssh "$host" "umask 077; mkdir -p $stage"
           rsync -rltz release/ "$host:$stage/"
