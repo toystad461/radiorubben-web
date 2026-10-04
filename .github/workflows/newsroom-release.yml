@@ -1,4 +1,4 @@
-name: Activate immutable source evidence references
+name: Activate native WordPress newsroom jobs
 on:
   push:
     branches: ['feat/newsroom-digest']
