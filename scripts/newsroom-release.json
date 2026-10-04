@@ -1,0 +1,41 @@
+{
+  "studio_commit": "09ead0c10605e668732c1dea3049c4a6bcb779cf",
+  "studio_ci_runs": [
+    37235892971,
+    37235862137
+  ],
+  "wordpress_runtime_commit": "4d4143888a3b53b471335aff9f663bf323f345f9",
+  "wordpress_ci_runs": [
+    37235894293,
+    37235863204
+  ],
+  "before": {
+    "studio-private/app/news-script.php": "ae621167693339d7a7a0111c2282d7330f752e585bf1bba2c6646993617d70f5",
+    "studio-private/app/web-publish.php": "93051860561d1bd38ded2eca827b9e8138da438322f8e8d57f87e9238490c980",
+    "studio-private/app/case-workflow.php": "87f3ab81bce5cd2fa925378fc874818c77bb533383b447371e4422f19bccedeb",
+    "studio-public/newsdesk.php": "507fc9a901620ce34f9e0b9c6ec35ae0456267aa3288c03ded4653db4b78df09",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-review.php": "eab0d3110ac46eb4c46ffc252f77adb122f50948469f0e5ee308546a0dde1b19",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-monitor.php": "e79ec019421d4da70a9ead3db5897c7efa40cd538fa83d734afc7ebebfc1981c",
+    "wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php": "186ff96ffdae75c36a19901060138f025f0a2ac240eb3549cd9833e73f34a3e6",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/review-desk.php": "84d6c952de2b81e9538c4a5b8c14804ca646307e7ee592fda9d7490cf0662ef6"
+  },
+  "after": {
+    "studio-private/app/news-script.php": "fbab3449075c86953e3ef988b94880f0a4a6b6b8a275bde9d18bb65c1c72c07e",
+    "studio-private/app/web-publish.php": "f4a66a1fd1132c2e2b54287b5ecfdd07af0a6d1a3506385179a8d76b2860a6f1",
+    "studio-private/app/case-workflow.php": "52ff90f48999062b4f639f940bdb29dc3b948c7c24c601a9bf0a2ef5186dfdba",
+    "studio-private/app/newsroom.php": "c0c196f6ddfaa5251e2bcbc84aac3ba92deda1f217e35bae98d96e957d0c942f",
+    "studio-private/app/newsroom-wordpress.php": "60cd40fc49956b8d9d090a5b9a087daab5e711613b6f95761796a7da50e98ae8",
+    "studio-private/app/newsroom-worker.php": "bf65c5511f857c708fd4fea9379ab0b29ba3f990535fd2a13528ac6d93475747",
+    "studio-public/newsdesk.php": "cd7370a53867d32c3708aa41e69b2e65a3b66e104e0e2e478adece3a09e45c80",
+    "studio-public/assets/newsroom.css": "90ad263af72a8cd2c24eaa3cc2f00c454b221155a70c809b7fc7ab2d853011d8",
+    "studio-public/assets/newsroom.js": "4f76758ac4cd0b1f239d2c7efdf879656f37a97dda63f9d795202d5539a5f41c",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-review.php": "e173f665fda874467b2feec697a21c1f33723d09ee0f1e8a585874adaf8963d1",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-monitor.php": "c8e61a930d57d36963d541aa3fedf27f187a97b1d54bd34c2615a7e17b600fd7",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/review-desk.php": "32e88b8b1355ddcdb9bc171a63e7d8be3a937a78bb3641c0b6587b5c4cc542c7",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/review-digest.php": "21aff489226eb0db6114883c71391691e4046c1ab85ef38e9b2de2f89872fc29",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/newsroom.php": "d247cae27333288547c6af0616d3b84d5ac238967b5a3e22bd7875064f56ffc7",
+    "wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php": "68aedcf25056c1e92803bff6c3f0d08eef8fa64a0bfc27808758f28cfd516fbd"
+  },
+  "studio_package": "release-artifacts/studio-09ead0c.json",
+  "studio_package_sha256": "9661f522f7fcf10475b1655eba932cb8042ba249115ea0073ef308e284c9c5c5"
+}
