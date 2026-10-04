@@ -5,6 +5,7 @@ require_once __DIR__.'/editorial-notice.php';
 require_once __DIR__.'/player-monitor.php';
 require_once __DIR__.'/player-news-filter.php';
 require_once __DIR__.'/review-desk.php';
+require_once __DIR__.'/review-digest.php';
 
 /** Durable, human-approved publication. Links only open the authenticated review page. */
 final class PlayerReview {
@@ -22,15 +23,7 @@ final class PlayerReview {
     }
     public static function headers(): array {return ['Content-Type: text/plain; charset=UTF-8','From: Fotballroboten <'.self::FROM.'>'];}
     public static function notify(int $id): void {
-        self::lock('mail_'.$id,static function() use($id){
-            $s=self::state($id);$p=get_post($id);
-            if($s['status']!=='pending'||in_array($s['mail']??'', ['accepted','sending'],true))return;
-            $s['mail']='sending';self::put($id,$s);
-            $subject=($s['test']?'[TEST] ':'').'Fotballroboten: '.$p->post_title;
-            $body=($s['test']?"TEST – ingen publisering, også når du velger ja.\n\n":'').$p->post_title."\n\n".$p->post_excerpt."\n\nLes hele forslaget og velg ja, nei eller be om endringer med kommentar:\n".self::url($id)."\n\nDu må logge inn i WordPress. Lenken publiserer ingenting. Kommentarer skrives på godkjenningssiden; svar på denne e-posten behandles ikke automatisk.\n\nFotballroboten · Radio Rubben";
-            try {$ok=MicrosoftMail::send($subject,$body);unset($s['mail_error']);$s['mail']=$ok?'accepted':'failed';}catch(\Throwable $e){$s['mail']='failed';$s['mail_error']=$e->getMessage();}
-            $s['mail_at']=gmdate(DATE_ATOM);self::put($id,$s);
-        });
+        self::lock('mail_'.$id,static fn()=>ReviewDigest::enqueue($id));
     }
     public static function create(string $key,array $facts,bool $test=false,bool $notify=true): int {
         return self::lock('create_'.hash('sha256',$key),static function()use($key,$facts,$test,$notify){
