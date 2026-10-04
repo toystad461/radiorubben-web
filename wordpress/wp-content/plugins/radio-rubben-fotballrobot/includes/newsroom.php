@@ -28,12 +28,22 @@ final class Newsroom {
         if(preg_match_all('~<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>~is',$p->post_content,$matches,PREG_SET_ORDER))foreach($matches as $a){
             $url=html_entity_decode($a[1],ENT_QUOTES,'UTF-8');$parts=parse_url($url);
             if(($parts['scheme']??'')!=='https'||empty($parts['host'])||isset($parts['user'])||isset($parts['pass']))continue;
-            $links[$url]=['url'=>$url,'label'=>trim(wp_strip_all_tags($a[2]))?:$parts['host']];
+            if(!isset($links[$url]))$links[$url]=['url'=>$url,'label'=>trim(wp_strip_all_tags($a[2]))?:$parts['host']];
         }
-        $body=trim(html_entity_decode(wp_strip_all_tags(preg_replace('~</(?:p|h[1-6]|li)>|<br\s*/?>~i',"\n",$p->post_content)),ENT_QUOTES,'UTF-8'));
+        // Presentation only: retain the stored article and its quality hash verbatim.
+        $html=EditorialNotice::reviewContent($p->post_content);
+        $notice=$html!==$p->post_content?'KI-generert artikkel · Redaksjonelt ansvar: Radio Rubben.':'';
+        $html=preg_replace('~<small\b[^>]*>Kilder:.*?</small>~is','',$html);
+        $body=trim(html_entity_decode(wp_strip_all_tags(preg_replace('~</(?:p|h[1-6]|li)>|<br\s*/?>~i',"\n",$html)),ENT_QUOTES,'UTF-8'));
+        $paragraphs=preg_split('/\R+/u',$body);
+        $normalize=static fn($text)=>preg_replace('/\s+/u',' ',trim(html_entity_decode(wp_strip_all_tags($text),ENT_QUOTES,'UTF-8')));
+        if($paragraphs&&$normalize($paragraphs[0])===$normalize($p->post_excerpt))array_shift($paragraphs);
+        $body=implode("\n",$paragraphs);
+        $media=(int)get_post_meta($id,'_thumbnail_id',true);$imageUrl=$media?wp_get_attachment_image_url($media,'large'):false;
+        $image=$imageUrl?['id'=>$media,'url'=>$imageUrl,'alt'=>(string)get_post_meta($media,'_wp_attachment_image_alt',true),'caption'=>(string)wp_get_attachment_caption($media)]:null;
         return ['id'=>$id,'type'=>'wordpress','token'=>$token,'title'=>$p->post_title,'intro'=>$p->post_excerpt,
-            'body'=>$body,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$correction?'Fotball · Oppdatering av publisert sak':($m['player']?'Fotball · Spillersak':'Fotball · Kampomtale'),
-            'sourceUrl'=>'','links'=>array_values($links),'canApprove'=>$m['can_approve'],'canRevise'=>$m['player']&&$m['pending'],
+            'body'=>$body,'notice'=>$notice,'image'=>$image,'isCorrection'=>(bool)$correction,'canAddFacts'=>!$correction,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$correction?'Fotball · Oppdatering av publisert sak':($m['player']?'Fotball · Spillersak':'Fotball · Kampomtale'),
+            'sourceUrl'=>'','links'=>array_values($links),'canApprove'=>$m['can_approve'],'canRevise'=>$correction?$m['can_approve']:($m['player']&&$m['pending']),
             'publishedUrl'=>$status==='published'?get_permalink($id):null];
     }
     public static function response(): array {
@@ -55,7 +65,7 @@ final class Newsroom {
             if(!empty($input['editorial_facts']))throw new \RuntimeException('Nye opplysninger krever et nytt kontrollert forslag.');
             if($op==='approve')PlayerCorrections::approve($input['id'],$input['token']);
             elseif($op==='reject')PlayerCorrections::discard($input['id'],$input['token']);
-            else throw new \RuntimeException('Forkast endringsforslaget før du bestiller en ny versjon.');
+            else PlayerCorrections::revise($input['id'],$input['token'],$input['comment']??'');
         }else ReviewDesk::decide($input['id'],$input['token'],$op,$input['comment']??'',$input['editorial_facts']??'');
         add_post_meta($input['id'],'_rrfr_studio_decision',['operation'=>$op,'actor'=>sanitize_text_field($input['actor']??'Studio'),'at'=>gmdate(DATE_ATOM),'wordpress_user'=>get_current_user_id()]);
         return self::response();

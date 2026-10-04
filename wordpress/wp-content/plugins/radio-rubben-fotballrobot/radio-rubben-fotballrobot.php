@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Radio Rubbens Fotballrobot
  * Description: Kontrollert kampgrunnlag, laghistorikk og separate prøveutkast for Radio Rubben.
- * Version: 0.10.3
+ * Version: 0.10.4
  * Requires PHP: 8.0
  * Author: Radio Rubben
  */
