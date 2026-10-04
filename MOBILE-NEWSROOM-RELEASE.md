@@ -32,9 +32,19 @@ Tilbakeføring bruker samme manifest og kodekopi:
 `php <stage>/scripts/mobile-newsroom-install.php <stage> <backup> rollback`.
 Installasjon/postflight-feil utløser automatisk tilbakeføring under samme lås.
 Nye filer fjernes bare hvis de inngår i dette manifestet; tidligere filer gjenopprettes.
-Stage: `$HOME/.radiorubben-deploy/mobile-newsroom-transport` er ikke brukt;
-faktisk stage er `$HOME/.radiorubben-deploy/mobile-newsroom/<release-sha>`.
+Stage er `$HOME/.radiorubben-deploy/mobile-newsroom/<release-sha>`.
 
-Produksjonsresultatet føres etter fullført jobb. Mobiltestene bruker isolerte
+## Resultat
+
+Release `dd6b775ee2f80365c3b55b123ae8f418c9a9eea1`, Actions 37243206615,
+fullført 04.10.2026 23:17:48 UTC (05.10.2026 01:17:48 norsk tid).
+Verify og deploy var grønne; integrasjonskontroll 37243209317 også grønn.
+Alle ti etter-hasher stemte. Postflight: 11 køkort, hovedbilde 813, ventende
+rettelse synlig, publisert tekst og ventende forslag uendret. Vedlikeholdsmodus
+ble opphevet. Autentisert HTTP GET til newsroom bekreftet bilde, canRevise=true,
+canAddFacts=false, isCorrection=true og en lesekopi uten gjentatt ingress.
+
+Nettleseren ble sendt til normal Studio-innlogging, så innlogget produksjons-UI
+er ikke visuelt verifisert i denne leveransen. Mobiltestene bruker isolerte
 fiktive saker på 375/390/800/1280 px. Fysisk iPhone og innlogget produksjonsflyt
 med en reell publisering er ikke brukt som test.
