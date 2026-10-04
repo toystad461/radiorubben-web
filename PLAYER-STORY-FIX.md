@@ -24,3 +24,7 @@ installed, with exact baseline fingerprints, full regression tests, private
 backup and rollback. No merge, full-repo deploy, automatic article publication
 or test email. The article image was independently corrected through WordPress
 REST and verified published with featured_media 813.
+
+Follow-up 0.10.3: surface pending corrections in the existing Studio queue and
+delegate its explicit approval/rejection to the same protected methods. Seven
+allowlisted runtime files, baseline 0.10.2. No Studio code or settings changed.

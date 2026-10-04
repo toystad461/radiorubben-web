@@ -3,7 +3,7 @@ declare(strict_types=1);
 $stage=$argv[1]??'';$backup=$argv[2]??'';$mode=$argv[3]??'';$root='/run/webroots/r1417157';
 if(!is_dir($stage)||!is_dir($backup)||!in_array($mode,['install','rollback'],true))throw new RuntimeException('Invalid paths.');
 $m=json_decode(file_get_contents($stage.'/scripts/player-story-release.json'),true,32,JSON_THROW_ON_ERROR);
-$allowed=array_map(static fn($p)=>'wp-content/plugins/radio-rubben-fotballrobot/'.$p,['includes/player-review.php','includes/writer.php','includes/player-corrections.php','includes/review-desk.php','includes/player-monitor.php','radio-rubben-fotballrobot.php']);
+$allowed=array_map(static fn($p)=>'wp-content/plugins/radio-rubben-fotballrobot/'.$p,['includes/newsroom.php','includes/player-review.php','includes/writer.php','includes/player-corrections.php','includes/review-desk.php','includes/player-monitor.php','radio-rubben-fotballrobot.php']);
 $paths=array_keys($m['after']);sort($paths);$check=$allowed;sort($check);
 if($paths!==$check||array_diff(array_keys($m['before']),$allowed))throw new RuntimeException('Wrong release scope.');
 $write=static function($p,$body){$tmp=tempnam(dirname($p),'.player-story-');if(file_put_contents($tmp,$body)===false||!chmod($tmp,0644)||!rename($tmp,$p))throw new RuntimeException('Atomic replacement failed.');};

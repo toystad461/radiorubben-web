@@ -1,4 +1,4 @@
-name: Fix player story images and staged corrections
+name: Connect staged story corrections to unified newsdesk
 on:
   push:
     branches: ['fix/player-story-image']

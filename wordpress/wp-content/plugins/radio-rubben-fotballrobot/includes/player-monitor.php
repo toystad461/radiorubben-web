@@ -93,7 +93,7 @@ final class PlayerMonitor {
             $players[]=['id'=>(int)$id,'fiks_id'=>$s['fiks_id'],'name'=>$s['name'],'enabled'=>$s['enabled'],'last_checked'=>$s['last_checked'],'error'=>$s['error'],'warnings'=>$s['snapshot']['warnings']??[],'news'=>array_slice($news,0,100),'news_total'=>count($news),'reviews'=>array_values($reviews),'news_filter'=>PlayerReview::newsSelection((int)$id,$s,(int)get_option('rrfr_player_review_enabled_at',PHP_INT_MAX))];
         }
         $next=wp_next_scheduled('rrfr_players_tick');
-        return ['version'=>'0.10.2','engine'=>'radio-rubben-fotballrobot','features'=>['candidate_approval','verified_video','supporting_sources','player_news_filter','unified_newsroom','digest_notifications'],'automatic_proposals'=>(bool)get_option('rrfr_player_review_enabled_at',0),'publication'=>'manual_approval_required','next_check'=>$next?gmdate(DATE_ATOM,$next):null,'queue_error'=>get_option('rrfr_review_queue_error',null),'players'=>$players];
+        return ['version'=>'0.10.3','engine'=>'radio-rubben-fotballrobot','features'=>['candidate_approval','verified_video','supporting_sources','player_news_filter','unified_newsroom','digest_notifications'],'automatic_proposals'=>(bool)get_option('rrfr_player_review_enabled_at',0),'publication'=>'manual_approval_required','next_check'=>$next?gmdate(DATE_ATOM,$next):null,'queue_error'=>get_option('rrfr_review_queue_error',null),'players'=>$players];
     }
     public static function routes(): void {
         register_rest_route('rr-fotballrobot/v1','/player-monitor',['methods'=>'GET','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn()=>Robot::response(static fn()=>self::status())]);

@@ -69,6 +69,12 @@ final class PlayerCorrections {
             }
         });
     }
+    public static function discard(int $id,string $token): void {
+        self::locked($id,static function()use($id,$token){self::live($id);$r=get_post_meta($id,self::META,true);
+            if(!is_array($r)||($r['status']??'')!=='pending'||!hash_equals($r['token'],$token))throw new \RuntimeException('Forslaget er endret.');
+            $r['status']='discarded';$r['discarded_by']=get_current_user_id();self::put($id,$r);
+        });
+    }
     public static function render(int $id): void {
         $r=get_post_meta($id,self::META,true);if(!is_array($r)||($r['status']??'')!=='pending')return;
         try{$current=hash_equals($r['base'],self::base($id));}catch(\Throwable $e){$current=false;}
@@ -86,10 +92,7 @@ final class PlayerCorrections {
             $token=(string)wp_unslash($_POST['token']??'');$op=(string)($_POST['operation']??'');
             if($op==='approve'){self::approve($id,$token);$message='Saken er oppdatert.';}
             elseif($op==='discard'){
-                self::locked($id,static function()use($id,$token){self::live($id);$r=get_post_meta($id,self::META,true);
-                    if(!is_array($r)||($r['status']??'')!=='pending'||!hash_equals($r['token'],$token))throw new \RuntimeException('Forslaget er endret.');
-                    $r['status']='discarded';$r['discarded_by']=get_current_user_id();self::put($id,$r);
-                });$message='Endringsforslaget er forkastet. Den publiserte saken er beholdt.';
+                self::discard($id,$token);$message='Endringsforslaget er forkastet. Den publiserte saken er beholdt.';
             }else throw new \RuntimeException('Ukjent valg.');
         }
         catch(\Throwable $e){$message=$e->getMessage();}

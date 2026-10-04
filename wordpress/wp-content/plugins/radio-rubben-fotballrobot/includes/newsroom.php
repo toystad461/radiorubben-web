@@ -8,6 +8,17 @@ final class Newsroom {
         $m=ReviewDesk::model($id);$p=$m['post'];$s=$m['state'];$reasons=[];
         if($m['status']==='rejected'||$m['test'])return [];
         $status=$m['status']==='published'?'published':($m['can_approve']?'ready':'attention');
+        $token=ReviewDesk::token($id,$m);$correction=null;
+        if($m['status']==='published'&&class_exists(PlayerCorrections::class)){
+            $r=get_post_meta($id,PlayerCorrections::META,true);
+            if(is_array($r)&&($r['status']??'')==='pending'){
+                $correction=$r;$p=clone $p;foreach($r['post'] as $key=>$value)$p->$key=$value;
+                $token=$r['token'];$m['can_approve']=current_user_can('publish_posts')&&hash_equals($r['base'],PlayerCorrections::base($id))
+                    &&($r['quality']['publishable']??false)===true&&($r['quality']['rulesVersion']??'')===EditorialQuality::RULES_VERSION;
+                $status=$m['can_approve']?'ready':'attention';
+                $reasons[]=$m['can_approve']?'Godkjenning oppdaterer den eksisterende saken. Nettadresse og bilde beholdes.':'Saken er endret etter kontrollen av dette endringsforslaget. Ny kontroll kreves.';
+            }
+        }
         if($status==='attention'){
             if(!empty($s['error']))$reasons[]=$s['error'];
             if(!$m['quality'])$reasons[]='Fakta- og språkkontrollen må fullføres før publisering.';
@@ -20,8 +31,8 @@ final class Newsroom {
             $links[$url]=['url'=>$url,'label'=>trim(wp_strip_all_tags($a[2]))?:$parts['host']];
         }
         $body=trim(html_entity_decode(wp_strip_all_tags(preg_replace('~</(?:p|h[1-6]|li)>|<br\s*/?>~i',"\n",$p->post_content)),ENT_QUOTES,'UTF-8'));
-        return ['id'=>$id,'type'=>'wordpress','token'=>ReviewDesk::token($id,$m),'title'=>$p->post_title,'intro'=>$p->post_excerpt,
-            'body'=>$body,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$m['player']?'Fotball · Spillersak':'Fotball · Kampomtale',
+        return ['id'=>$id,'type'=>'wordpress','token'=>$token,'title'=>$p->post_title,'intro'=>$p->post_excerpt,
+            'body'=>$body,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$correction?'Fotball · Oppdatering av publisert sak':($m['player']?'Fotball · Spillersak':'Fotball · Kampomtale'),
             'sourceUrl'=>'','links'=>array_values($links),'canApprove'=>$m['can_approve'],'canRevise'=>$m['player']&&$m['pending'],
             'publishedUrl'=>$status==='published'?get_permalink($id):null];
     }
@@ -39,7 +50,13 @@ final class Newsroom {
         $op=$input['operation']??'';
         if(!in_array($op,['approve','reject','revise'],true)||!is_int($input['id']??null)||!is_string($input['token']??null)||!preg_match('/^[a-f0-9]{64}$/D',$input['token']))throw new \RuntimeException('Ugyldig avgjørelse.');
         foreach(['comment','editorial_facts','actor'] as $field)if(isset($input[$field])&&(!is_string($input[$field])||strlen($input[$field])>8000))throw new \RuntimeException('Ugyldig tekst.');
-        ReviewDesk::decide($input['id'],$input['token'],$op,$input['comment']??'',$input['editorial_facts']??'');
+        $correction=class_exists(PlayerCorrections::class)?get_post_meta($input['id'],PlayerCorrections::META,true):null;
+        if(is_array($correction)&&($correction['status']??'')==='pending'){
+            if(!empty($input['editorial_facts']))throw new \RuntimeException('Nye opplysninger krever et nytt kontrollert forslag.');
+            if($op==='approve')PlayerCorrections::approve($input['id'],$input['token']);
+            elseif($op==='reject')PlayerCorrections::discard($input['id'],$input['token']);
+            else throw new \RuntimeException('Forkast endringsforslaget før du bestiller en ny versjon.');
+        }else ReviewDesk::decide($input['id'],$input['token'],$op,$input['comment']??'',$input['editorial_facts']??'');
         add_post_meta($input['id'],'_rrfr_studio_decision',['operation'=>$op,'actor'=>sanitize_text_field($input['actor']??'Studio'),'at'=>gmdate(DATE_ATOM),'wordpress_user'=>get_current_user_id()]);
         return self::response();
     }
