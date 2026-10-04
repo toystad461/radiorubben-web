@@ -92,22 +92,31 @@ final class PlayerReview {
         try{self::create($next['key'],$next['facts']);delete_option('rrfr_review_queue_error');}
         catch(\Throwable $e){update_option('rrfr_review_queue_error',$e->getMessage(),false);}
     }
-    public static function decide(int $id,int $version,string $hash,string $op,string $comment): void {
+    public static function decide(int $id,int $version,string $hash,string $op,string $comment,string $editorFacts=''): void {
         if(!Robot::allowed()||!current_user_can('edit_post',$id))throw new \RuntimeException('Ingen tilgang.');
-        self::lock((string)$id,static function()use($id,$version,$hash,$op,$comment){
+        self::lock((string)$id,static function()use($id,$version,$hash,$op,$comment,$editorFacts){
             $s=self::state($id);$p=get_post($id);
             if(!$p||$p->post_type!=='post'||$p->post_status!=='draft')throw new \RuntimeException('Forslaget er ikke et redigerbart utkast.');
             if($version!==$s['version']||!hash_equals(self::hash($p),$hash))throw new \RuntimeException('Teksten eller statusen er endret. Last siden på nytt.');
             $comment=sanitize_textarea_field($comment);if(mb_strlen($comment)>2000)throw new \RuntimeException('Kommentaren kan være høyst 2000 tegn.');
+            $editorFacts=trim($editorFacts);
+            if($editorFacts!=='' && ($op!=='revise' || $editorFacts!==strip_tags($editorFacts) || mb_strlen($editorFacts)>2000)) throw new \RuntimeException('Egne opplysninger må være ren tekst på høyst 2000 tegn og sendes til omskriving.');
             if($op==='mail') {if($s['status']!=='pending')throw new \RuntimeException('Ingen tekst venter på godkjenning.');$s['mail']='none';self::put($id,$s);self::notify($id);return;}
             if(!in_array($op,['approve','reject','revise','resubmit','retry'],true))throw new \RuntimeException('Ukjent valg.');
             if(in_array($op,['approve','reject','revise'],true)&&$s['status']!=='pending')throw new \RuntimeException('Forslaget er allerede behandlet.');
             if($op==='approve'&&!current_user_can('publish_posts'))throw new \RuntimeException('Du mangler publiseringsrettighet.');
-            if($op==='revise'&&mb_strlen($comment)<5)throw new \RuntimeException('Beskriv endringen du ønsker.');
+            if($op==='revise'&&mb_strlen($comment)<5&&mb_strlen($editorFacts)<5)throw new \RuntimeException('Beskriv endringen eller opplysningene du ønsker å legge til.');
             if($op==='retry'&&$s['status']!=='failed')throw new \RuntimeException('Bare feilede skrivejobber kan prøves på nytt.');
             if($op==='resubmit'&&empty($s['article']))throw new \RuntimeException('Forslaget mangler en kontrollert tekst.');
             if($op==='approve'&&!PublicationGate::current($id,$p)) throw new \RuntimeException('Språk- og kvalitetskontroll mangler eller er utdatert. Kontroller lagret tekst i WordPress først.');
             $s['history'][]=['action'=>$op,'comment'=>$comment,'user'=>get_current_user_id(),'at'=>gmdate(DATE_ATOM),'version'=>$s['version'],'hash'=>$hash,'rulesVersion'=>EditorialQuality::RULES_VERSION];
+            if($editorFacts!=='') {
+                $note=['text'=>$editorFacts,'source_kind'=>'editor_confirmed','source_name'=>(string)wp_get_current_user()->display_name,'user'=>get_current_user_id(),'recorded_at'=>gmdate(DATE_ATOM)];
+                $s['facts']['editorial_facts'][]=$note;
+                $s['history'][array_key_last($s['history'])]['editorial_facts']=$note;
+                // New source facts invalidate the old review. They never grant publication approval.
+                update_post_meta($id,PublicationGate::META,['rulesVersion'=>EditorialQuality::RULES_VERSION,'publishable'=>false,'findings'=>['Nye redaksjonelle opplysninger må kontrolleres sammen med den omskrevne teksten.']]);
+            }
             $s['version']++;
             if($op==='approve'){
                 $s['hash']=$hash;$s['status']=$s['test']?'test_approved':'publishing';self::put($id,$s);
