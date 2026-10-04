@@ -1,0 +1,46 @@
+name: Inspect player sources and completed Brann match
+on:
+  push:
+    branches: ['fix/player-profile-and-match-followup']
+    paths: ['.github/workflows/player-followup-inspect.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Read public sources through existing WordPress transport
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/player-inspect/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz scripts/player-followup-inspect.php "$host:$stage/"
+          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file $stage/player-followup-inspect.php" | tee source-check.log
+          grep -q '^FOLLOWUP_READ_OK$' source-check.log
+          mkdir -p evidence
+          rsync -rltz "$host:$stage/evidence/" evidence/
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: player-followup-sources
+          path: evidence/
+          retention-days: 3
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
