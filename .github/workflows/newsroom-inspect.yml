@@ -1,4 +1,4 @@
-name: Inspect existing Studio and WordPress connection
+name: Verify active newsroom and prepare one source
 on:
   push:
     branches: ['feat/newsroom-digest']
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - name: Read deployment inventory through existing server access
+      - name: Verify installed newsroom without publication or test email
         env:
           DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
@@ -27,8 +27,8 @@ jobs:
           host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
           stage=".radiorubben-deploy/newsroom-inspect/$GITHUB_SHA"
           ssh "$host" "umask 077; mkdir -p $stage"
-          rsync -rltz scripts/newsroom-inspect.php "$host:$stage/"
-          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file $stage/newsroom-inspect.php"
+          rsync -rltz scripts/newsroom-live-verify.php "$host:$stage/"
+          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file $stage/newsroom-live-verify.php"
       - name: Remove SSH key
         if: always()
         run: rm -f ~/.ssh/id_ed25519
