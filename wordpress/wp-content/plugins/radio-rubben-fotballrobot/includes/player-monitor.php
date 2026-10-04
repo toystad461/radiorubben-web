@@ -84,11 +84,16 @@ final class PlayerMonitor {
         $players=[];
         foreach(Players::ids() as $id){$s=Players::state((int)$id);$news=[];$reviews=[];
             foreach(array_reverse(self::sources((int)$id)) as $n){$review=self::review(self::key((int)$id,$n['id']));$news[]=$n+['review'=>$review];}
-            foreach($s['events'] as $e){$key='events:'.$id.':'.$e['detected_at'];if(isset($reviews[$key]))continue;$review=self::review($key);if($review)$reviews[$key]=$review;}
-            $players[]=['id'=>(int)$id,'fiks_id'=>$s['fiks_id'],'name'=>$s['name'],'enabled'=>$s['enabled'],'last_checked'=>$s['last_checked'],'error'=>$s['error'],'warnings'=>$s['snapshot']['warnings']??[],'news'=>array_slice($news,0,100),'news_total'=>count($news),'reviews'=>array_values($reviews)];
+            $seen=[];
+            foreach($s['events'] as $e){
+                $keys=['events:'.$id.':'.$e['detected_at']];
+                if(preg_match('/^([1-9][0-9]*):[1-9][0-9]*$/D',(string)($e['key']??''),$match))$keys[]='match-news:'.$s['fiks_id'].':'.$match[1];
+                foreach($keys as $key){if(isset($seen[$key]))continue;$seen[$key]=true;$review=self::review($key);if($review)$reviews[$key]=$review;}
+            }
+            $players[]=['id'=>(int)$id,'fiks_id'=>$s['fiks_id'],'name'=>$s['name'],'enabled'=>$s['enabled'],'last_checked'=>$s['last_checked'],'error'=>$s['error'],'warnings'=>$s['snapshot']['warnings']??[],'news'=>array_slice($news,0,100),'news_total'=>count($news),'reviews'=>array_values($reviews),'news_filter'=>PlayerReview::newsSelection((int)$id,$s,(int)get_option('rrfr_player_review_enabled_at',PHP_INT_MAX))];
         }
         $next=wp_next_scheduled('rrfr_players_tick');
-        return ['version'=>'0.9.6','engine'=>'radio-rubben-fotballrobot','features'=>['candidate_approval','verified_video','supporting_sources'],'automatic_proposals'=>(bool)get_option('rrfr_player_review_enabled_at',0),'publication'=>'manual_approval_required','next_check'=>$next?gmdate(DATE_ATOM,$next):null,'queue_error'=>get_option('rrfr_review_queue_error',null),'players'=>$players];
+        return ['version'=>'0.9.9','engine'=>'radio-rubben-fotballrobot','features'=>['candidate_approval','verified_video','supporting_sources','player_news_filter'],'automatic_proposals'=>(bool)get_option('rrfr_player_review_enabled_at',0),'publication'=>'manual_approval_required','next_check'=>$next?gmdate(DATE_ATOM,$next):null,'queue_error'=>get_option('rrfr_review_queue_error',null),'players'=>$players];
     }
     public static function routes(): void {
         register_rest_route('rr-fotballrobot/v1','/player-monitor',['methods'=>'GET','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn()=>Robot::response(static fn()=>self::status())]);
@@ -100,6 +105,9 @@ final class PlayerMonitor {
     public static function panel(): void {
         $s=self::status();
         echo '<section class="rrfr-card"><h2>Samlet spillerovervåkning</h2><p>NFF-data og kontrollerte avis- og klubbnyheter går til den nye Fotballroboten. Nyhetssøket leverer kilder hit; roboten skriver, faktakontrollerer og sender forslag til din godkjenning.</p><p>Automatiske artikkelforslag: <strong>'.($s['automatic_proposals']?'På':'Av').'</strong>. Publisering krever din sluttgodkjenning. <a href="'.esc_url(PlayerReview::url()).'">Åpne artikler til godkjenning</a>.</p>';
+        $filtered=[];foreach($s['players'] as $player)foreach($player['news_filter']['excluded_counts'] as $reason=>$number)$filtered[$reason]=($filtered[$reason]??0)+$number;
+        echo '<p><strong>Nyhetsfilter aktivt:</strong> Vanlige bytter og tekniske rettelser beholdes i historikken. Mål og utvisninger kan gi ett forslag per spiller og kamp når kampdato, sluttstatus, lag, turnering og resultat er bekreftet. Kamper eldre enn 48 timer gir ikke automatiske forslag.</p>';
+        if($filtered){echo '<details><summary>Hvorfor noen registreringer ikke blir artikkelforslag</summary><ul>';foreach($filtered as $reason=>$number)echo '<li>'.esc_html(PlayerNewsFilter::REASONS[$reason]??$reason).' ('.(int)$number.')</li>';echo '</ul></details>';}
         if(!$s['next_check'])echo '<p class="rrfr-notice">Spillerkontrollen mangler en planlagt kjøring.</p>';
         if($s['queue_error'])echo '<p class="rrfr-notice">'.esc_html($s['queue_error']).'</p>';
         $count=0;

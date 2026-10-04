@@ -3,6 +3,7 @@ namespace RadioRubben\Fotballrobot;
 require_once __DIR__.'/publication-gate.php';
 require_once __DIR__.'/editorial-notice.php';
 require_once __DIR__.'/player-monitor.php';
+require_once __DIR__.'/player-news-filter.php';
 require_once __DIR__.'/review-desk.php';
 
 /** Durable, human-approved publication. Links only open the authenticated review page. */
@@ -78,19 +79,31 @@ final class PlayerReview {
         $since=get_option('rrfr_player_review_enabled_at',0);if(!$since)return;
         // One proposal per run across both sources; oldest unhandled observation first.
         $candidates=PlayerMonitor::candidates();
-        foreach(Players::ids() as $id){$s=Players::state((int)$id);if(!$s['enabled'])continue;$groups=[];
-            foreach($s['events'] as $e)if($e['status']==='new'&&strtotime($e['detected_at'])>=$since)$groups[$e['detected_at']][]=$e;
-            foreach($groups as $at=>$events){
-                $key='events:'.$id.':'.$at;
-                if(PlayerMonitor::review($key))continue;
-                $candidates[]=['key'=>$key,'at'=>$at,'facts'=>['type'=>'events','events'=>$events,'source'=>PlayerFacts::url($s['fiks_id']),'fetched_at'=>$at]];
-            }
+        foreach(Players::ids() as $id){$s=Players::state((int)$id);if(!$s['enabled'])continue;
+            foreach(self::newsSelection((int)$id,$s,(int)$since)['candidates'] as $candidate)$candidates[]=$candidate;
         }
         usort($candidates,static fn($a,$b)=>(strtotime($a['at'])<=>strtotime($b['at']))?:strcmp($a['key'],$b['key']));
         if(!$candidates)return;
         $next=$candidates[0];
         try{self::create($next['key'],$next['facts']);delete_option('rrfr_review_queue_error');}
         catch(\Throwable $e){update_option('rrfr_review_queue_error',$e->getMessage(),false);}
+    }
+    /** Read-only queue inspection; preserve old drafts, decisions and raw observations. */
+    public static function newsSelection(int $id,array $state,int $since): array {
+        $events=[];$handled=[];
+        foreach($state['events'] as $event){
+            $at=(string)($event['detected_at']??'');
+            if(($event['status']??'')!=='new'||strtotime($at)<$since)continue;
+            if(!array_key_exists($at,$handled))$handled[$at]=(bool)PlayerMonitor::review('events:'.$id.':'.$at);
+            if(!$handled[$at])$events[]=$event;
+        }
+        $selection=PlayerNewsFilter::select($state,$events);$candidates=[];
+        foreach($selection['proposals'] as $mid=>$proposal){
+            $key='match-news:'.$state['fiks_id'].':'.$mid;
+            if(!PlayerMonitor::review($key))$candidates[]=['key'=>$key]+$proposal;
+        }
+        unset($selection['proposals']);$selection['candidates']=$candidates;
+        return $selection;
     }
     public static function decide(int $id,int $version,string $hash,string $op,string $comment,string $editorFacts=''): void {
         if(!Robot::allowed()||!current_user_can('edit_post',$id))throw new \RuntimeException('Ingen tilgang.');

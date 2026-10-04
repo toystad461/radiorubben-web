@@ -85,7 +85,9 @@ $again=$monitor::ingest(1011,array_replace($input,['url'=>'https://www.brann.no/
 check(!$again['created']&&$again['source']['facts']===$input['facts'],'Canonical retry cannot overwrite evidence');
 R::tick();check($writes===$n,'Disabled auto-proposals retain inbox without generation');
 $options['rrfr_player_review_enabled_at']=time()-100;
-$profiles[1011]['events']=[['kind'=>'lineup','id'=>'sample','status'=>'new','detected_at'=>gmdate(DATE_ATOM,time()-60),'source'=>'https://www.fotball.no/fotballdata/kamp/?fiksId=123']];
+$goal=['id'=>'7','name'=>'Test Spiller','minute'=>'46','type'=>'Spillemål'];$sourceUrl='https://www.fotball.no/fotballdata/kamp/?fiksId=123';$start=gmdate(DATE_ATOM,time()-7200);
+$profiles[1011]['snapshot']['matches'][123]=['id'=>123,'source'=>$sourceUrl,'kickoff'=>$start,'events'=>[7=>$goal],'news_context'=>['id'=>123,'source'=>$sourceUrl,'kickoff'=>$start,'home'=>['id'=>1,'name'=>'Hjemme'],'away'=>['id'=>2,'name'=>'Borte'],'competition'=>['id'=>3,'name'=>'Testserie'],'score'=>[1,0],'finished'=>true,'checked_at'=>gmdate(DATE_ATOM)]];
+$profiles[1011]['events']=[['kind'=>'goals','key'=>'123:7','id'=>'sample','fiks_id'=>3942773,'before'=>null,'after'=>$goal,'status'=>'new','detected_at'=>gmdate(DATE_ATOM,time()-60),'source'=>$sourceUrl]];
 R::tick();check($writes===$n+1,'Only oldest NFF observation handled first');
 check(count($monitor::candidates())===1,'News remains queued for next tick');
 R::tick();check($writes===$n+2,'News enters same quality and approval flow');
@@ -118,5 +120,17 @@ R::decide($editId,$s['version'],R::hash(get_post($editId)),'retry','Bruk de regi
 check(R::state($editId)['facts']['editorial_facts'][0]===$note && count(R::state($editId)['facts']['editorial_facts'])===1,'Retry preserves evidence without duplication');
 check(R::state($editId)['status']==='pending' && RadioRubben\Fotballrobot\PublicationGate::current($editId,get_post($editId)),'New evidence and text are quality checked together');
 wp_update_post(['ID'=>$editId,'post_status'=>'publish']);check(get_post($editId)->post_status==='draft','Manual approval still required after new facts');
+// End-to-end queue regression: ordinary substitutions/renames never reach Writer or mail.
+$writesBefore=$writes;$mailBefore=count($mail);$postsBefore=count($posts);
+$sub=$profiles[1011]['events'][0];$sub['after']['type']='Utbytte';$sub['key']='123:8';$sub['after']['id']='8';$sub['detected_at']=gmdate(DATE_ATOM);
+$profiles[1011]['snapshot']['matches'][123]['events'][8]=$sub['after'];$profiles[1011]['events']=[$sub];
+$renamed=$sub;$renamed['before']=$sub['after'];$renamed['before']['type']='Ut: Test Spiller';$profiles[1011]['events'][]=$renamed;
+$beforeProfile=serialize($profiles);R::tick();R::tick();
+check($writes===$writesBefore&&count($mail)===$mailBefore&&count($posts)===$postsBefore,'Routine and technical changes generate no posts, AI calls or email');
+check(serialize($profiles)===$beforeProfile,'Filtered events are preserved, not marked consumed or deleted');
+// A later discovery time for an already proposed match cannot duplicate the article.
+$againEvent=$sub;$againEvent['key']='123:9';$againEvent['after']['id']='9';$againEvent['after']['type']='Spillemål';
+$profiles[1011]['events']=[$againEvent];$profiles[1011]['snapshot']['matches'][123]['events'][9]=$againEvent['after'];R::tick();
+check($writes===$writesBefore&&count($mail)===$mailBefore,'Player and match identity prevents second article across observation timestamps');
 echo "$count approval checks passed; mocked existing Microsoft mail transport\n";
 }
