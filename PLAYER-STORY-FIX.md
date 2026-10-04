@@ -28,3 +28,11 @@ REST and verified published with featured_media 813.
 Follow-up 0.10.3: surface pending corrections in the existing Studio queue and
 delegate its explicit approval/rejection to the same protected methods. Seven
 allowlisted runtime files, baseline 0.10.2. No Studio code or settings changed.
+
+Verified live 2026-10-04 22:55 UTC: runtime 0.10.3, commit
+10b70edf246f2c1acd7a05682d4cbd88f9f63cf8, release 37241759848 success,
+full integration 37241759847 success. Authenticated newsroom GET shows the
+requested correction ready, canApprove true, original post still published
+with featured_media 813. Independent fact and language checks passed. The
+replacement text remains pending explicit approval; no article was republished
+and no test email was sent. Public browser inspection confirms the image.
