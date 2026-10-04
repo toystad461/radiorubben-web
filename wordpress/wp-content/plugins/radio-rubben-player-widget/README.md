@@ -4,7 +4,7 @@ Standardvisningen er nå en kompakt, sammenleggbar spillerrekke med vannrett bla
 
 `[rr_spillerkamper]` viser spillerrekken; `player="3942773"` avgrenser til én person. Den tidligere store visningen er fortsatt tilgjengelig med `[rr_spillerkamper layout="cards" limit="3"]`. `limit` gjelder bare store kampkort. MyGame-knappen åpner en bekreftet kampside også når en konkret TV 2-sending ennå ikke er tilgjengelig. Identitet, avspark og planlagt status må fortsatt stemme med NFF. «TV 2» vises som en egen lenke når sendings-ID-en er bekreftet. Ingen klokkeslett brukes til å hevde at spilleren spiller nå.
 
-Den kompakte oppdateringen har 13 egne kontroller i tillegg til de 63 eksisterende, samt mobil/desktop-kontroll av høyde, vannrett blaing, sammenfolding og utløpte kilde-/troppsdata. Førstegangsinstallasjonen nedenfor er historikk; 1.1.0 rulles ut med `deploy-player-widget-compact.sh`, som tar backup og kontrollerer 1.0.1-filene før den bytter kun widgetens egne filer.
+Den kompakte oppdateringen har 13 egne kontroller i tillegg til de 63 eksisterende, samt mobil/desktop-kontroll av høyde, vannrett blaing, sammenfolding og utløpte kilde-/troppsdata. Førstegangsinstallasjonen nedenfor er historikk; 1.1.0 ble publisert fra `7e636c41ffaccb27d2a983408d149617164140a6` med `deploy-player-widget-compact.sh`. Jobb [37209335706](https://github.com/toystad461/radiorubben-web/actions/runs/37209335706) bestod, inkludert fersk MyGame-side for Fana–Åsane 2, uendrede spillerinnstillinger og begge offentlige plasseringer ved 360/1280 px. Backup ligger utenfor webrot i `.radiorubben-deploy/backups/player-widget-compact-7e636c41ffaccb27d2a983408d149617164140a6/code.tar.gz`. Kun åtte widgetfiler ble byttet/lagt til; temaet er uendret. Sport-sidens eksisterende widgetgruppe er gjort kortere, slik at overskriften ikke gjentas. Ingen main-merge er utført.
 
 Viser kommende kamper for valgte lokale spillere med den godkjente Radio Rubben-profilen, bekreftede MyGame-lenker og separat troppsstatus. Ingen video bygges inn. Se-knappen åpner den konkrete TV 2 Play-sendingen; abonnement håndteres der.
 
@@ -14,7 +14,7 @@ Viser kommende kamper for valgte lokale spillere med den godkjente Radio Rubben-
 2. Åpne **Innstillinger → Radio Rubben – spillerkamper**. Spillerlisten leses fra den eksisterende Fotballroboten (`rr_robot_player` og `rrfr_player_{id}`); ingen av disse dataene endres.
 3. Velg spillerne som skal vises offentlig, velg lag-ID-er og slå på kampoversikten. Det er bevisst ingen automatisk publisering av alle private spillerprofiler ved aktivering.
 4. Klikk «Oppdater neste runde», eller vent på WP-Cron. Hver runde behandler ett lag og inntil to kamper. Forhåndsvisningen står på samme innstillingsside.
-5. Legg en **Kortkode**-blokk på ønsket side: `[rr_spillerkamper]`. Bruk `[rr_spillerkamper limit="3"]` for flere kamper eller `[rr_spillerkamper player="3942773"]` for én NFF-person-ID. Alternativt velges **Radio Rubben – spillerkamper** under Utseende → Widgeter.
+5. Legg en **Kortkode**-blokk på ønsket side: `[rr_spillerkamper]`. Bruk `[rr_spillerkamper layout="cards" limit="3"]` for store kampkort eller `[rr_spillerkamper player="3942773"]` for én NFF-person-ID. Alternativt velges **Radio Rubben – spillerkamper** under Utseende → Widgeter.
 
 Ingen forsidemal endres automatisk. Kortet er uavhengig av aktivt theme og kan også brukes etter et senere theme-bytte.
 
