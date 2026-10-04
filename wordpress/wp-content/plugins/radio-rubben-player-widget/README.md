@@ -12,6 +12,10 @@ Viser kommende kamper for valgte lokale spillere med den godkjente Radio Rubben-
 
 15 egne kontroller dekker automatisk godkjenning, flere lag, sortering, flyttet kamp, gamle klubber, pausing og identitetsvern. Oppdateringen bruker `deploy-player-widget-roster.sh`, med kontrollsum mot 1.1.0 og sikkerhetskopi av seks berørte runtime-filer utenfor webrot. Ingen tema- eller sideinnholdsendring. Manglende godkjente NFF-profiler fylles gjennom Fotballrobotens egen `Players::refresh`; godkjenninger og manuelle widgetvalg endres ikke. Nærmeste kamp per spiller prioriteres ved kildeinnhenting.
 
+Versjon 1.2.0 er publisert fra `f6608df58b3e54921c746af49b2854498f248594`. [Publisering og livekontroll 37210827562](https://github.com/toystad461/radiorubben-web/actions/runs/37210827562) bestod med 12 spillere, stigende kampdatoer, ingen fjernede merknader, MyGame-lenker, sideveis blaing og sammenfolding på begge sider ved 360/1280 px. 91 PHP-kontroller og begge offline nettlesersuiter bestod. Backup: `.radiorubben-deploy/backups/player-widget-roster-f6608df58b3e54921c746af49b2854498f248594/code.tar.gz`.
+
+Kildebegrensning ved publisering: Torbjørn Kallevåg vises som godkjent spiller, men Fotballrobotens NFF-parser avviste sesongtabellen med «Ukjent format eller spiller-ID i sesongstatistikken». Hans `snapshot` er fortsatt tom; det vises ingen antatt klubb, kamp eller status. De fire Bjarg-profilene fikk grunnlagsdata gjennom robotens egen oppdatering. Øvrige godkjenninger, profilnotater og manuelle widgetvalg er bevart.
+
 ## Installasjon og plassering
 
 1. Installer kun denne pluginmappen på WordPress og aktiver pluginen. PHP 8.0+, DOM og mbstring kreves.
