@@ -32,7 +32,7 @@ final class ReviewDigest {
         $error=get_option('rrfr_newsroom_job_error','');if($error)$message.=' '.$error;
         if(!get_option('rrfr_newsroom_enabled',false))$message='Samlevarsler er ikke aktivert.';
         if(($lock=get_option('rrfr_digest_lock',0))&&$lock<time()-600)$message.=' Varslingsjobben er avbrutt og må kontrolleres.';
-        return ['mode'=>'digest','status'=>$s['status']??'idle','acceptedAt'=>isset($s['accepted_at'])?gmdate(DATE_ATOM,$s['accepted_at']):null,'message'=>$message];
+        return ['mode'=>'digest','status'=>$s['status']??'idle','acceptedAt'=>isset($s['accepted_at'])?gmdate(DATE_ATOM,$s['accepted_at']):null,'message'=>$message,'lastPreparation'=>get_option('rrfr_newsroom_last_prepare',null)];
     }
     public static function worker(string $mode): array {
         if(!in_array($mode,['tick','queue'],true))throw new \RuntimeException('Ugyldig jobb.');
@@ -89,7 +89,7 @@ final class ReviewDigest {
     }
     public static function prepare(): void {
         if(!get_option('rrfr_newsroom_enabled',false))return;
-        try{self::worker('tick');delete_option('rrfr_newsroom_job_error');}catch(\Throwable $e){update_option('rrfr_newsroom_job_error','Klargjøringen trenger kontroll i nyhetsdesken.',false);}
+        try{$result=self::worker('tick');update_option('rrfr_newsroom_last_prepare',['at'=>gmdate(DATE_ATOM),'state'=>$result['state']??'unknown'],false);delete_option('rrfr_newsroom_job_error');}catch(\Throwable $e){update_option('rrfr_newsroom_job_error','Klargjøringen trenger kontroll i nyhetsdesken.',false);}
     }
     public static function register(): void {
         if(!get_option('rrfr_newsroom_enabled',false))return;
