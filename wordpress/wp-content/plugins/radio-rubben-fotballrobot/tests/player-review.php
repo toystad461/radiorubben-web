@@ -33,6 +33,11 @@ function admin_url($p){return 'https://example.test/wp-admin/'.$p;}function wp_m
 function current_user_can($cap,...$a){return $GLOBALS['allowed']&&($cap!=='publish_posts'||$GLOBALS['publish']);}
 function get_current_user_id(){return 7;}function sanitize_textarea_field($s){return trim(strip_tags($s));}
 $f=['source'=>'https://www.fotball.no/fotballdata/person/profil/?fiksId=3942773','fetched_at'=>'2026-09-26T00:00:00Z'];
+$silent=R::create('silent:1',$f,false,false);
+check(get_post($silent)->post_status==='draft' && count($mail)===0,'Explicit silent draft sends no message');
+check(R::state($silent)['status']==='pending','Silent draft still needs manual approval');
+wp_update_post(['ID'=>$silent,'post_status'=>'publish']);check(get_post($silent)->post_status==='draft','Silent draft retains publication gate');
+$writes=0;
 putenv('RRFR_REVIEW_FROM_EMAIL=approved-sender@example.org');putenv('RRFR_REVIEW_FROM_APPROVED=1');
 $id=R::create('test:1',$f,true);check($writes===1,'One write');check(count($mail)===1,'One notification');
 check($mail[0]['to']===R::TO&&str_contains(implode(' ',$mail[0]['headers']),R::FROM),'Explicit mail addresses');
