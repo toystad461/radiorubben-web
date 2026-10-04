@@ -1,0 +1,26 @@
+name: Verify published player widget
+on:
+  push:
+    branches: ['feat/bomlo-player-match-widget']
+    paths: ['.github/workflows/player-widget-live-check.yml']
+permissions:
+  contents: read
+jobs:
+  public-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Check both public placements
+        run: |
+          npm install --prefix /tmp/rrpw-ui --no-audit --no-fund playwright@1.56.1
+          /tmp/rrpw-ui/node_modules/.bin/playwright install chromium --with-deps --only-shell
+          NODE_PATH=/tmp/rrpw-ui/node_modules node scripts/player-widget-live-ui.cjs
+      - name: Live screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: player-widget-live-pages
+          path: player-widget-live-*.png

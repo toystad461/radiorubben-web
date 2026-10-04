@@ -1,4 +1,4 @@
-# Radio Rubben – spillerkamper 1.0.0
+# Radio Rubben – spillerkamper 1.0.1
 
 Viser kommende kamper for valgte lokale spillere med den godkjente Radio Rubben-profilen, bekreftede MyGame-lenker og separat troppsstatus. Ingen video bygges inn. Se-knappen åpner den konkrete TV 2 Play-sendingen; abonnement håndteres der.
 
@@ -52,12 +52,17 @@ Innstillinger krever administrator og nonce. Foreldede adminskjemaer avvises. Ba
 
 `tests/preview.php` produserer en lokal layoutprøve uten WordPress. Dato/tid tilpasses kjøringen; prøven publiserer ingenting. `scripts/player-widget-ui.cjs` kontrollerer 320/360/736/1100 px, bilder, lenke, detaljfelt og utløpte data. Klubblogo-fixturene er nedskalerte kopier av de to offentlige logoene som den observerte MyGame-siden bruker: `fiks-no3302.png` og `fiks-no781.png`. Ingen nettverk, video, e-post eller AI-kall brukes i testene.
 
-## Før aktivering på Radio Rubben
+## Publisert på Radio Rubben 4. oktober 2026
 
-Dette er kildekode og testet implementasjon. Pluginen er ikke installert eller aktivert av denne endringen. Ingen eksisterende PR er endret, ingen merge eller bred deploy er utført.
+Versjon 1.0.1 ble installert og aktivert selektivt fra `ed33789911f21a0e11edff732cf71c8ed8c36199`, etter brukerens publiseringsgodkjenning. Produksjonsjobben er [37199403512](https://github.com/toystad461/radiorubben-web/actions/runs/37199403512). Main er ikke flettet eller bredt publisert, og Fotballrobotens kode/spillerdata er uendret.
 
-1. Installer kun denne pluginen, uten `tests/`. Ikke kjør repositoryets brede WordPress-publisering for dette.
-2. Bekreft en fersk NFF-terminliste og kampside fra WordPress-serveren. Direkte lesing fra utviklingsmiljøet ga HTTP 403; dette er ikke en vellykket live-test av NFF-adapteren. Nettlesing og Fotballrobotens eksisterende adapter dokumenterer formatet, og kontrakttestene består.
-3. Start med Tiril / lag 35897 og kontroller MyGame-lenke for kamp 8989882 mens den er aktuell. Deretter de øvrige godkjente lagene. Ikke bruk fixture-data i produksjon.
-4. Bekreft cronkjøring og riktig cacheoppsett. Prøv deretter kortkode på en WordPress-kladd og kontroller med aktivt theme før ønsket plassering publiseres.
-5. Tilbakeføring: fjern kortkoden/widgeten og deaktiver bare denne pluginen. Dens cronjobb ryddes ved deaktivering. Ingen eksisterende spillerdata eller artikler er endret.
+- Forsiden: to nærmeste kamper over siste nyheter, via ett `rrpw_homepage`-hook i eksisterende `front-page.php`. Sport-side 769: `[rr_spillerkamper limit="6"]` ved `#bomlo-spillere`.
+- Valgte lag: Tiril → Brann 2 / 35897; Lasse → Åsane 2 / 20705; Troy og Sander → Tromsø / 2; Anna → Haugesund 2 / 210681. Øvrige lag i tabellen ovenfor er forslag, ikke aktive valg. Flere lag velges i administratorinnstillingene ved behov.
+- Fire ferske lagkilder bestod fra webhotellet. NFF-kamp 8989882 ga Sogndal–Brann 2 kl. 14.00, og MyGame bekreftet TV 2-lenken. Tiril var oppført som innbytter ved kontroll kl. 13.39. Dette er et historisk kontrollresultat, ikke en fast troppsstatus.
+- `rrpw_refresh` er registrert hvert femte minutt og er observert kjørt automatisk. WP-Cron er avhengig av sidetrafikk.
+- Forsiden (når `rrpw_homepage_enabled` er på) og sider med kortkoden får `DONOTCACHEPAGE`, WordPress `nocache_headers()` og LiteSpeeds dokumenterte `litespeed_control_set_nocache`-signal. Produksjonshodet `Cache-Control: no-cache, must-revalidate, max-age=0, no-store, private` er kontrollert. Ved andre temaplasserte kortkoder/widgeter må cache-unntak fortsatt konfigureres eksplisitt.
+- 63 kilde-/tilstandskontroller, lokale layoutkontroller ved fire bredder og ekte nettleserkontroll med aktivt theme ved 360/1280 px bestod. Selve TV 2-videoavspillingen er ikke testet.
+
+Publiseringsjobben er en avgrenset førstegangsinstallasjon: den nekter å erstatte en eksisterende pluginmappe eller en forside med endret kontrollsum. Ikke kjør den på nytt som en generell oppdatering. Skjermbildesjekken bruker denne konkrete publiseringskampen og er heller ikke en varig kampavhengig CI-test.
+
+Tilbakeføring: deaktiver bare `radio-rubben-player-widget` og fjern kortkodegruppen på Sport-siden. Forsidehooket blir da inaktivt. Original forside er sikkerhetskopiert utenfor webrot i `.radiorubben-deploy/backups/player-widget-ed33789911f21a0e11edff732cf71c8ed8c36199/front-page.php`; sammenlign nyere temaendringer før eventuell gjenoppretting. Deaktivering rydder pluginens egen cronjobb. Eksisterende artikler og fulgte spillerprofiler blir stående.
