@@ -1,0 +1,35 @@
+name: Inspect RSS Studio production baseline
+on:
+  push:
+    branches: ['codex/rss-studio-release-20261005']
+    paths: ['.github/workflows/rss-studio-preflight.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Inspect exact Studio files without generating, approving or sending mail
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/rss-studio-inspect/$GITHUB_SHA"
+          php -l scripts/rss-studio-inspect.php
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz scripts/rss-studio-inspect.php "$host:$stage/"
+          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file $stage/rss-studio-inspect.php"
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
