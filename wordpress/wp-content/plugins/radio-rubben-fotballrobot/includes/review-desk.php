@@ -117,6 +117,7 @@ final class ReviewDesk {
     }
     public static function article(int $id,array $m,array $ready=[]): void {
         $p=$m['post'];$s=$m['state'];$quality=get_post_meta($id,PublicationGate::META,true);
+        if($m['status']==='published'&&class_exists(PlayerCorrections::class))PlayerCorrections::render($id);
         echo '<section class="rrfr-card rrfr-reading"><p class="rrfr-badge">'.esc_html(self::label($m)).'</p><h2 class="rrfr-story-title">'.esc_html($p->post_title).'</h2>';
         if($m['status']==='published')echo '<p><a href="'.esc_url(get_permalink($id)).'">Se den publiserte artikkelen →</a></p>';
         if(!$m['quality']&&$p->post_status==='draft') {
@@ -156,13 +157,13 @@ final class ReviewDesk {
         echo '<details class="rrfr-review-details"><summary>Historikk og flere valg</summary><p><a href="'.esc_url(get_edit_post_link($id,'raw')).'">Åpne i WordPress</a> · <a href="'.esc_url(PlayerReview::url($id)).'">Hent siste lagrede tekst</a></p>';
         echo '<p>Kontroll: '.esc_html($quality['rulesVersion']??'Ikke kontrollert').'</p>';
         if($m['player']) {
-            $mailLabels=['none'=>'Ikke sendt','sending'=>'Utsending må kontrolleres','accepted'=>'Levert til e-postsystemet','failed'=>'Sending feilet'];
+            $mailLabels=['queued'=>'Venter på samlevarsel','none'=>'Ikke varslet','sending'=>'Utsending må kontrolleres','accepted'=>'Levert til e-postsystemet','failed'=>'Sending feilet'];
             echo '<p>E-post: '.esc_html($mailLabels[$s['mail']??'none']??'Ukjent').'</p>';
             if(!empty($s['mail_error']))echo '<p>'.esc_html($s['mail_error']).'</p>';
         }
         $ops=[];
         if($p->post_status==='draft') {
-            if($m['player']&&$m['pending'])$ops['mail']='Send e-post på nytt';
+            if($m['player']&&$m['pending'])$ops['mail']='Legg i samlevarsel';
             if($m['status']==='rejected'||($m['player']&&$m['status']==='test_approved'))$ops['resubmit']='Åpne for ny gjennomlesing';
             if($m['player']&&$m['status']==='failed')$ops['retry']='Prøv AI-skriving på nytt';
         }
@@ -183,12 +184,12 @@ final class ReviewDesk {
         echo '<script>document.getElementById("rrfr-desk-check").addEventListener("click",async function(){const c='.$config.';this.disabled=true;const s=document.getElementById("rrfr-desk-check-status");s.textContent="Kontrollerer språk og fakta …";try{const r=await fetch(c.url,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json","X-WP-Nonce":c.nonce},body:JSON.stringify({hash:c.hash})});const d=await r.json();if(r.ok){window.location.reload();return}s.textContent=d.message||"Kontrollen feilet. Last siden på nytt før nytt forsøk."}catch(e){s.textContent="Kontrollen ble avbrutt. Last siden på nytt før nytt forsøk."}});</script>';
     }
     private static function settings(): void {
-        echo '<details class="rrfr-card rrfr-settings"><summary>Innstillinger og testforslag</summary><p><a href="'.esc_url(MicrosoftMail::url()).'">E-postoppsett og tilkobling</a></p><p>Varslene lenker til denne innloggede siden. Svar på e-post behandles ikke automatisk.</p><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';
+        echo '<details class="rrfr-card rrfr-settings"><summary>Innstillinger og testforslag</summary><p><a href="'.esc_url(MicrosoftMail::url()).'">E-postoppsett og tilkobling</a></p><p>Samlevarslene lenker til den samlede nyhetsdesken i Studio. Svar på e-post behandles ikke automatisk.</p><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';
         $enabled=(bool)get_option('rrfr_player_review_enabled_at',0);PlayerReview::fields($enabled?'disable':'enable');
         echo '<p>Automatiske spillerforslag: <strong>'.($enabled?'Aktivert':'Ikke aktivert').'</strong></p><button>'.($enabled?'Stopp automatiske forslag':'Aktiver nye forslag').'</button></form>';
         echo '<h3>Test med en spiller</h3><form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';PlayerReview::fields('test');echo '<label>Spiller <select name="player_id">';
         foreach(Players::ids() as $pid){$state=Players::state((int)$pid);echo '<option value="'.esc_attr($pid).'">'.esc_html($state['name']).'</option>';}
-        echo '</select></label> <button>Lag og send testforslag</button><p>Bruker AI. Testforslaget kan aldri publiseres.</p></form></details>';
+        echo '</select></label> <button>Lag testforslag</button><p>Bruker AI. Testforslaget kan aldri publiseres.</p></form></details>';
     }
 }
 add_action('admin_post_rrfr_review_desk',[ReviewDesk::class,'action']);

@@ -1,0 +1,58 @@
+name: Connect staged story corrections to unified newsdesk
+on:
+  push:
+    branches: ['fix/player-story-image']
+    paths: ['.github/workflows/player-story-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Exact package and regression tests
+        run: |
+          set -euo pipefail
+          php -r '$m=json_decode(file_get_contents("scripts/player-story-release.json"),true);foreach($m["after"]as$p=>$h)if(hash_file("sha256","wordpress/".$p)!==$h)exit(1);'
+          root=wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          find "$root" -name '*.php' -print0 | xargs -0 -n1 php -l
+          for test in run lineups writer writer-flow inline-sources editorial-quality staged-quality publication-gate player-review player-corrections review-desk review-digest newsroom player-news-filter players candidates-media learning report bootstrap match-jobs; do php "$root/tests/$test.php"; done
+          php -l scripts/player-story-install.php
+          php -l scripts/player-story-postflight.php
+          bash -n scripts/deploy-player-story.sh
+          git diff --check
+  deploy:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Selective install with backup and rollback
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/player-story/$GITHUB_SHA"
+          mkdir -p release/scripts
+          cp scripts/player-story-{install,postflight}.php scripts/player-story-release.json scripts/deploy-player-story.sh release/scripts/
+          php -r '$m=json_decode(file_get_contents("scripts/player-story-release.json"),true);foreach($m["after"]as$p=>$h){@mkdir(dirname("release/runtime/".$p),0700,true);copy("wordpress/".$p,"release/runtime/".$p);}'
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz release/ "$host:$stage/"
+          ssh "$host" "bash $stage/scripts/deploy-player-story.sh $GITHUB_SHA"
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

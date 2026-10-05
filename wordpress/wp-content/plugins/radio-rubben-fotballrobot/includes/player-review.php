@@ -5,12 +5,24 @@ require_once __DIR__.'/editorial-notice.php';
 require_once __DIR__.'/player-monitor.php';
 require_once __DIR__.'/player-news-filter.php';
 require_once __DIR__.'/review-desk.php';
+require_once __DIR__.'/review-digest.php';
 
 /** Durable, human-approved publication. Links only open the authenticated review page. */
 final class PlayerReview {
     const TO='thomas.sellevold-oystad@radiorubben.no';
     const FROM='fotballrobot@radiorubben.no';
     const META='_rrfr_player_review';
+    const DEFAULT_FEATURED_MEDIA=813; // Radio Rubben Fotball, without a club logo.
+    public static function ensureImage(int $id): void {
+        // Respect an editor-selected image. Never replace it during a rewrite.
+        $selected=(int)get_post_meta($id,'_thumbnail_id',true);
+        if($selected) {
+            if(!wp_attachment_is_image($selected))throw new \RuntimeException('Hovedbildet er ikke tilgjengelig. Velg et nytt bilde før godkjenning.');
+            return;
+        }
+        if(!wp_attachment_is_image(self::DEFAULT_FEATURED_MEDIA)||!set_post_thumbnail($id,self::DEFAULT_FEATURED_MEDIA))
+            throw new \RuntimeException('Fotballbildet mangler. Velg et hovedbilde før godkjenning.');
+    }
     public static function menu(): void {add_submenu_page('rr-fotballrobot','Artikler til godkjenning','Artikler til godkjenning','manage_options','rrfr-player-review',[self::class,'page']);}
     public static function url(int $id=0): string {return admin_url('admin.php?page=rrfr-player-review'.($id?'&post_id='.$id:''));}
     public static function hash($p): string {return hash('sha256',$p->post_title."\n".$p->post_content."\n".$p->post_excerpt);}
@@ -22,15 +34,7 @@ final class PlayerReview {
     }
     public static function headers(): array {return ['Content-Type: text/plain; charset=UTF-8','From: Fotballroboten <'.self::FROM.'>'];}
     public static function notify(int $id): void {
-        self::lock('mail_'.$id,static function() use($id){
-            $s=self::state($id);$p=get_post($id);
-            if($s['status']!=='pending'||in_array($s['mail']??'', ['accepted','sending'],true))return;
-            $s['mail']='sending';self::put($id,$s);
-            $subject=($s['test']?'[TEST] ':'').'Fotballroboten: '.$p->post_title;
-            $body=($s['test']?"TEST – ingen publisering, også når du velger ja.\n\n":'').$p->post_title."\n\n".$p->post_excerpt."\n\nLes hele forslaget og velg ja, nei eller be om endringer med kommentar:\n".self::url($id)."\n\nDu må logge inn i WordPress. Lenken publiserer ingenting. Kommentarer skrives på godkjenningssiden; svar på denne e-posten behandles ikke automatisk.\n\nFotballroboten · Radio Rubben";
-            try {$ok=MicrosoftMail::send($subject,$body);unset($s['mail_error']);$s['mail']=$ok?'accepted':'failed';}catch(\Throwable $e){$s['mail']='failed';$s['mail_error']=$e->getMessage();}
-            $s['mail_at']=gmdate(DATE_ATOM);self::put($id,$s);
-        });
+        self::lock('mail_'.$id,static fn()=>ReviewDigest::enqueue($id));
     }
     public static function create(string $key,array $facts,bool $test=false,bool $notify=true): int {
         return self::lock('create_'.hash('sha256',$key),static function()use($key,$facts,$test,$notify){
@@ -46,6 +50,7 @@ final class PlayerReview {
         $s=self::state($id);$p=get_post($id);$before=self::hash($p);
         update_post_meta($id,PublicationGate::META,['rulesVersion'=>EditorialQuality::RULES_VERSION,'publishable'=>false,'findings'=>['Ny skrive- og kvalitetskontroll er ikke fullført.']]);
         try {
+            self::ensureImage($id);
             $a=Writer::playerArticle($s['facts'],$comment,$s['article']??null);
             // Never overwrite a human edit made while the request was running.
             if(self::hash(get_post($id))!==$before||get_post($id)->post_status!=='draft')throw new \RuntimeException('Artikkelen ble endret under skriving. Teksten din er beholdt.');

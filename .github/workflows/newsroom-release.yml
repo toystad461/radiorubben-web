@@ -1,0 +1,55 @@
+name: Activate native WordPress newsroom jobs
+on:
+  push:
+    branches: ['feat/newsroom-digest']
+    paths: ['.github/workflows/newsroom-release.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Check exact release bytes and full football regression suite
+        run: |
+          set -euo pipefail
+          php -r '$m=json_decode(file_get_contents("scripts/newsroom-release.json"),true);$p="scripts/".$m["studio_package"];if(hash_file("sha256",$p)!==$m["studio_package_sha256"])exit(1);$s=json_decode(file_get_contents($p),true);foreach($m["after"] as $path=>$hash){$text=$s["files"][$path]??file_get_contents("wordpress/".$path);if(hash("sha256",$text)!==$hash)exit(2);if(str_ends_with($path,".php")){ $f=tempnam(sys_get_temp_dir(),"newsroom-");file_put_contents($f,$text);passthru("php -l ".escapeshellarg($f),$code);unlink($f);if($code)exit($code);}}'
+          root=wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          find "$root" -name '*.php' -print0 | xargs -0 -n1 php -l
+          for script in newsroom-install newsroom-postflight newsroom-connect newsroom-activate; do php -l "scripts/$script.php"; done
+          bash -n scripts/deploy-newsroom.sh
+          for test in run lineups writer writer-flow inline-sources editorial-quality staged-quality publication-gate player-review review-desk review-digest newsroom player-news-filter players candidates-media learning report bootstrap match-jobs; do php "$root/tests/$test.php"; done
+          git diff --check
+  deploy:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Upload fixed release set and activate using existing server connection
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/newsroom/$GITHUB_SHA"
+          mkdir -p release/scripts/release-artifacts
+          cp scripts/newsroom-{install,postflight,connect,activate}.php scripts/newsroom-release.json scripts/deploy-newsroom.sh release/scripts/
+          cp scripts/release-artifacts/studio-5fdee8e.json release/scripts/release-artifacts/
+          php -r '$m=json_decode(file_get_contents("scripts/newsroom-release.json"),true);foreach($m["after"] as $p=>$h)if(str_starts_with($p,"wp-content/")){@mkdir(dirname("release/runtime/".$p),0700,true);copy("wordpress/".$p,"release/runtime/".$p);}'
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz release/ "$host:$stage/"
+          ssh "$host" "bash $stage/scripts/deploy-newsroom.sh $GITHUB_SHA"
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
