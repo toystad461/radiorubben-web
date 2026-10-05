@@ -11,7 +11,10 @@
 <header class="rr-header">
   <div class="rr-wrap rr-header-inner">
     <a class="rr-brand" href="<?php echo esc_url(home_url('/')); ?>" aria-label="Radio Rubben hjem">
-      <img src="<?php echo esc_url(rr_one_logo_url()); ?>" alt="Radio Rubben">
+      <picture>
+        <source media="(max-width: 720px)" srcset="<?php echo esc_url(rr_one_logo_url('compact')); ?>" width="1700" height="670">
+        <img src="<?php echo esc_url(rr_one_logo_url()); ?>" alt="Radio Rubben" width="1700" height="760">
+      </picture>
     </a>
     <a class="rr-member-entry" href="<?php echo esc_url(home_url('/min-side/')); ?>" aria-label="<?php echo esc_attr(rr_member_entry_label()); ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span>Min Rubben</span></a>
     <button class="rr-menu-toggle" type="button" aria-label="Åpne meny" aria-expanded="false" aria-controls="rr-primary-nav"><span></span><span></span><span></span></button>

@@ -1,0 +1,27 @@
+RADIO RUBBEN - LOGOPAKKE / 30.09.2026
+
+Basert på vedlagt masterlogo med play-symbol, radiobølger og verdilinjen:
+LOKAL • INKLUDERENDE • VERDIG • ENGASJERENDE
+
+SVG: skalerbare konturer, uten fontavhengigheter og uten innebygde rasterbilder.
+PNG: 2400 px brede logoer; profilbilder og ikoner 1080 x 1080 px.
+Transparente PNG-filer har ekte alfakanal.
+Ikoner: favicon.ico samt PNG i 16, 32, 48, 180, 192 og 512 px.
+
+FARGER
+Rød #FF001B, svart #000000, hvit #FFFFFF. Rødfargen er normalisert
+fra den vedlagte PNG-logoen; ingen tidligere original fargespesifikasjon forelå.
+Fargene er RGB for skjerm. Trykkeriet må avtale CMYK/spotfarge og prøve med deg.
+
+BRUK
+Hvit skrift på mørke flater; svart skrift på lyse flater.
+Bruk logo uten verdilinje når liten tekst blir uleselig.
+Bruk ikonet på de aller minste flatene. Behold proporsjoner og luft rundt logoen.
+Profilbildene har ekstra luft for sirkulær beskjæring.
+Forslag til OneDrive-plassering: Radio Rubben / Sosiale Medier / Profil og logo / 2026.
+
+OM FILENE
+Dette er en vektorisering av den leverte PNG-en, ikke en original vektormaster.
+Konturene følger bildepunktene; svært stor trykkproduksjon kan kreve optisk finpuss.
+Liggende logo og ikon er avledede varianter satt sammen fra samme original.
+Logoens bokstaver er konturer; ingen erstatningsfont brukes i selve logoen.
