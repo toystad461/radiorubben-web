@@ -1,0 +1,590 @@
+[
+  {
+    "scenario": "radio",
+    "width": 320,
+    "state": {
+      "width": 320,
+      "scrollWidth": 320,
+      "focus": "radio",
+      "sections": [
+        "nettradio",
+        "nyheter",
+        "sport"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "radio",
+    "width": 390,
+    "state": {
+      "width": 390,
+      "scrollWidth": 390,
+      "focus": "radio",
+      "sections": [
+        "nettradio",
+        "nyheter",
+        "sport"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "radio",
+    "width": 768,
+    "state": {
+      "width": 768,
+      "scrollWidth": 768,
+      "focus": "radio",
+      "sections": [
+        "nettradio",
+        "nyheter",
+        "sport"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "radio",
+    "width": 1440,
+    "state": {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "focus": "radio",
+      "sections": [
+        "nettradio",
+        "nyheter",
+        "sport"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "news",
+    "width": 320,
+    "state": {
+      "width": 320,
+      "scrollWidth": 320,
+      "focus": "news",
+      "sections": [
+        "nyheter",
+        "nettradio",
+        "sport"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "news",
+    "width": 390,
+    "state": {
+      "width": 390,
+      "scrollWidth": 390,
+      "focus": "news",
+      "sections": [
+        "nyheter",
+        "nettradio",
+        "sport"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "news",
+    "width": 768,
+    "state": {
+      "width": 768,
+      "scrollWidth": 768,
+      "focus": "news",
+      "sections": [
+        "nyheter",
+        "nettradio",
+        "sport"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "news",
+    "width": 1440,
+    "state": {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "focus": "news",
+      "sections": [
+        "nyheter",
+        "nettradio",
+        "sport"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "sport",
+    "width": 320,
+    "state": {
+      "width": 320,
+      "scrollWidth": 320,
+      "focus": "sport",
+      "sections": [
+        "sport",
+        "nettradio",
+        "nyheter"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "sport",
+    "width": 390,
+    "state": {
+      "width": 390,
+      "scrollWidth": 390,
+      "focus": "sport",
+      "sections": [
+        "sport",
+        "nettradio",
+        "nyheter"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "sport",
+    "width": 768,
+    "state": {
+      "width": 768,
+      "scrollWidth": 768,
+      "focus": "sport",
+      "sections": [
+        "sport",
+        "nettradio",
+        "nyheter"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  },
+  {
+    "scenario": "sport",
+    "width": 1440,
+    "state": {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "focus": "sport",
+      "sections": [
+        "sport",
+        "nettradio",
+        "nyheter"
+      ],
+      "audioCount": 1,
+      "images": [
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/football.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/images/mosterhamn.webp",
+          "loaded": true
+        },
+        {
+          "src": "http://127.0.0.1:12379/theme-next/radio-rubben-next/assets/brand/2026-09-30/SVG/07-Uten-verdilinje-hvit.svg",
+          "loaded": true
+        }
+      ],
+      "mini": true
+    },
+    "errors": [],
+    "failed": [],
+    "menuAndPlayerRecovery": true
+  }
+]
