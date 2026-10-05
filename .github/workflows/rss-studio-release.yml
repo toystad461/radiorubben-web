@@ -1,0 +1,55 @@
+name: Release bounded review with fixed real RSS source and legacy completion
+on:
+  push:
+    branches: ['codex/rss-studio-release-20261005']
+    paths: ['.github/workflows/rss-studio-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify pinned source bytes and PHP
+        run: |
+          set -euo pipefail
+          php scripts/rss-studio-artifact-check.php # verified canonical Uniweb directory
+          find /tmp/rss-studio-check -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l scripts/rss-studio-install.php
+          php -l scripts/rss-studio-live-test.php
+          php -l scripts/rss-studio-backfill.php
+          bash -n scripts/rss-studio-deploy.sh
+          git diff --check
+  deploy:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Install only three Studio files with verified backup
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/rss-studio/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz scripts/rss-studio-{install.php,live-test.php,backfill.php,release.json,deploy.sh} scripts/release-artifacts/rss-studio.json "$host:$stage/"
+          ssh "$host" "umask 077; mkdir -p $stage/scripts/release-artifacts; mv $stage/rss-studio-install.php $stage/rss-studio-live-test.php $stage/rss-studio-backfill.php $stage/rss-studio-release.json $stage/rss-studio-deploy.sh $stage/scripts/; mv $stage/rss-studio.json $stage/scripts/release-artifacts/"
+          ssh "$host" "bash $stage/scripts/rss-studio-deploy.sh $GITHUB_SHA"
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
