@@ -81,6 +81,8 @@ chmod 755 "$theme/assets/brand"
 for asset in SVG/03-Hovedlogo-transparent-hvit.svg SVG/07-Uten-verdilinje-hvit.svg PNG/01-Hovedlogo-mork.png Ikoner/ikon-32.png RadioRubben-Logopakke.zip; do
   curl --fail --silent --show-error --location --max-time 30 "https://www.radiorubben.no/wp-content/themes/radio-rubben-wordpress-v1/assets/brand/2026-09/$asset?rr_brand=$release" -o /dev/null
 done
+# The site uses WP-Optimize page cache; rebuild old HTML after changing shared branding.
+/usr/local/bin/wp --path="$root" --skip-themes eval 'if (function_exists("wpo_cache_flush")) { wpo_cache_flush(); echo "WP-Optimize page cache cleared.\n"; } else { throw new Exception("Expected WP-Optimize cache API is unavailable"); }'
 curl --fail --silent --show-error --location --max-time 30 "https://www.radiorubben.no/?rr_brand=$release" -o "$stage/live.html"
 grep -q 'assets/brand/2026-09/SVG/03-Hovedlogo-transparent-hvit.svg' "$stage/live.html"
 grep -q 'assets/brand/2026-09/Ikoner/ikon-32.png' "$stage/live.html"
