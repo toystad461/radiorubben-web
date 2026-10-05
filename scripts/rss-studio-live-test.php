@@ -5,6 +5,7 @@ $stage=$argv[1]??'';if(!is_dir($stage))throw new RuntimeException('Missing priva
 $root='/run/webroots/r1417157/studio-private/app';
 require_once $root.'/config.php';require_once $root.'/newsroom.php';
 require_once $root.'/producer.php';require_once $root.'/integrations/NewsDesk.php';
+$activePath=studio_board_path();$activeBefore=hash_file('sha256',$activePath);
 $config=load_config();$spec=newsdesk_sources()['bomlo'];
 $body=newsdesk_fetch_rss($spec['feed']);
 if($body===null)throw new RuntimeException('Live feed unavailable');
@@ -22,7 +23,7 @@ $result=['sourceUrl'=>$source['url'],'sourceId'=>$source['id'],'itemId'=>$item['
  'radioGenerated'=>trim((string)($item['script']??''))!=='','webGenerated'=>!empty($item['web']['body']),
  'sameOriginalSnapshot'=>$shared,'radioChecked'=>studio_news_check_current($item),'webChecked'=>studio_web_checked($item),
  'webApprovalAbsent'=>empty($item['web']['approvedHash']),'radioUnapproved'=>$item['status']==='draft'&&!$item['verified'],
- 'noDelivery'=>!isset($item['web']['delivery']),'activeBoardUntouched'=>true];
+ 'noDelivery'=>!isset($item['web']['delivery']),'activeBoardUntouched'=>hash_equals($activeBefore,hash_file('sha256',$activePath))];
 file_put_contents($stage.'/live-test-result.json',json_encode($result,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
 echo json_encode($result,JSON_UNESCAPED_SLASHES)."\n";
 if(!$both||!$shared||!$result['webApprovalAbsent']||!$result['radioUnapproved']||!$result['noDelivery'])exit(2);
