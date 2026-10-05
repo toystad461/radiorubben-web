@@ -8,6 +8,8 @@ if ( 'posts' === get_option( 'show_on_front' ) ) {
     echo '<div class="rr-wrap rr-section rr-content">';
     while ( have_posts() ) { the_post(); the_content(); wp_link_pages(); }
     echo '</div>';
+} elseif ( rr_home_universes_enabled() ) {
+    get_template_part( 'template-parts/home/universes' );
 } else {
     foreach ( array( 'hero', 'member', 'latest', 'feed' ) as $part ) { get_template_part( 'template-parts/home/' . $part ); }
     do_action( 'rr_theme_home_after_news' );
