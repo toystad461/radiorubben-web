@@ -1,4 +1,4 @@
-name: Inspect RSS Studio production baseline
+name: Inspect installed RSS Studio and isolated review result
 on:
   push:
     branches: ['codex/rss-studio-release-20261005']

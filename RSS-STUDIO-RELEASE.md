@@ -40,3 +40,13 @@ fersk kontroll 37298910886 bekrefter alle opprinnelige hasher og samme to
 RSS-saker. Kanonisk app-sti er /customers/9/3/1/cptk37ymg/webroots/r1417157/studio-private/app.
 Manifestet låser denne observerte, eksakte stien; målbanen og de tre filnavnene
 er fortsatt faste. Ingen sertifikat-, rolle- eller nøkkelsperre omgås.
+
+## Bekreftet installasjon og ekte-data-test
+
+Release e145c19f0a12f4c5431e536bb7afb900a00765fe, [Actions 37299028081](https://github.com/toystad461/radiorubben-web/actions/runs/37299028081)
+er grønn. Alle tre etter-hasher er bekreftet og privat backup opprettet.
+Ekte Bømlo-original ble hentet, og begge utkast ble laget på én isolert sak,
+med identisk kildeobjekt. Nettkontrollen besto; radiokontrollen kjørte, men
+ga ikke klar-status. Ingen godkjenning eller WordPress-levering ble foretatt.
+Hash av aktiv sendeliste før/etter var identisk. Testinnhold er privat.
+Innlogget UI er ikke kontrollert her; Chrome-tilkoblingen var utilgjengelig.
