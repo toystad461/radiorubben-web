@@ -16,4 +16,15 @@
 @media(min-width:760px){.rr-u-intro{flex-direction:row;justify-content:space-between;align-items:center;padding-block:26px}.rr-u-radio{grid-template-columns:1.1fr 1fr}.rr-u-radio-copy{padding:45px}.rr-u-radio-art{min-height:520px}.rr-u-track{grid-column:1/-1;grid-template-columns:1.2fr 1fr auto;gap:30px;padding:28px 45px}.rr-u-status{display:inline;margin-left:15px}.rr-u-news{padding-block:80px}.rr-u-news-grid{grid-template-columns:1.65fr 1fr;gap:40px}.rr-u-story-copy h3{font-size:35px}.rr-u-sport{padding-block:65px}.rr-u-sport-grid{grid-template-columns:1.5fr 1fr}.rr-u-sports-stories{grid-template-columns:repeat(3,1fr)}.rr-u-art-overlay{padding:40px}}
 .rr-u-match h2{font-size:clamp(25px,3vw,38px);overflow-wrap:anywhere}.rr-u-mini-label{font-size:12px;white-space:nowrap;font-weight:700}.rr-front:has(.rr-universes) .rr-mini-player{max-width:min(420px,calc(100vw - 28px));min-height:64px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}.rr-front:has(.rr-universes) .rr-mini-player .rr-broadcast{display:none}.rr-u-all-menu{position:relative}.rr-u-all-menu summary{cursor:pointer;padding:10px;min-height:44px}.rr-u-all-menu summary:focus-visible{outline:3px solid #ff001b;outline-offset:2px}.rr-u-all-menu[open]>ul{position:absolute;right:0;top:100%;min-width:220px;max-height:70vh;overflow:auto;background:#111;padding:18px;display:grid;border:1px solid #555}.rr-u-all-menu[open]>ul a{padding:10px;display:block}
 @media(max-width:1100px){.rr-u-all-menu[open]>ul{position:static;border:0;min-width:0}.rr-u-all-menu summary{display:flex;align-items:center}}
+/* Equal breathing room on both sides of Sport, also when the universes reorder. */
+.rr-universes{--u-section-gap:32px}
+.rr-u-news{padding-bottom:var(--u-section-gap)}
+.rr-u-story-copy{padding-bottom:0}
+.rr-u-small-story:last-child{padding-bottom:0}
+.rr-u-sport{padding-block:var(--u-section-gap)}
+.rr-u-sports-stories h3{margin-bottom:0}
+.rr-u-more{padding-top:var(--u-section-gap)}
+.rr-u-radio+.rr-u-sport,.rr-u-sport+.rr-u-radio{margin-top:var(--u-section-gap)}
+@media(min-width:760px){.rr-universes{--u-section-gap:48px}}
 @media(prefers-reduced-motion:no-preference){.rr-is-playing .rr-u-wave i{animation:rr-u-pulse 1s ease-in-out infinite alternate}.rr-is-playing .rr-u-wave i:nth-child(3n){animation-delay:-.4s}@keyframes rr-u-pulse{to{transform:scaleY(.4)}}}
+

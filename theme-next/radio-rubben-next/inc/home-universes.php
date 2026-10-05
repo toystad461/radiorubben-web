@@ -149,8 +149,9 @@ add_action( 'customize_register', function ( $manager ) {
 }, 20 );
 add_action( 'wp_enqueue_scripts', function () {
     if ( ! rr_home_universes_active() ) { return; }
-    wp_enqueue_style( 'rr-next-universes', get_theme_file_uri( '/assets/css/home-universes.css' ), array( 'rr-next-home' ), '2026.10.05.1' );
+    wp_enqueue_style( 'rr-next-universes', get_theme_file_uri( '/assets/css/home-universes.css' ), array( 'rr-next-home' ), '2026.10.05.2' );
     // Reuse the single existing audio element and its play/pause/error handling.
     $radio = rr_home_radio_data();
     wp_localize_script( 'rr-next-ui', 'RR_ONE', array( 'streamUrl' => $radio['stream_url'] ) );
 } );
+
