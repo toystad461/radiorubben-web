@@ -1,4 +1,4 @@
-name: Release structured RSS review and complete legacy drafts
+name: Release verified strict review artifact and legacy drafts
 on:
   push:
     branches: ['codex/rss-studio-release-20261005']
