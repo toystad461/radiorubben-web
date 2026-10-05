@@ -43,3 +43,10 @@ Velg mal på eksisterende sider; ikke opprett erstatningssider med nye URL-er. M
 `get_template_part()` og `get_theme_file_uri()` finner child-filer først. Intern bootstrap bruker parent-filer og unike funksjonsnavn. Overstyr eksempelvis `template-parts/components/match-card.php`, `assets/css/components.css`, `front-page.php` eller `theme.json`. Child `style.css` lastes etter foreldrestilene. Bruk komponentfiltre i egen utvidelse for data, ikke omdefinering av PHP-funksjoner.
 
 Nytt navn betyr egne theme_mods. Temaet leser gamle `theme_mods_radio-rubben-wordpress-v1` som fallback for logo, menyplassering og radiovisning, uten å kopiere eller skrive dem. Eksplisitte nye verdier, også tom strøm-URL, vinner. Velg forsideportrett via Customizer; mediefilen importeres ikke automatisk. På en eksisterende installasjon med gamle theme_mods brukes tidligere portrettvedlegg 760 som read-only fallback dersom det fortsatt finnes som bilde. En eksplisitt ny verdi overstyrer dette; ferske installasjoner får ikke en hardkodet medieavhengighet.
+
+## Gjenbrukbare RR-maler (05.10.2026)
+
+Nye sider bruker `templates/content.php`, `application.php`, `editorial.php` eller `football.php`.
+De deler ramme/overskrift/seksjonsnavigasjon under `template-parts/page/`; redaksjonell mal og `single.php` deler `template-parts/content/article.php`.
+Fire nye patterns gir seksjoner, kort og kombinerte fotball-/funksjonssider. Se `../../docs/DESIGNSYSTEM-ARKITEKTUR.md` i repoet for forskningsgrunnlag, komponentregler, pluginavhengigheter, redaktørveiledning og stagingporter.
+Dette er fortsatt hybrid/PHP-maler, ikke full Site Editor-/HTML-malstøtte.
