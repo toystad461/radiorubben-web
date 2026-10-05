@@ -1,0 +1,19 @@
+{
+  "source_repository": "toystad461/radiorubben-studio",
+  "source_commit": "0612c6c650ac7a8b5e6857ac6e3fca2ab0c516f4",
+  "before": {
+    "news-script.php": "3d0ee9bd29dce995ea1a8a2dbce231c5615efb648766ee4db8ae84b8f128d0f7",
+    "case-workflow.php": "598e98fc36581c0aaca5c48a93801d74de5c9f25889e16ef53dec82bea6d5677",
+    "newsroom.php": "c0c196f6ddfaa5251e2bcbc84aac3ba92deda1f217e35bae98d96e957d0c942f",
+    "board.php": "aefe4af163ede3cb0e6abbb5d925a85b27e940c7e8501130576640258a0a3aea",
+    "source-identity.php": "8d9d8c8b8d4b5e865b76edb2a0f94a23284545650b26f7e149ab09a183118a85",
+    "web-publish.php": "f4a66a1fd1132c2e2b54287b5ecfdd07af0a6d1a3506385179a8d76b2860a6f1",
+    "news-publication.php": "37ab6f88138a53b95c4d0237284597436ff856d680d5a81b86b74784c3354ee7",
+    "newsroom-worker.php": "bf65c5511f857c708fd4fea9379ab0b29ba3f990535fd2a13528ac6d93475747"
+  },
+  "after": {
+    "case-workflow.php": "f05697f3e45fd5657caaf387390b30fc17d1df11494866a6715a9ca01fcb008c",
+    "news-script.php": "dc0b97c12962881b108ed6f2b2aabed120e8b1793f6e93c2d60f1087fde9d294",
+    "newsroom.php": "31b681bff03c96d63492d757a060d05fc0ada6dbc50ee41dfbe2cb73b4755c50"
+  }
+}
