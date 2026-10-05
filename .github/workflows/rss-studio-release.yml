@@ -1,4 +1,4 @@
-name: Release RSS attribution and complete legacy Studio drafts
+name: Release structured RSS review and complete legacy drafts
 on:
   push:
     branches: ['codex/rss-studio-release-20261005']
