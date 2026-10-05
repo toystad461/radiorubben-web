@@ -31,12 +31,12 @@ final class PlayerReview {
             $s['mail_at']=gmdate(DATE_ATOM);self::put($id,$s);
         });
     }
-    public static function create(string $key,array $facts,bool $test=false): int {
-        return self::lock('create_'.hash('sha256',$key),static function()use($key,$facts,$test){
+    public static function create(string $key,array $facts,bool $test=false,bool $notify=true): int {
+        return self::lock('create_'.hash('sha256',$key),static function()use($key,$facts,$test,$notify){
             $found=get_posts(['post_type'=>'post','post_status'=>['draft','pending','publish','private','future','trash'],'meta_key'=>'_rrfr_review_key','meta_value'=>$key,'numberposts'=>1]);
             if($found)return (int)$found[0]->ID;
             // Reserve before paid generation. Failed or interrupted jobs are never retried automatically.
-            $id=wp_insert_post(['post_type'=>'post','post_status'=>'draft','post_title'=>($test?'[TEST] ':'').'Spillerforslag klargjøres','meta_input'=>['_rrfr_review_key'=>$key,self::META=>['test'=>$test,'status'=>'writing','version'=>0,'mail'=>'none','facts'=>$facts,'history'=>[]]]],true);
+            $id=wp_insert_post(['post_type'=>'post','post_status'=>'draft','post_title'=>($test?'[TEST] ':'').'Spillerforslag klargjøres','meta_input'=>['_rrfr_review_key'=>$key,self::META=>['test'=>$test,'notify'=>$notify,'status'=>'writing','version'=>0,'mail'=>'none','facts'=>$facts,'history'=>[]]]],true);
             if(is_wp_error($id))throw new \RuntimeException($id->get_error_message());
             self::write((int)$id,'');return (int)$id;
         });
@@ -55,7 +55,7 @@ final class PlayerReview {
             unset($a['_quality']);
             $s['article']=$a;$s['status']='pending';$s['version']++;$s['hash']=self::hash(get_post($id));$s['mail']='none';unset($s['error']);self::put($id,$s);
         }catch(\Throwable $e){$s['status']='failed';$s['error']=$e->getMessage();self::put($id,$s);return;}
-        self::notify($id);
+        if($s['notify']??true) self::notify($id);
     }
     public static function body(array $article,array $facts,bool $test=false): string {
         $block=static fn($html)=>"<!-- wp:paragraph -->\n<p>".$html."</p>\n<!-- /wp:paragraph -->\n";

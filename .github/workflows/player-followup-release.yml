@@ -1,0 +1,73 @@
+name: Publish match-driven player updates and corrected Hodd profile
+on:
+  push:
+    branches: ['fix/player-profile-and-match-followup']
+    paths: ['.github/workflows/player-followup-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Test parser, scheduling, publication gate and browser updates
+        run: |
+          set -euo pipefail
+          robot=wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          widget=wordpress/wp-content/plugins/radio-rubben-player-widget
+          find "$robot" "$widget" -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l scripts/player-followup-check.php
+          php -l scripts/player-debut-draft.php
+          bash -n scripts/deploy-player-followup.sh
+          php "$robot/tests/players.php"
+          php "$robot/tests/player-review.php"
+          for test in run compact roster live; do php "$widget/tests/$test.php"; done
+          node --check "$widget/assets/widget.js"
+          php "$widget/tests/compact-preview.php" > widget-preview.html
+          npm install --prefix /tmp/rrpw-ui --no-audit --no-fund playwright@1.56.1
+          /tmp/rrpw-ui/node_modules/.bin/playwright install chromium --with-deps --only-shell
+          NODE_PATH=/tmp/rrpw-ui/node_modules node scripts/player-live-ui.cjs
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Selective deployment with fingerprints and backup
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/player-followup/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage/scripts $stage/plugins"
+          rsync -rltz --files-from=scripts/player-followup-files.txt wordpress/wp-content/plugins/ "$host:$stage/plugins/"
+          rsync -rltz scripts/player-followup-check.php scripts/player-followup-baseline.sha256 scripts/player-followup-target.sha256 scripts/player-followup-files.txt scripts/deploy-player-followup.sh scripts/player-debut-draft.php "$host:$stage/scripts/"
+          ssh "$host" "bash $stage/scripts/deploy-player-followup.sh $GITHUB_SHA"
+      - name: Create verified debut draft without sending mail
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file .radiorubben-deploy/player-followup/$GITHUB_SHA/scripts/player-debut-draft.php" | tee debut.log
+          grep -Eq '^DEBUT_DRAFT_(OK|EXISTS)$' debut.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: player-followup-checks
+          path: |
+            player-live-ui-360.png
+            debut.log
+          retention-days: 3
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

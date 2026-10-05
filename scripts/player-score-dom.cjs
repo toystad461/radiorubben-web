@@ -1,0 +1,21 @@
+const {JSDOM}=require('jsdom');
+const fs=require('fs'),assert=require('node:assert/strict');
+const html='<section class="rr-test"><article class="rr-test-row" data-player-id="1037" data-match-id="9071080" data-kickoff="1791223200"><span class="rr-test-badge">Registrert kamp</span><div class="rr-test-team"><small>Åkra/Kopervik/Vedavåg</small></div><div class="rr-test-time"><strong>5.10.</strong><span>20:00</span></div><div class="rr-test-team"><small>Haugesund 2</small></div></article></section>';
+const dom=new JSDOM(html,{url:'https://www.radiorubben.no/spillertest-daglig/',runScripts:'outside-only',pretendToBeVisual:true});
+const w=dom.window;let now=1791226800,calls=0,fail=false;const timers=[];
+w.Date.now=()=>now*1000;w.setInterval=(fn,ms)=>timers.push({fn,ms});
+let payload={html:'<article data-player-id="1037" data-kickoff="1791223200"><span class="rrpw-mini-status" data-lineup-expires="1791226950">Spiller nå</span><a class="rrpw-mini-nff" href="https://www.fotball.no/fotballdata/kamp/?fiksId=9071080">Kampinfo</a></article>',matches:[{id:9071080,home:{id:53929,name:'Åkra/Kopervik/Vedavåg'},away:{id:210681,name:'Haugesund 2'},kickoff:'2026-10-05T20:00:00+02:00',phase:'live',score:{home:0,away:3,kind:'halftime'},checked_at:now,expires:now+150}]};
+w.fetch=async()=>{calls++;if(fail)throw Error('offline');return {ok:true,json:async()=>payload};};
+const tick=()=>new Promise(r=>setTimeout(r,10));
+(async()=>{
+ w.eval(fs.readFileSync('docs/player-test-status.js','utf8'));await tick();
+ const center=()=>w.document.querySelector('.rr-test-time').textContent;
+ assert.match(center(),/0–3Pauseresultat/);assert.equal(w.document.querySelector('.rr-test-badge').textContent,'Spiller nå');
+ assert.equal(calls,1);assert.equal(timers.filter(t=>t.ms===60000).length,1);
+ now+=60;payload.matches[0].score={home:1,away:4,kind:'current'};payload.matches[0].checked_at=now;payload.matches[0].expires=now+150;
+ await timers.find(t=>t.ms===60000).fn();await tick();assert.match(center(),/1–4Pågår/);assert.equal(calls,2);
+ fail=true;now+=151;timers.find(t=>t.ms===10000).fn();assert.match(center(),/5.10./);assert.doesNotMatch(center(),/1–4/);
+ fail=false;payload.matches[0].expires=now+150;payload.matches[0].phase='finished';payload.matches[0].score.kind='final';payload.html='';
+ await timers.find(t=>t.ms===60000).fn();await tick();assert.match(center(),/1–4Ferdigspilt/);assert.equal(w.document.querySelector('.rr-test-badge').textContent,'Ferdigspilt');
+ console.log('DOM: halftime, live replacement, minute polling, stale expiry and final result passed');dom.window.close();
+})().catch(e=>{console.error(e);process.exitCode=1;dom.window.close();});

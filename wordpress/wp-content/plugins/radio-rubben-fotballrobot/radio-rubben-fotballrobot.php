@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Radio Rubbens Fotballrobot
  * Description: Kontrollert kampgrunnlag, laghistorikk og separate prøveutkast for Radio Rubben.
- * Version: 0.9.6
+ * Version: 0.9.7
  * Requires PHP: 8.0
  * Author: Radio Rubben
  */
@@ -27,7 +27,8 @@ add_action('init', [Players::class,'register']);
 add_action('admin_menu', [Players::class,'menu']);
 add_action('rest_api_init', [Players::class,'routes']);
 add_action('admin_post_rrfr_player_action', [Players::class,'action']);
-add_action('rrfr_players_tick', [Players::class,'tick']);
+add_filter('cron_schedules', [Players::class,'schedules']);
+add_action('rrfr_profiles_tick', [Players::class,'tick']);
 register_deactivation_hook(__FILE__, [Players::class,'stop']);
 add_action('admin_enqueue_scripts', static function($hook) {
     if($hook==='fotballrobot_page_rr-fotballrobot-players') wp_enqueue_style('rrfr-admin',plugins_url('admin.css',__FILE__),[], '0.9.5');

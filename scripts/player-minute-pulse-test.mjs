@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {pulse} from './player-minute-pulse.mjs';
+const now=()=>1800000000000;
+const calls=[];
+const good=async(url,options)=>{calls.push({url,options});return {ok:true,text:async()=>'',json:async()=>({html:'<details></details>',updated_at:1800000000-60})};};
+assert.equal((await pulse(good,now)).last_completed_seconds_ago,60);
+assert.equal(calls.length,2);
+assert.match(calls[0].url,/\/wp-cron\.php\?rr_player_pulse=/);
+assert.equal(calls[0].url.includes('doing_wp_cron'),false);
+assert.equal(calls[0].options.redirect,'error');
+await assert.rejects(()=>pulse(async()=>({ok:false,status:503}),now),/HTTP 503/);
+await assert.rejects(()=>pulse(async()=>({ok:true,text:async()=>'',json:async()=>({html:'',updated_at:1800000000-301})}),now),/not completed/);
+console.log('External minute pulse and failure detection verified without network');

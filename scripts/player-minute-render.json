@@ -1,0 +1,13 @@
+{
+  "name": "radiorubben-player-minute",
+  "repo": "https://github.com/toystad461/radiorubben-web",
+  "branch": "fix/player-profile-and-match-followup",
+  "runtime": "node",
+  "region": "frankfurt",
+  "plan": "starter",
+  "schedule": "* * * * *",
+  "autoDeploy": "no",
+  "buildCommand": "node --check scripts/player-minute-pulse.mjs",
+  "startCommand": "node scripts/player-minute-pulse.mjs",
+  "workspaceId": "tea-dap3fsn40ujc73beb1jg"
+}
