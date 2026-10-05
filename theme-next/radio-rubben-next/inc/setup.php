@@ -14,14 +14,14 @@ function rr_theme_setup() {
     add_image_size( 'rr-card', 720, 405, true );
     add_image_size( 'rr-hero', 1600, 900, false );
     register_nav_menus( array( 'primary' => __( 'Hovedmeny', 'radio-rubben-next' ), 'footer' => __( 'Footermeny', 'radio-rubben-next' ) ) );
-    add_editor_style( array( 'assets/css/editor.css', 'assets/css/components.css' ) );
+    add_editor_style( array( 'assets/css/editor.css', 'assets/css/components.css', 'assets/css/page-layouts.css' ) );
 }
 add_action( 'after_setup_theme', 'rr_theme_setup' );
 function rr_theme_assets() {
     $previous = array();
-    foreach ( array( 'theme', 'design-v13', 'member-hub', 'mobile-shell', 'components', 'brand-profile' ) as $style ) {
+    foreach ( array( 'theme', 'design-v13', 'member-hub', 'mobile-shell', 'components', 'brand-profile', 'page-layouts' ) as $style ) {
         $handle = 'rr-next-' . $style;
-        wp_enqueue_style( $handle, get_theme_file_uri( '/assets/css/' . $style . '.css' ), $previous, 'brand-profile' === $style ? '2026.10.01.1' : RR_THEME_VERSION );
+        wp_enqueue_style( $handle, get_theme_file_uri( '/assets/css/' . $style . '.css' ), $previous, 'page-layouts' === $style ? '2026.10.05.1' : ( 'brand-profile' === $style ? '2026.10.01.1' : RR_THEME_VERSION ) );
         $previous = array( $handle );
     }
     if ( is_front_page() ) {
