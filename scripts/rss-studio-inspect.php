@@ -2,7 +2,7 @@
 declare(strict_types=1);
 $root='/run/webroots/r1417157/studio-private/app';
 $paths=['news-script.php','case-workflow.php','newsroom.php','board.php','source-identity.php','web-publish.php','news-publication.php','newsroom-worker.php'];
-$out=['files'=>[]];
+$out=['files'=>[],'appRealpath'=>realpath($root),'appIsLink'=>is_link($root),'php'=>PHP_VERSION];
 foreach($paths as $path){
     if(!is_file($root.'/'.$path)||is_link($root.'/'.$path))throw new RuntimeException('Missing or linked dependency.');
     $out['files'][$path]=hash_file('sha256',$root.'/'.$path);
