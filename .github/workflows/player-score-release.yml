@@ -1,0 +1,51 @@
+name: Player score - test and selective release
+on:
+  push:
+    branches: ['fix/player-live-score']
+    paths: ['.github/workflows/player-score-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate score, identity, privacy and minute scheduling
+        run: |
+          set -euo pipefail
+          widget=wordpress/wp-content/plugins/radio-rubben-player-widget
+          find "$widget" -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l scripts/score-check.php
+          bash -n scripts/deploy-player-score.sh
+          for test in run compact roster live score; do php "$widget/tests/$test.php"; done
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Release only two fingerprinted widget files
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/player-score/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage/scripts $stage/plugins/radio-rubben-player-widget/includes"
+          rsync -rltz wordpress/wp-content/plugins/radio-rubben-player-widget/includes/live.php "$host:$stage/plugins/radio-rubben-player-widget/includes/"
+          rsync -rltz wordpress/wp-content/plugins/radio-rubben-player-widget/radio-rubben-player-widget.php "$host:$stage/plugins/radio-rubben-player-widget/"
+          rsync -rltz scripts/score-check.php scripts/score-baseline.sha256 scripts/score-target.sha256 scripts/deploy-player-score.sh "$host:$stage/scripts/"
+          ssh "$host" "bash $stage/scripts/deploy-player-score.sh $GITHUB_SHA"
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
