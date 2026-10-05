@@ -50,3 +50,12 @@ med identisk kildeobjekt. Nettkontrollen besto; radiokontrollen kjørte, men
 ga ikke klar-status. Ingen godkjenning eller WordPress-levering ble foretatt.
 Hash av aktiv sendeliste før/etter var identisk. Testinnhold er privat.
 Innlogget UI er ikke kontrollert her; Chrome-tilkoblingen var utilgjengelig.
+
+Sluttkontroll [37299270971](https://github.com/toystad461/radiorubben-web/actions/runs/37299270971)
+bekrefter de tre nye hashene og uendrede fem øvrige undersøkte avhengigheter.
+Aktiv kø har fortsatt to eldre web-only-saker; ingen automatisk tilbakefylling
+eller tekstendring er gjort. Isolert radiokontroll har needs_review, ingen
+generelle issues og korrekt fingerprint. Ett segment er unsupported fordi
+kontrolløren krever eksplisitt kildebelegg for opplysningen om at informasjonen
+kommer fra Bømlo kommune. Sperren er beholdt; dette skal gjennomgås redaksjonelt
+og er ikke omskrevet eller godkjent automatisk.
