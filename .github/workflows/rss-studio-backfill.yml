@@ -1,4 +1,4 @@
-name: Complete two legacy RSS drafts after validated pipeline test
+name: Inspect incomplete web review before legacy backfill
 on:
   push:
     branches: ['codex/rss-studio-release-20261005']

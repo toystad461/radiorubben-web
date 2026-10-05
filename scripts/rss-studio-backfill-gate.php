@@ -12,6 +12,7 @@ $items=studio_board_active(studio_board_read($stage.'/live-test-board.json'));if
 $item=$items[0];$reviews=['radio'=>$item['sourceCheck'],'web'=>$item['web']['check']];$summary=[];
 foreach($reviews as $kind=>$check){
  $text=$kind==='radio'?$item['script']:studio_web_text($item['web']);
+ echo json_encode(['reviewDiagnostics'=>['kind'=>$kind,'status'=>$check['status']??null,'issues'=>$check['issues']??[],'segmentCount'=>count($check['segments']??[]),'policy'=>$check['policy']??null,'originalRead'=>studio_news_original_read($item,$check),'fingerprintMatches'=>hash_equals(studio_news_fingerprint($item,$text),(string)($check['fingerprint']??''))]],JSON_UNESCAPED_SLASHES)."\n";
  if(!in_array($check['status']??'',['passed','needs_review'],true)||!studio_news_original_read($item,$check)
   ||($check['policy']??'')!==STUDIO_NEWS_POLICY||!hash_equals(studio_news_fingerprint($item,$text),(string)($check['fingerprint']??''))||empty($check['segments']))
   throw new RuntimeException('Invalid or incomplete source review');
