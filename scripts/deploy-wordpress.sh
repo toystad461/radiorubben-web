@@ -2,6 +2,9 @@
 # Run on the GitHub runner; authentication is configured by the workflow.
 set -Eeuo pipefail
 mode=${1:-dry-run}
+if [[ "$mode" == brand-dry-run || "$mode" == brand-apply ]]; then
+  exec bash scripts/deploy-brand.sh "$mode"
+fi
 [[ "$mode" == dry-run || "$mode" == apply ]] || exit 2
 host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
 root=/run/webroots/r1417157/wp-content
