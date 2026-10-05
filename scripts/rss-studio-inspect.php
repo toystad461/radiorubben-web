@@ -17,10 +17,20 @@ foreach(studio_board_active($board) as $item)if(studio_web_is_news($item)){
     $key=$web?($radio?'both':'web_only'):($radio?'radio_only':'empty');
     $out['rss_productions'][$key]++;
 }
-$testPath=getenv('HOME').'/.radiorubben-deploy/rss-studio/fb89950ddd7b68152c95fa52345cf799288026c1/live-test-board.json';
+
+$out['activeReviews']=[];
+foreach(studio_board_active($board) as $item)if(studio_web_is_news($item)){
+ $reviews=[];foreach(['radio'=>$item['sourceCheck']??[],'web'=>$item['web']['check']??[]] as $kind=>$check)
+  $reviews[$kind]=['status'=>$check['status']??'missing','issues'=>$check['issues']??[],'segments'=>count($check['segments']??[]),
+  'unsupported'=>array_values(array_map(static fn($s)=>['reason'=>$s['reason']],array_filter($check['segments']??[],static fn($s)=>$s['verdict']!=='supported')))];
+ $out['activeReviews'][]=['id'=>$item['id'],'reviews'=>$reviews,'unapproved'=>empty($item['web']['approvedHash'])&&!$item['verified'],'noDelivery'=>empty($item['web']['delivery'])];
+}
+
+$testPath=getenv('HOME').'/.radiorubben-deploy/rss-studio/16670e6d2c91cd15fcbe4023ab06f73466ccd9fb/live-test-board.json';
 if(is_file($testPath)){
  $test=studio_board_read($testPath);$item=studio_board_active($test)[0];
  $check=$item['sourceCheck']??[];
+ $out['isolatedWebReview']=['status'=>$item['web']['check']['status']??'missing','issues'=>$item['web']['check']['issues']??[],'unsupported'=>array_values(array_map(static fn($s)=>['reason'=>$s['reason']],array_filter($item['web']['check']['segments']??[],static fn($s)=>$s['verdict']!=='supported')))];
  $out['isolatedRadioReview']=['jobState'=>$item['newsroom']['state']??'missing','jobError'=>$item['newsroom']['error']??null,'status'=>$check['status']??'missing','issues'=>$check['issues']??[],
   'fingerprintMatches'=>hash_equals((string)($check['fingerprint']??''),studio_news_fingerprint($item,(string)$item['script'])),
   'unsupported'=>array_values(array_map(static fn($s)=>['verdict'=>$s['verdict'],'reason'=>$s['reason']],array_filter($check['segments']??[],static fn($s)=>$s['verdict']!=='supported')))];

@@ -1,4 +1,4 @@
-name: Inspect stopped second RSS real-source test
+name: Verify completed RSS release and legacy review results
 on:
   push:
     branches: ['codex/rss-studio-release-20261005']
