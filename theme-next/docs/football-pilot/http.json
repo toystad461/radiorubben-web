@@ -1,0 +1,106 @@
+{
+  "checks": [
+    {
+      "check": "Pilot contains synthetic match",
+      "pass": true
+    },
+    {
+      "check": "One page heading",
+      "pass": true
+    },
+    {
+      "check": "One main landmark",
+      "pass": true
+    },
+    {
+      "check": "One voting module",
+      "pass": true
+    },
+    {
+      "check": "No unresolved shortcodes",
+      "pass": true
+    },
+    {
+      "check": "Personalized view cannot be cached",
+      "pass": true
+    },
+    {
+      "check": "Query cannot turn content into API or speakerboard",
+      "pass": true
+    },
+    {
+      "check": "POST to content page does not execute embedded motor",
+      "pass": true
+    },
+    {
+      "check": "Local login admin",
+      "pass": true
+    },
+    {
+      "check": "Local login member",
+      "pass": true
+    },
+    {
+      "check": "Anonymous control rejected",
+      "pass": true
+    },
+    {
+      "check": "Member control rejected",
+      "pass": true
+    },
+    {
+      "check": "Invalid admin nonce rejected",
+      "pass": true
+    },
+    {
+      "check": "Synthetic match starts",
+      "pass": true
+    },
+    {
+      "check": "Latest session payload retained",
+      "pass": true
+    },
+    {
+      "check": "Anonymous vote rejected",
+      "pass": true
+    },
+    {
+      "check": "Invalid vote token rejected",
+      "pass": true
+    },
+    {
+      "check": "Synthetic admin vote accepted",
+      "pass": true
+    },
+    {
+      "check": "Duplicate vote rejected",
+      "pass": true
+    },
+    {
+      "check": "Halftime retained",
+      "pass": true
+    },
+    {
+      "check": "Second half retained",
+      "pass": true
+    },
+    {
+      "check": "Synthetic 85 minute clock",
+      "pass": true
+    },
+    {
+      "check": "Voting closes at 85 minutes",
+      "pass": true
+    },
+    {
+      "check": "Clock correction cannot reopen vote",
+      "pass": true
+    },
+    {
+      "check": "Logged-in pilot stays public view",
+      "pass": true
+    }
+  ],
+  "passed": 25,
+  "total": 25
+}

@@ -27,11 +27,12 @@ $html = render_layout( 'editorial', false, true );
 check_layout( str_contains( $html, 'rr-post-nav' ) && str_contains( $html, 'data-fixture-component="source"' ), 'Post navigation/source lost' );
 $blocks = parse_blocks( '<!-- wp:heading {"anchor":"safe"} --><h2 id="safe">A &amp; B</h2><!-- /wp:heading --><!-- wp:heading {"anchor":"x\" onclick=\"bad"} --><h2>Unsafe</h2><!-- /wp:heading --><!-- wp:query --><div><!-- wp:heading {"anchor":"loop"} --><h2>Query</h2><!-- /wp:heading --></div><!-- /wp:query -->' );
 check_layout( array( 'safe'=>'A & B' ) === rr_theme_section_links( $blocks ), 'Unsafe/query-loop anchors or escaped labels indexed' );
-foreach ( array( 'section','cards','combined-football','combined-dashboard' ) as $pattern ) {
+foreach ( array( 'section','cards','combined-football','combined-football-live','combined-dashboard' ) as $pattern ) {
     $markup = fixture_pattern( $pattern ); $blocks = parse_blocks( $markup );
     check_layout( ! empty( array_filter( $blocks, static fn( $b ) => 'core/group' === $b['blockName'] ) ), "$pattern: core group not parsed" );
     check_layout( substr_count( $markup, '<!-- wp:group ' ) === substr_count( $markup, '<!-- /wp:group -->' ), "$pattern: unbalanced groups" );
 }
 check_layout( 3 === count( rr_theme_section_links( parse_blocks( fixture_pattern( 'combined-football' ) ) ) ), 'Football composition anchors' );
+check_layout( 2 === count( rr_theme_section_links( parse_blocks( fixture_pattern( 'combined-football-live' ) ) ) ), 'Live football composition anchors' );
 check_layout( 3 === count( rr_theme_section_links( parse_blocks( fixture_pattern( 'combined-dashboard' ) ) ) ), 'Dashboard composition anchors' );
 echo "PASS: $count layout/content/password/pagination/anchor/pattern assertions.\n";
