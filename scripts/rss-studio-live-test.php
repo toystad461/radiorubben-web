@@ -26,5 +26,5 @@ $result=['sourceUrl'=>$source['url'],'sourceId'=>$source['id'],'itemId'=>$item['
  'noDelivery'=>!isset($item['web']['delivery']),'activeBoardUntouched'=>hash_equals($activeBefore,hash_file('sha256',$activePath))];
 file_put_contents($stage.'/live-test-result.json',json_encode($result,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES));
 echo json_encode($result,JSON_UNESCAPED_SLASHES)."\n";
-if(!$both||!$shared||!$result['webApprovalAbsent']||!$result['radioUnapproved']||!$result['noDelivery'])exit(2);
+if(!$result['radioChecked']||!$result['webChecked']||!$both||!$shared||!$result['webApprovalAbsent']||!$result['radioUnapproved']||!$result['noDelivery'])exit(2);
 echo "RSS_REAL_SOURCE_TEST_OK\n";
