@@ -23,6 +23,6 @@ if(is_file($testPath)){
  $check=$item['sourceCheck']??[];
  $out['isolatedRadioReview']=['status'=>$check['status']??'missing','issues'=>$check['issues']??[],
   'fingerprintMatches'=>hash_equals((string)($check['fingerprint']??''),studio_news_fingerprint($item,(string)$item['script'])),
-  'unsupported'=>array_values(array_map(static fn($s)=>['verdict'=>$s['verdict'],'reason'=>$s['reason']],array_filter($check['segments']??[],static fn($s)=>$s['verdict']!=='supported')))];
+  'unsupported'=>array_values(array_map(static fn($s)=>['verdict'=>$s['verdict'],'reason'=>$s['reason'],'text'=>$s['text']??''],array_filter($check['segments']??[],static fn($s)=>$s['verdict']!=='supported')))];
 }
 echo json_encode($out,JSON_UNESCAPED_SLASHES)."\nRSS_STUDIO_PREFLIGHT_OK\n";

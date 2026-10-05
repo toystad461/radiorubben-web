@@ -1,4 +1,4 @@
-name: Inspect installed RSS Studio and isolated review result
+name: Inspect attribution blocker before second RSS release
 on:
   push:
     branches: ['codex/rss-studio-release-20261005']
