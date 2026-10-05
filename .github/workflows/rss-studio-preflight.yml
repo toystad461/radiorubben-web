@@ -1,4 +1,4 @@
-name: Inspect attribution blocker before second RSS release
+name: Inspect stopped second RSS real-source test
 on:
   push:
     branches: ['codex/rss-studio-release-20261005']

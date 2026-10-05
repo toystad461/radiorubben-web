@@ -17,12 +17,12 @@ foreach(studio_board_active($board) as $item)if(studio_web_is_news($item)){
     $key=$web?($radio?'both':'web_only'):($radio?'radio_only':'empty');
     $out['rss_productions'][$key]++;
 }
-$testPath=getenv('HOME').'/.radiorubben-deploy/rss-studio/e145c19f0a12f4c5431e536bb7afb900a00765fe/live-test-board.json';
+$testPath=getenv('HOME').'/.radiorubben-deploy/rss-studio/fb89950ddd7b68152c95fa52345cf799288026c1/live-test-board.json';
 if(is_file($testPath)){
  $test=studio_board_read($testPath);$item=studio_board_active($test)[0];
  $check=$item['sourceCheck']??[];
- $out['isolatedRadioReview']=['status'=>$check['status']??'missing','issues'=>$check['issues']??[],
+ $out['isolatedRadioReview']=['jobState'=>$item['newsroom']['state']??'missing','jobError'=>$item['newsroom']['error']??null,'status'=>$check['status']??'missing','issues'=>$check['issues']??[],
   'fingerprintMatches'=>hash_equals((string)($check['fingerprint']??''),studio_news_fingerprint($item,(string)$item['script'])),
-  'unsupported'=>array_values(array_map(static fn($s)=>['verdict'=>$s['verdict'],'reason'=>$s['reason'],'text'=>$s['text']??''],array_filter($check['segments']??[],static fn($s)=>$s['verdict']!=='supported')))];
+  'unsupported'=>array_values(array_map(static fn($s)=>['verdict'=>$s['verdict'],'reason'=>$s['reason']],array_filter($check['segments']??[],static fn($s)=>$s['verdict']!=='supported')))];
 }
 echo json_encode($out,JSON_UNESCAPED_SLASHES)."\nRSS_STUDIO_PREFLIGHT_OK\n";
