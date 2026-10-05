@@ -29,11 +29,11 @@ final class ReviewDesk {
         update_post_meta($id,self::META,$s);
         if(get_post_meta($id,self::META,true)!==$s)throw new \RuntimeException('Kunne ikke lagre avgjørelsen.');
     }
-    public static function decide(int $id,string $token,string $op,string $comment=''): void {
+    public static function decide(int $id,string $token,string $op,string $comment='',string $editorFacts=''): void {
         $m=self::model($id);
         if(!hash_equals(self::token($id,$m),$token))throw new \RuntimeException('Forslaget er endret siden du åpnet det. Les den nyeste teksten før du velger på nytt.');
         if($m['player']) {
-            PlayerReview::decide($id,(int)$m['state']['version'],PlayerReview::hash($m['post']),$op,$comment);
+            PlayerReview::decide($id,(int)$m['state']['version'],PlayerReview::hash($m['post']),$op,$comment,$editorFacts);
             return;
         }
         $lock='rrfr_review_lock_'.$id;
@@ -65,7 +65,7 @@ final class ReviewDesk {
         if(($_SERVER['REQUEST_METHOD']??'')!=='POST'||!Robot::allowed())wp_die('Ingen tilgang.',403);
         check_admin_referer('rrfr_review_desk');$id=absint($_POST['post_id']??0);
         try {
-            self::decide($id,(string)wp_unslash($_POST['token']??''),sanitize_key($_POST['operation']??''),(string)wp_unslash($_POST['comment']??''));
+            self::decide($id,(string)wp_unslash($_POST['token']??''),sanitize_key($_POST['operation']??''),(string)wp_unslash($_POST['comment']??''),(string)wp_unslash($_POST['editorial_facts']??''));
             $m=self::model($id);
             $message=$m['status']==='published'?'Artikkelen er publisert.':($m['status']==='rejected'?'Forslaget er avvist. Teksten er beholdt som utkast.':'Valget er lagret. Se oppdatert status nedenfor.');
         } catch(\Throwable $e) {$message=$e->getMessage();}
@@ -139,7 +139,7 @@ final class ReviewDesk {
             echo '<a class="rrfr-secondary" href="'.esc_url(get_edit_post_link($id,'raw')).'">Rediger selv</a></div>';
             if(!$m['can_approve'])echo '<p class="rrfr-muted">'.esc_html(!current_user_can('publish_posts')?'Du mangler publiseringsrettighet.':($m['test']&&!$m['player']?'Prøveutkast kan ikke publiseres.':'Publisering er låst til kontrollen er godkjent.')).'</p>';
             echo '<details class="rrfr-changes"><summary>Be om endringer eller avvis</summary><label for="rrfr-comment">Hva vil du endre?</label><textarea id="rrfr-comment" name="comment" rows="3" maxlength="2000" placeholder="For eksempel: Kort ned ingressen og gjør Bremnes-vinkelen tydeligere."></textarea><p class="rrfr-muted">Kommentaren er intern og blir ikke en del av artikkelen.</p><div class="rrfr-row">';
-            if($m['player'])echo '<button name="operation" value="revise">Send til omskriving</button>';
+            if($m['player'])echo '</div><label for="rrfr-editorial-facts">Egne opplysninger til saken</label><textarea id="rrfr-editorial-facts" name="editorial_facts" rows="3" maxlength="2000" placeholder="Opplysninger du kjenner og vil stå som kilde til."></textarea><p class="rrfr-muted">Opplysningene lagres med deg som kilde og brukes i den nye fakta- og språkkontrollen. Vanlige endringsønsker skrives i feltet over.</p><div class="rrfr-row"><button name="operation" value="revise">Send til omskriving</button>';
             else echo '<a class="rrfr-secondary" href="'.esc_url(get_edit_post_link($id,'raw')).'">Åpne teksten for endring</a>';
             echo '<button name="operation" value="reject">Avvis forslaget</button></div>';
             if($m['player'])echo '<p class="rrfr-muted">Omskriving bruker AI og krever en ny sluttgodkjenning.</p>';
@@ -168,7 +168,7 @@ final class ReviewDesk {
         }
         if($ops){echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'">';self::fields($id,$m);foreach($ops as $op=>$label)echo '<button name="operation" value="'.esc_attr($op).'">'.esc_html($label).'</button> ';echo '</form>';}
         $names=['approve'=>'Godkjent','reject'=>'Avvist','revise'=>'Bedt om endringer','resubmit'=>'Åpnet igjen','retry'=>'Nytt skriveforsøk'];
-        foreach(array_reverse($s['history']??[]) as $h)echo '<p>'.esc_html(($names[$h['action']]??$h['action']).' · '.$h['at'].(!empty($h['comment'])?' · '.$h['comment']:'')).'</p>';
+        foreach(array_reverse($s['history']??[]) as $h)echo '<p>'.esc_html(($names[$h['action']]??$h['action']).' · '.$h['at'].(!empty($h['comment'])?' · '.$h['comment']:'').(!empty($h['editorial_facts'])?' · Egne opplysninger fra '.$h['editorial_facts']['source_name'].': '.$h['editorial_facts']['text']:'')).'</p>';
         echo '</details></section>';
     }
     private static function quality(int $id,$post,array $quality): void {

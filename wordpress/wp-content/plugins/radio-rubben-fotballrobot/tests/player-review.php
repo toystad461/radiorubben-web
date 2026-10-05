@@ -99,5 +99,24 @@ $again=$monitor::ingest(1011,$input);R::tick();check(!$again['created']&&$writes
 $write_fail=true;$monitor::ingest(1011,array_replace($input,['url'=>'https://www.brann.no/nyheter/second']));R::tick();$write_fail=false;R::tick();check($writes===$n+3,'Failed news generation is not retried automatically');
 $status=$monitor::status();check($status['engine']==='radio-rubben-fotballrobot'&&count($status['players'])===1&&count($status['players'][0]['news'])===2,'Combined status retains source receipts and reviews');
 $monitor::routes();foreach($routes as $route){foreach(isset($route['methods'])?[$route]:$route as $r)check($r['permission_callback']===[RadioRubben\Fotballrobot\Robot::class,'allowed'],'Every monitor route requires admin access');}
+function wp_get_current_user(){return (object)['display_name'=>'Testredaktør'];}
+$editId=R::create('editor-facts-test',$f,false,false);$s=R::state($editId);$hash=R::hash(get_post($editId));
+$notes='Spilleren har trent regelmessig og fått nye oppgaver på laget.';
+$allowed=false;rejects(fn()=>R::decide($editId,$s['version'],$hash,'revise','Ta med bakgrunnen.',$notes),'Unprivileged editor facts rejected');$allowed=true;
+rejects(fn()=>R::decide($editId,$s['version']+1,$hash,'revise','Ta med bakgrunnen.',$notes),'Stale facts edit rejected');
+rejects(fn()=>R::decide($editId,$s['version'],$hash,'approve','',$notes),'Facts cannot silently accompany approval');
+rejects(fn()=>R::decide($editId,$s['version'],$hash,'revise','Ta med bakgrunnen.','<b>Ny opplysning</b>'),'HTML facts rejected');
+rejects(fn()=>R::decide($editId,$s['version'],$hash,'revise','Ta med bakgrunnen.',str_repeat('x',2001)),'Oversize facts rejected');
+check(!isset(R::state($editId)['facts']['editorial_facts']),'Rejected requests do not alter evidence');
+$write_fail=true;$mailBefore=count($mail);R::decide($editId,$s['version'],$hash,'revise','',$notes);$write_fail=false;
+$s=R::state($editId);$note=$s['facts']['editorial_facts'][0];
+check($note['text']===$notes && $note['user']===7 && $note['source_name']==='Testredaktør','New facts carry exact text and authenticated provenance');
+check(end($s['history'])['editorial_facts']===$note,'Editorial evidence recorded in audit history');
+check($s['status']==='failed' && !RadioRubben\Fotballrobot\PublicationGate::current($editId,get_post($editId)),'Provider failure preserves facts and invalidates old approval');
+check(get_post($editId)->post_status==='draft' && count($mail)===$mailBefore,'No automatic publication or notification');
+R::decide($editId,$s['version'],R::hash(get_post($editId)),'retry','Bruk de registrerte opplysningene.');
+check(R::state($editId)['facts']['editorial_facts'][0]===$note && count(R::state($editId)['facts']['editorial_facts'])===1,'Retry preserves evidence without duplication');
+check(R::state($editId)['status']==='pending' && RadioRubben\Fotballrobot\PublicationGate::current($editId,get_post($editId)),'New evidence and text are quality checked together');
+wp_update_post(['ID'=>$editId,'post_status'=>'publish']);check(get_post($editId)->post_status==='draft','Manual approval still required after new facts');
 echo "$count approval checks passed; mocked existing Microsoft mail transport\n";
 }

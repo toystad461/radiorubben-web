@@ -1,0 +1,64 @@
+name: Publish explicit editor facts and revise requested player draft
+on:
+  push:
+    branches: ['fix/editor-facts-player-revisions']
+    paths: ['.github/workflows/editor-facts-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Test editor facts and existing publication gates
+        run: |
+          set -euo pipefail
+          robot=wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          while read -r hash path; do php -l "$robot/$path"; done < scripts/editor-facts-target.sha256
+          php -l scripts/editor-facts-check.php
+          php -l scripts/tiril-editor-revision.php
+          bash -n scripts/deploy-editor-facts.sh
+          for test in player-review review-desk writer-flow staged-quality; do php "$robot/tests/$test.php"; done
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Deploy four review files with backup and fingerprints
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/editor-facts/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage/scripts $stage/plugin/includes"
+          awk '{print $2}' scripts/editor-facts-target.sha256 > /tmp/editor-facts-files.txt
+          rsync -rltz --files-from=/tmp/editor-facts-files.txt wordpress/wp-content/plugins/radio-rubben-fotballrobot/ "$host:$stage/plugin/"
+          rsync -rltz scripts/editor-facts-check.php scripts/editor-facts-baseline.sha256 scripts/editor-facts-target.sha256 scripts/deploy-editor-facts.sh scripts/tiril-editor-revision.php "$host:$stage/scripts/"
+          ssh "$host" "bash $stage/scripts/deploy-editor-facts.sh $GITHUB_SHA"
+      - name: Revise requested draft through owning plugin without mail or publication
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file .radiorubben-deploy/editor-facts/$GITHUB_SHA/scripts/tiril-editor-revision.php" | tee tiril-revision.log
+          grep -q '^TIRIL_REVISION_OK$' tiril-revision.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: editor-facts-checks
+          path: tiril-revision.log
+          retention-days: 3
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
