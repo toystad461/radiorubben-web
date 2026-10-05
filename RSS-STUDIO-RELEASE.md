@@ -59,3 +59,25 @@ generelle issues og korrekt fingerprint. Ett segment er unsupported fordi
 kontrolløren krever eksplisitt kildebelegg for opplysningen om at informasjonen
 kommer fra Bømlo kommune. Sperren er beholdt; dette skal gjennomgås redaksjonelt
 og er ikke omskrevet eller godkjent automatisk.
+
+## Follow-up release and legacy completion — 2026-10-05
+
+Studio source PRs [28](https://github.com/toystad461/radiorubben-studio/pull/28), [29](https://github.com/toystad461/radiorubben-studio/pull/29), [30](https://github.com/toystad461/radiorubben-studio/pull/30) and [32](https://github.com/toystad461/radiorubben-studio/pull/32) are merged after exact-head PHP 8.2/8.4 and mobile checks passed. Reviewed runtime source: `d9cdd6bd908155cb8359b42b3b357bc341279ffd`.
+
+Fixes:
+- Exact standalone source attribution is backed by a validated original URL and intact source snapshot; compound claims, wrong publishers and editorial issues still block readiness.
+- Radio generation requests canonical Bokmål attribution.
+- The reviewer uses strict structured output with exact segment count, bounded source references and string issues; server-side validation remains.
+- A legacy web-only case can obtain a missing radio draft during recheck without rewriting saved web text or creating another case.
+
+Successful selective release and bounded backfill: [Actions 37302374295](https://github.com/toystad461/radiorubben-web/actions/runs/37302374295). Release stage/backup suffix: `16670e6d2c91cd15fcbe4023ab06f73466ccd9fb`. Runtime backups are under `$HOME/.radiorubben-deploy/backups/rss-studio-16670e6d2c91cd15fcbe4023ab06f73466ccd9fb`; the pre-backfill active board is saved privately in the release stage as `active-board-before-backfill.json`. Preserve this board backup for investigation; never restore the entire board over subsequent editorial edits.
+
+The fixed real-source test used Bømlo's “Bli med i frivilligheita”. Both productions share one item and exact original snapshot; both reviews completed. Radio passed, web required review for an unsupported statement about the project's goals. No approval or delivery was made, and the active board was unchanged by this isolated test. Test success means the pipeline and fail-closed editorial gates work; it does not assert every generated claim passes fact checking.
+
+Both legacy cases were completed. Their IDs and original identity were preserved, web text remained byte-for-byte equivalent, and the newly generated radio and refreshed web check share one original. No case was approved or delivered. One radio check passed; the other radio and both old web texts require review. The old web texts contain unsupported claims about injuries, fire service attendance, official follow-up, road effects and frequency of landslides. Do not publish them until corrected and rechecked by the editorial workflow.
+
+[Read-only postflight 37302620846](https://github.com/toystad461/radiorubben-web/actions/runs/37302620846) confirmed all eight dependency hashes, with the five unrelated files unchanged. It found **three active RSS cases with both productions, zero web-only cases**. The third case arrived through the ordinary automatic worker and passed both reviews. All three remain unapproved and have no delivery.
+
+Earlier attempts stopped safely: malformed issue entries, too many evidence references, and an outdated Git blob in the transport artifact. These were diagnosed without blind paid retries and fixed before the successful release. No old case was changed until the final bounded backfill.
+
+Remaining: browser verification of the authenticated Studio interface and retirement of the legacy robot.php/navigation after preserving its source exports. This release did not change public pages, navigation, credentials, WordPress plugin/theme or publishing permissions.
