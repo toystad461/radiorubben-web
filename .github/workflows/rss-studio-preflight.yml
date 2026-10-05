@@ -29,7 +29,7 @@ jobs:
           php -l scripts/rss-studio-inspect.php
           ssh "$host" "umask 077; mkdir -p $stage"
           rsync -rltz scripts/rss-studio-inspect.php "$host:$stage/"
-          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file $stage/rss-studio-inspect.php"
+          ssh "$host" "php $stage/rss-studio-inspect.php"
       - name: Remove runner SSH key
         if: always()
         run: rm -f ~/.ssh/id_ed25519
