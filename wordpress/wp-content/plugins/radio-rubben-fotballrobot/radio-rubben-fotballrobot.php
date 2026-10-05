@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Radio Rubbens Fotballrobot
  * Description: Kontrollert kampgrunnlag, laghistorikk og separate prøveutkast for Radio Rubben.
- * Version: 0.9.8
+ * Version: 0.10.4
  * Requires PHP: 8.0
  * Author: Radio Rubben
  */
@@ -35,6 +35,7 @@ add_action('admin_enqueue_scripts', static function($hook) {
 });
 
 require_once __DIR__.'/includes/player-review.php';
+require_once __DIR__.'/includes/player-corrections.php';
 require_once __DIR__.'/includes/player-candidates.php';
 add_action('admin_enqueue_scripts', static function($hook) {
     if(strpos($hook,'rrfr-player-review')!==false) wp_enqueue_style('rrfr-admin',plugins_url('admin.css',__FILE__),[], '0.9.5');
@@ -45,6 +46,12 @@ require_once __DIR__.'/includes/match-jobs.php';
 require_once __DIR__.'/includes/fact-store.php';
 
 require_once __DIR__.'/includes/microsoft-mail.php';
+require_once __DIR__.'/includes/newsroom.php';
+add_action('rest_api_init',[Newsroom::class,'routes']);
+add_action('init',[ReviewDigest::class,'register'],20);
+add_action('rrfr_newsroom_prepare',[ReviewDigest::class,'prepare']);
+add_action('rrfr_newsroom_digest',[ReviewDigest::class,'tick']);
+register_deactivation_hook(__FILE__,[ReviewDigest::class,'stop']);
 
 // Enforce review on every publication path.
 add_filter('wp_insert_post_data',[PublicationGate::class,'guard'],99,2);

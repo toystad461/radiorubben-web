@@ -1,0 +1,34 @@
+name: Verify active newsroom and prepare one source
+on:
+  push:
+    branches: ['feat/newsroom-digest']
+    paths: ['.github/workflows/newsroom-inspect.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify installed newsroom without publication or test email
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/newsroom-inspect/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz scripts/newsroom-live-verify.php "$host:$stage/"
+          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad eval-file $stage/newsroom-live-verify.php"
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

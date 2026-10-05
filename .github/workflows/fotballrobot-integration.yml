@@ -1,7 +1,7 @@
 name: Fotballrobot integration checks
 on:
   push:
-    branches: ['integrate/fotballrobot-090-quality']
+    branches: ['integrate/fotballrobot-090-quality', 'feat/newsroom-digest', 'fix/player-story-image']
     paths: ['wordpress/wp-content/plugins/radio-rubben-fotballrobot/**', '.github/workflows/fotballrobot-integration.yml']
   pull_request:
     paths: ['wordpress/wp-content/plugins/radio-rubben-fotballrobot/**', '.github/workflows/fotballrobot-integration.yml']
@@ -19,7 +19,7 @@ jobs:
           set -euo pipefail
           root=wordpress/wp-content/plugins/radio-rubben-fotballrobot
           find "$root" -name '*.php' -print0 | xargs -0 -n1 php -l
-          for test in run lineups writer writer-flow inline-sources editorial-quality staged-quality publication-gate player-review review-desk players candidates-media learning report bootstrap match-jobs; do
+          for test in run lineups writer writer-flow inline-sources editorial-quality staged-quality publication-gate player-review player-corrections review-desk review-digest newsroom player-news-filter players candidates-media learning report bootstrap match-jobs; do
             php "$root/tests/$test.php"
           done
           git diff --check
@@ -33,3 +33,4 @@ jobs:
           php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/review-desk.php
           npm install --prefix "$RUNNER_TEMP/rrfr-ui" --no-audit --no-fund playwright@1.62.1
           node scripts/review-desk-visual.cjs
+

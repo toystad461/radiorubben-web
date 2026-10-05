@@ -79,14 +79,27 @@ final class Players {
         uksort($candidates,static fn($a,$b)=>(($checked[$a]??0)<=>($checked[$b]??0)) ?: ($b<=>$a));
         foreach(array_slice(array_keys($candidates),0,6) as $mid) {
             try {
-                $detail=PlayerFacts::participation(self::fetch('/fotballdata/kamp/?fiksId='.$mid),(int)$mid,$id);
-                if($detail) $p['matches'][$mid]=$detail;
+                $matchHtml=self::fetch('/fotballdata/kamp/?fiksId='.$mid);
+                $detail=PlayerFacts::participation($matchHtml,(int)$mid,$id);
+                if($detail) $p['matches'][$mid]=self::newsContext($matchHtml,$detail,$p['matches'][$mid]??[]);
                 $checked[$mid]=time();
             } catch(\Throwable $e) { $checked[$mid]=time(); $p['warnings'][]='Kamp '.$mid.': '.$e->getMessage(); }
         }
         $p['detail_checked']=$checked; $p['detail_backlog']=max(0,count($candidates)-6);
         ksort($p['matches']); $p['source']=PlayerFacts::url($id); $p['fetched_at']=gmdate(DATE_ATOM);
         return $p;
+    }
+    /** Add verified match facts from the same response; never infer finish from score/time. */
+    private static function newsContext(string $html,array $detail,array $previous=[],?bool $finished=null): array {
+        try {
+            $match=Facts::match($html,(int)$detail['id']);
+            if($match['kickoff']!==$detail['kickoff'] || $match['source']!==$detail['source'])return $detail;
+            $old=$previous['news_context']??[];
+            if($finished===null)$finished=($old['id']??0)===$match['id']&&($old['kickoff']??null)===$match['kickoff']&&($old['finished']??false)===true;
+            $detail['news_context']=array_intersect_key($match,array_flip(['id','home','away','kickoff','competition','score','source']));
+            $detail['news_context']+=['finished'=>$finished,'checked_at'=>gmdate(DATE_ATOM)];
+        }catch(\Throwable $e){/* Existing player observations remain useful without article context. */}
+        return $detail;
     }
     public static function refresh(int $id): array {
         return self::locked((string)$id,static function() use($id) {
@@ -137,6 +150,7 @@ final class Players {
         foreach(self::ids() as $id) {
             $s=self::state((int)$id); if(!$s['enabled'] || !in_array($s['fiks_id'],$people,true) || !$s['snapshot']) continue;
             $detail=PlayerFacts::participation($html,$match,$s['fiks_id']); if(!$detail) continue;
+            $detail=self::newsContext($html,$detail,[],$finished);
             self::locked((string)$id,static function() use($id,$match,$detail,$finished) {
                 $s=self::state((int)$id); $before=$s['snapshot']; $after=$before; $after['matches'][$match]=$detail;
                 foreach(PlayerFacts::diff($before,$after) as $change) if(in_array($change['kind'],$s['watch'],true)) {
