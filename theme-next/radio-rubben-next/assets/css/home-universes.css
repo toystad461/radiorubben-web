@@ -23,7 +23,8 @@
 .rr-u-small-story:last-child{padding-bottom:0}
 .rr-u-sport{padding-block:var(--u-section-gap)}
 .rr-u-sports-stories h3{margin-bottom:0}
-.rr-u-more{padding-top:var(--u-section-gap)}
+.rr-u-more{padding-block:var(--u-section-gap)}
+.rr-u-more>:last-child{margin-bottom:0}
 .rr-u-radio+.rr-u-sport,.rr-u-sport+.rr-u-radio{margin-top:var(--u-section-gap)}
 @media(min-width:760px){.rr-universes{--u-section-gap:48px}}
 @media(prefers-reduced-motion:no-preference){.rr-is-playing .rr-u-wave i{animation:rr-u-pulse 1s ease-in-out infinite alternate}.rr-is-playing .rr-u-wave i:nth-child(3n){animation-delay:-.4s}@keyframes rr-u-pulse{to{transform:scaleY(.4)}}}
