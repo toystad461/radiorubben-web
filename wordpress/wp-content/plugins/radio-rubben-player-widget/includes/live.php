@@ -44,7 +44,43 @@ final class Live {
             }
         }
         if(in_array($phase,['finished','cancelled'],true)) $roles=array_fill_keys($players,null);
-        return ['phase'=>$phase,'roles'=>$roles];
+        return ['phase'=>$phase,'roles'=>$roles,'score'=>self::score($x,$match,$phase)];
+    }
+    /** Only the current match card, never historical head-to-head cards or goal counts. */
+    private static function score(\DOMXPath $x,array $match,string $phase): ?array {
+        if(in_array($phase,['scheduled','cancelled'],true)) return null;
+        $urls=$x->query('//meta[@property="og:url"]/@content');
+        if($urls->length!==1) return null;
+        parse_str(parse_url($urls->item(0)->nodeValue,PHP_URL_QUERY)?:'', $query);
+        if((string)($query['fiksId']??'')!==(string)$match['id']) return null;
+        foreach(['endResult'=>'current','halfTime'=>'halftime'] as $class=>$kind) {
+            $nodes=$x->query('(//*['.self::cls('a_matchCard').'])[1]//*['.self::cls('result').']/*['.self::cls($class).']');
+            if(!$nodes->length) continue;
+            if($nodes->length!==1) return null;
+            $text=Sources::text($nodes->item(0));
+            $pattern=$kind==='halftime'?'/^\((\d{1,2})\s*[-–]\s*(\d{1,2})\)$/u':'/^(\d{1,2})\s*[-–]\s*(\d{1,2})$/u';
+            if(!preg_match($pattern,$text,$m)) return null;
+            return ['home'=>(int)$m[1],'away'=>(int)$m[2],'kind'=>$kind==='current' && $phase==='finished'?'final':$kind];
+        }
+        return null;
+    }
+    /** Public allowlist: selected fixtures only. No private profile/editorial data. */
+    public static function publicMatches(): array {
+        $s=Service::settings(); if(!$s['enabled']) return [];
+        $now=time(); $cache=Service::cache(); $out=[];
+        foreach(Service::candidates($s,Service::profiles(),$cache,$now) as $id=>$c) {
+            $m=$c['match']; $start=strtotime($m['kickoff']);
+            if($start>$now+4500 || $start<$now-14400) continue;
+            $r=$cache['matches'][$id]??[];
+            if(($r['match']??null)!==$m) continue;
+            $checked=(int)($r['lineup_checked_at']??0);
+            $ttl=in_array($r['phase']??'', ['finished','cancelled'],true)?900:150;
+            $fresh=$checked>$now-$ttl;
+            $out[]=['id'=>(int)$id,'home'=>$m['home'],'away'=>$m['away'],'kickoff'=>$m['kickoff'],
+                'phase'=>$fresh?($r['phase']??'unknown'):'unknown','score'=>$fresh?($r['score']??null):null,
+                'checked_at'=>$checked,'expires'=>$checked+$ttl];
+        }
+        return $out;
     }
     public static function interval(array $m,array $record,int $now): int {
         $start=strtotime($m['kickoff']);
@@ -124,7 +160,7 @@ final class Live {
     }
     public static function routes(): void {
         register_rest_route('rr-player-widget/v1','/widget',['methods'=>'GET','permission_callback'=>'__return_true','args'=>['player'=>['default'=>0,'sanitize_callback'=>'absint']],'callback'=>static function($r) {
-            $response=new \WP_REST_Response(['html'=>Compact::render((int)$r['player']),'updated_at'=>Service::cache()['last_run']??0]);
+            $response=new \WP_REST_Response(['html'=>Compact::render((int)$r['player']),'matches'=>self::publicMatches(),'updated_at'=>Service::cache()['last_run']??0]);
             $response->header('Cache-Control','no-store, max-age=0'); return $response;
         }]);
     }
