@@ -850,7 +850,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 </section>
 <?php endif; ?>
 <?php if ($rr_match_sponsor === ''): ?><section class="poll-partner" aria-label="Dagens kampsponsor"><h2>Dagens kampsponsor</h2><p>Ikke registrert for denne kampen ennå.</p></section><?php endif; ?>
-<div class="poll-coverage"><span>Utviklet for lokalfotballen – i samarbeid med Radio Rubben</span><img src="<?php echo esc_url(rr_one_logo_url()); ?>" alt="Radio Rubben" width="120"><small>Digitalt engasjement rundt kampen</small></div>
+<div class="poll-coverage"><span>Utviklet for lokalfotballen – i samarbeid med Radio Rubben</span><img src="<?php echo esc_url(rr_one_logo_url('compact')); ?>" alt="Radio Rubben" width="120"><small>Digitalt engasjement rundt kampen</small></div>
 </div>
 <?php endif; ?>
 <?php if ($rr_control && $rr_admin && $rr_dashboard_section==='hendelser'): ?>

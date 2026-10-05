@@ -2,16 +2,16 @@ name: WordPress kontroll og publisering
 on:
   pull_request:
     branches: [main]
-    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', '.github/workflows/wordpress.yml']
+    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', 'scripts/audit-wordpress-brand.sh', 'scripts/deploy-brand*.sh', 'scripts/brand-logo.patch', '.github/workflows/wordpress.yml']
   push:
     branches: [main]
-    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', '.github/workflows/wordpress.yml']
+    paths: ['wordpress/**', 'scripts/deploy-wordpress*.sh', 'scripts/audit-wordpress-brand.sh', 'scripts/deploy-brand*.sh', 'scripts/brand-logo.patch', '.github/workflows/wordpress.yml']
   workflow_dispatch:
     inputs:
       mode:
         description: Prøvekjøring eller publisering
         type: choice
-        options: [dry-run, apply]
+        options: [dry-run, apply, brand-dry-run, brand-apply]
         default: dry-run
 permissions:
   contents: read
@@ -29,6 +29,9 @@ jobs:
         run: |
           php --version
           find wordpress -name '*.php' -print0 | xargs -0 -n1 php -l
+          bash -n scripts/deploy-brand.sh
+          bash -n scripts/deploy-brand-remote.sh
+          bash -n scripts/audit-wordpress-brand.sh
           bash -n scripts/deploy-wordpress.sh
           bash -n scripts/deploy-wordpress-remote.sh
   deploy:
