@@ -5,6 +5,9 @@ on:
   push:
     branches: ['design/reusable-page-templates']
     paths: ['theme-next/**', '.github/workflows/page-layouts.yml']
+concurrency:
+  group: rr-page-layouts-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -26,9 +29,9 @@ jobs:
         run: |
           curl --fail --silent --show-error --location https://wordpress.org/wordpress-6.6.2.tar.gz -o /tmp/wordpress.tar.gz
           tar -xzf /tmp/wordpress.tar.gz -C /tmp
-          curl --fail --silent --show-error https://schemas.wp.org/wp/6.6/theme.json -o /tmp/theme-schema.json
-          python3 -m pip install --quiet jsonschema==4.23.0
-          python3 -c 'import json,jsonschema; jsonschema.validate(json.load(open("theme-next/radio-rubben-next/theme.json")),json.load(open("/tmp/theme-schema.json")))'
+          curl --fail --silent --show-error --location https://schemas.wp.org/wp/6.6/theme.json -o /tmp/theme-schema.json
+          python3 -m pip install --quiet --target /tmp/rr-schema-validation jsonschema==4.23.0
+          PYTHONPATH=/tmp/rr-schema-validation python3 -c 'import json,jsonschema; jsonschema.validate(json.load(open("theme-next/radio-rubben-next/theme.json")),json.load(open("/tmp/theme-schema.json")))'
       - name: Kontroller innholdsgrenser og render malene
         env:
           RR_WP_INCLUDES: /tmp/wordpress/wp-includes
