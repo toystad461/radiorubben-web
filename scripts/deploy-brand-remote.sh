@@ -27,6 +27,16 @@ for file in "${files[@]}"; do
 done
 (cd "$theme" && sha256sum "${files[@]}") > "$stage/before.sha256"
 (cd "$candidate" && patch --batch --forward --fuzz=0 -p1 < "$stage/brand-logo.patch")
+# The match module has unrelated live edits around its brand attribution.
+# Require exactly one known logo call and change that expression only.
+php -r '
+$file = $argv[1];
+$source = file_get_contents($file);
+$old = "rr_one_logo_url()";
+if (substr_count($source, $old) !== 1) { fwrite(STDERR, "Expected exactly one match logo call\n"); exit(1); }
+$new = "rr_one_logo_url(" . chr(39) . "compact" . chr(39) . ")";
+file_put_contents($file, str_replace($old, $new, $source));
+' "$candidate/inc/bremnes-poll-test.php"
 for file in "${files[@]}"; do php -l "$candidate/$file"; done
 php -l "$stage/inc/brand.php"
 echo "BRAND RELEASE $release; Git commit $commit; mode $mode"
