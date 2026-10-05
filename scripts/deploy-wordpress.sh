@@ -10,6 +10,8 @@ paths=(themes/radio-rubben-wordpress-v1 plugins/min-rubben plugins/RR_News plugi
 for path in "${paths[@]}"; do
   [[ -d "$source_dir/$path" && ! -L "$source_dir/$path" ]] || exit 3
 done
+# Read-only inventory is retained in the GitHub run before either deployment mode.
+ssh "$host" bash -s < scripts/audit-wordpress-brand.sh
 if [[ "$mode" == dry-run ]]; then
   for path in "${paths[@]}"; do
     rsync -rltz --dry-run --itemize-changes "$source_dir/$path/" "$host:$root/$path/"
