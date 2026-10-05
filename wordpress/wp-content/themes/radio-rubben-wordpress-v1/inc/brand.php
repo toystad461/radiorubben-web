@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) exit;
 
 // Release-owned assets make logo changes reversible through the normal code deploy.
 function rr_brand_url($path) {
-    return get_template_directory_uri() . '/assets/brand/2026-09/' . $path;
+    return get_template_directory_uri() . '/assets/brand/2026-09/' . $path . '?v=20261005-2';
 }
 
 function rr_one_logo_url($variant = 'master') {
@@ -36,7 +36,7 @@ remove_action('wp_head', 'wp_site_icon', 99);
 add_action('wp_head', 'rr_brand_head', 99);
 
 add_action('wp_enqueue_scripts', function () {
-    wp_enqueue_style('rr-brand', get_template_directory_uri() . '/assets/css/brand.css', ['rr-mobile-shell'], '2026.10.05');
+    wp_enqueue_style('rr-brand', get_template_directory_uri() . '/assets/css/brand.css', ['rr-mobile-shell'], '2026.10.05.2');
 });
 
 // Only replace the front-page brand card or a positively identified old brand image.
