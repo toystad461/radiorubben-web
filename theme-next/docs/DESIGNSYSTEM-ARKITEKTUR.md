@@ -1,6 +1,6 @@
 # Radio Rubben: gjenbrukbare sidemaler
 
-Gjennomgått 05.10.2026. Kandidat på `design/reusable-page-templates`, stablet på `design/home-three-universes` (PR #53), som bygger på Next PR #28. Dette er et presentasjonsarbeid for staging. Ingen aktivering, datamigrering eller produksjonsdeploy følger med.
+Gjennomgått 05.10.2026. Theme-kandidat 2.0.0-rc.2 (egen pakke/cacheversjon); pluginversjoner er uendret. Base for denne PR-en: `d688c34d79a8dae12c2782199d37b21abf7ff80e`; undersøkt main: `5dd696ff6e8305902805a6514daed6873f508b30`. Kandidat på `design/reusable-page-templates`, stablet på `design/home-three-universes` (PR #53), som bygger på Next PR #28. Dette er et presentasjonsarbeid for staging. Ingen aktivering, datamigrering eller produksjonsdeploy følger med.
 
 ## Hva gjennomgangen fant
 
@@ -21,7 +21,7 @@ Alle 27 åpne PR-er (#28–54) ble listet. Relevant kilde og dokumentasjon ble u
 
 - [#28 Next](https://github.com/toystad461/radiorubben-web/pull/28): grunnarkitektur, funksjonsbro, historiske stagingtester og fem utestående porter.
 - [#53 forside](https://github.com/toystad461/radiorubben-web/pull/53): valgt base, felles navigasjon og avspiller. Samme forsidestruktur og standardvalg beholdes.
-- [#35 profil](https://github.com/toystad461/radiorubben-web/pull/35): originale logoer, #FF001B, svart/hvitt, Arial. Next inneholder allerede porteringen. Ingen ny logo tegnes.
+- [#35 profil](https://github.com/toystad461/radiorubben-web/pull/35): originale logoer, #FF001B, svart/hvitt, Arial. Next inneholder allerede porteringen. Ingen ny logo tegnes. Nyere merged main-logoarbeid bruker samme originale logopakke; eventuelle ekstra SEO-/ikonvalg må også samkjøres før aktivering.
 - [#32 bortekamp](https://github.com/toystad461/radiorubben-web/pull/32): `opponent` og fire delingstekster; Next-broen kan være eldre. Skal samkjøres før aktivering.
 - [#33 quizretur](https://github.com/toystad461/radiorubben-web/pull/33), [#34 deling](https://github.com/toystad461/radiorubben-web/pull/34): funksjonsrettinger eies av quizlaget. Ingen kopi overstyrt her.
 - [#45 spillerwidget](https://github.com/toystad461/radiorubben-web/pull/45), [#47 kampoppfølging](https://github.com/toystad461/radiorubben-web/pull/47): egen widget/provider med kildekontroll, cache og refresh; den nyere pluginen må beholdes på staging.
