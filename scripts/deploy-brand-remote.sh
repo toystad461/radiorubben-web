@@ -26,15 +26,20 @@ for file in "${files[@]}"; do
   cp "$theme/$file" "$candidate/$file"
 done
 (cd "$theme" && sha256sum "${files[@]}") > "$stage/before.sha256"
-(cd "$candidate" && patch --batch --forward --fuzz=0 -p1 < "$stage/brand-logo.patch")
+if (cd "$candidate" && patch --dry-run --batch --reverse --fuzz=0 -p1 < "$stage/brand-logo.patch" >/dev/null 2>&1); then
+  echo 'The registered logo patch is already present; preserving it.'
+else
+  (cd "$candidate" && patch --batch --forward --fuzz=0 -p1 < "$stage/brand-logo.patch")
+fi
 # The match module has unrelated live edits around its brand attribution.
 # Require exactly one known logo call and change that expression only.
 php -r '
 $file = $argv[1];
 $source = file_get_contents($file);
 $old = "rr_one_logo_url()";
-if (substr_count($source, $old) !== 1) { fwrite(STDERR, "Expected exactly one match logo call\n"); exit(1); }
 $new = "rr_one_logo_url(" . chr(39) . "compact" . chr(39) . ")";
+if (substr_count($source, $old) === 0 && substr_count($source, $new) === 1) exit(0);
+if (substr_count($source, $old) !== 1 || substr_count($source, $new) !== 0) { fwrite(STDERR, "Expected exactly one match logo call\n"); exit(1); }
 file_put_contents($file, str_replace($old, $new, $source));
 ' "$candidate/inc/bremnes-poll-test.php"
 for file in "${files[@]}"; do php -l "$candidate/$file"; done
@@ -67,11 +72,17 @@ rollback() {
 (cd "$theme" && sha256sum -c "$stage/before.sha256")
 trap rollback ERR HUP INT TERM
 "${wp[@]}" maintenance-mode activate
-rsync -rlt --chmod=D755,F644 "$stage/assets/brand/" "$theme/assets/brand/"
+rsync -rltp --chmod=D755,F644 "$stage/assets/brand/" "$theme/assets/brand/"
 install -m 644 "$stage/assets/css/brand.css" "$theme/assets/css/brand.css"
 install -m 644 "$stage/inc/brand.php" "$theme/inc/brand.php"
 for file in "${files[@]}"; do install -m 644 "$candidate/$file" "$theme/$file"; done
+chmod 755 "$theme/assets/brand"
 "${wp[@]}" maintenance-mode deactivate
+for asset in SVG/03-Hovedlogo-transparent-hvit.svg SVG/07-Uten-verdilinje-hvit.svg PNG/01-Hovedlogo-mork.png Ikoner/ikon-32.png RadioRubben-Logopakke.zip; do
+  curl --fail --silent --show-error --location --max-time 30 "https://www.radiorubben.no/wp-content/themes/radio-rubben-wordpress-v1/assets/brand/2026-09/$asset?rr_brand=$release" -o /dev/null
+done
+# The site uses WP-Optimize page cache; rebuild old HTML after changing shared branding.
+/usr/local/bin/wp --path="$root" --skip-themes eval 'if (function_exists("wpo_cache_flush")) { wpo_cache_flush(); echo "WP-Optimize page cache cleared.\n"; } else { throw new Exception("Expected WP-Optimize cache API is unavailable"); }'
 curl --fail --silent --show-error --location --max-time 30 "https://www.radiorubben.no/?rr_brand=$release" -o "$stage/live.html"
 grep -q 'assets/brand/2026-09/SVG/03-Hovedlogo-transparent-hvit.svg' "$stage/live.html"
 grep -q 'assets/brand/2026-09/Ikoner/ikon-32.png' "$stage/live.html"
