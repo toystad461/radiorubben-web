@@ -1,0 +1,38 @@
+name: Inspect incomplete web review before legacy backfill
+on:
+  push:
+    branches: ['codex/rss-studio-release-20261005']
+    paths: ['.github/workflows/rss-studio-backfill.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate installed files and test invariants before bounded backfill
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/rss-studio-inspect/$GITHUB_SHA"
+          php -l scripts/rss-studio-backfill-gate.php
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz scripts/rss-studio-backfill-gate.php "$host:$stage/"
+          ssh "$host" "php -d display_errors=stderr $stage/rss-studio-backfill-gate.php"
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

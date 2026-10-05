@@ -3,6 +3,8 @@ require __DIR__.'/player-review.php';
 require __DIR__.'/../includes/player-corrections.php';
 require __DIR__.'/../includes/newsroom.php';
 function wp_strip_all_tags($s){return strip_tags($s);}
+function wp_get_attachment_image_url($id,$size){return 'https://www.radiorubben.no/wp-content/uploads/test.jpg';}
+function wp_get_attachment_caption($id){return 'Illustrasjon';}
 function get_permalink($id){return 'https://example.test/article/'.$id;}
 use RadioRubben\Fotballrobot\PlayerCorrections as C;
 use RadioRubben\Fotballrobot\PlayerReview as P;
@@ -17,10 +19,22 @@ $correctionFail=true;rejects(fn()=>C::prepare($id,$hash,$article),'Failed facts 
 check(get_post($id)==$original&&P::state($id)===$originalState,'Preparation failures keep original text and approval');
 $result=C::prepare($id,$hash,$article);$record=get_post_meta($id,C::META,true);
 $card=RadioRubben\Fotballrobot\Newsroom::card($id);
-check($card['status']==='ready'&&$card['canApprove']&&!$card['canRevise']&&$card['token']===$record['token']&&$card['title']===$article['title'],'Unified desk shows reviewed correction with exact proposal token');
+check($card['status']==='ready'&&$card['canApprove']&&$card['canRevise']&&!$card['canAddFacts']&&$card['isCorrection']&&$card['token']===$record['token']&&$card['title']===$article['title'],'Unified desk shows reviewed correction with exact proposal token');
 check($result['status']==='pending'&&get_post($id)==$original&&P::state($id)===$originalState,'Prepared correction does not modify public article');
 check(get_post_meta($id,G::META,true)===$originalQuality&&count($mail)===$mailBefore,'Preparation preserves original quality and sends no mail');
 rejects(fn()=>C::prepare($id,$hash,$article),'Pending revision cannot be overwritten');
+check($card['image']['id']===813&&$card['image']['caption']==='Illustrasjon','Desk receives the selected image');
+check(!str_contains($card['body'],$article['lead'])&&!str_contains($card['body'],'Kilder:')&&!str_contains($card['body'],'AI-generert'),'Desk removes only redundant display content');
+rejects(fn()=>C::revise($id,'stale','Kortere ingress'),'Rewrite requires exact proposal');
+$publish=false;rejects(fn()=>C::revise($id,$record['token'],'Kortere ingress'),'Rewrite requires editor capability');$publish=true;
+$write_fail=true;rejects(fn()=>C::revise($id,$record['token'],'Kortere ingress'),'Provider failure is reported');$write_fail=false;
+check(get_post_meta($id,C::META,true)===$record,'Failed rewrite preserves previous proposal');
+C::revise($id,$record['token'],'Kortere ingress');$revised=get_post_meta($id,C::META,true);
+check($revised['token']!==$record['token']&&count($revised['history'])===1,'Rewrite creates new token and retains history');
+check(get_post($id)==$original&&P::state($id)===$originalState&&get_post_meta($id,G::META,true)===$originalQuality&&count($mail)===$mailBefore,'Rewrite leaves public article, approval and mail unchanged');
+rejects(fn()=>C::approve($id,$record['token']),'Previous proposal cannot approve revised text');
+update_post_meta($id,C::META,$record);
+
 $publish=false;rejects(fn()=>C::approve($id,$record['token']),'Publish capability required');$publish=true;
 rejects(fn()=>C::approve($id,'stale'),'Exact proposal token required');
 update_post_meta($id,'_thumbnail_id',999);rejects(fn()=>C::approve($id,$record['token']),'Concurrent image change invalidates approval');update_post_meta($id,'_thumbnail_id',813);

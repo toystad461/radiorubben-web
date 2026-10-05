@@ -41,6 +41,23 @@ final class PlayerCorrections {
             return ['status'=>'pending','review_url'=>PlayerReview::url($id),'article'=>$a];
         });
     }
+    /** A requested rewrite replaces only the pending proposal after fresh quality checks. */
+    public static function revise(int $id,string $token,string $comment): void {
+        self::locked($id,static function()use($id,$token,$comment){
+            [$p,$s]=self::live($id);$r=get_post_meta($id,self::META,true);
+            if(!current_user_can('publish_posts')||!is_array($r)||($r['status']??'')!=='pending'||!hash_equals($r['token'],$token)||!hash_equals($r['base'],self::base($id)))
+                throw new \RuntimeException('Forslaget er endret. Les saken på nytt.');
+            $comment=trim(sanitize_textarea_field($comment));
+            if($comment===''||mb_strlen($comment)>2000)throw new \RuntimeException('Skriv ønsket endring, inntil 2000 tegn.');
+            $a=Writer::playerArticle($s['facts'],$comment,$r['article']);$quality=$a['_quality']??[];unset($a['_quality']);
+            if(($quality['publishable']??false)!==true)throw new \RuntimeException('Den nye teksten bestod ikke kontrollen. Forrige forslag er beholdt.');
+            if(!hash_equals($r['base'],self::base($id)))throw new \RuntimeException('Saken ble endret under kontrollen. Forslaget er beholdt.');
+            $post=['post_title'=>$a['title'],'post_excerpt'=>$a['lead'],'post_content'=>PlayerReview::body($a,$s['facts'])];
+            $r['history'][]=['article'=>$r['article'],'token'=>$r['token'],'requested_by'=>get_current_user_id(),'comment'=>$comment,'at'=>gmdate(DATE_ATOM)];
+            $r['article']=$a;$r['post']=$post;$r['quality']=PublicationGate::bind($quality,$post);
+            unset($r['token']);$r['token']=hash('sha256',serialize($r));self::put($id,$r);
+        });
+    }
     public static function approve(int $id,string $token): void {
         self::locked($id,static function()use($id,$token){
             [$p,$s]=self::live($id);$r=get_post_meta($id,self::META,true);
