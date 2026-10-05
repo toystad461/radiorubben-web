@@ -31,3 +31,12 @@ godkjenning/levering. Innhold og kildegrunnlag blir private; bare URL, ID-er
 og statusverdier logges. Modellsvar kan kreve redaksjonell retting.
 Testfeil etter vellykket installasjon rapporteres og gjentas ikke blindt.
 Innlogget UI og faktisk sluttgodkjenning er separate kontroller.
+
+## Avklart stopp før installasjon
+
+Første release-kjøring 37298776074 besto artefaktkontrollen, men stoppet fordi
+Uniweb sin /run/webroots-adresse er en aliassti. Ingen kode ble endret:
+fersk kontroll 37298910886 bekrefter alle opprinnelige hasher og samme to
+RSS-saker. Kanonisk app-sti er /customers/9/3/1/cptk37ymg/webroots/r1417157/studio-private/app.
+Manifestet låser denne observerte, eksakte stien; målbanen og de tre filnavnene
+er fortsatt faste. Ingen sertifikat-, rolle- eller nøkkelsperre omgås.

@@ -2,8 +2,9 @@
 declare(strict_types=1);
 $stage=$argv[1]??'';$backup=$argv[2]??'';$mode=$argv[3]??'install';
 $root='/run/webroots/r1417157/studio-private/app';
-if(realpath($root)!==$root||!is_dir($stage)||!is_dir($backup)||!in_array($mode,['install','rollback'],true))throw new RuntimeException('Invalid deployment paths');
+if(!is_dir($stage)||!is_dir($backup)||!in_array($mode,['install','rollback'],true))throw new RuntimeException('Invalid deployment paths');
 $m=json_decode(file_get_contents($stage.'/scripts/rss-studio-release.json'),true,64,JSON_THROW_ON_ERROR);
+if(is_link($root)||realpath($root)!==$m['app_realpath'])throw new RuntimeException('Unexpected canonical Studio directory');
 $a=json_decode(file_get_contents($stage.'/scripts/release-artifacts/rss-studio.json'),true,64,JSON_THROW_ON_ERROR);
 $allowed=['case-workflow.php','news-script.php','newsroom.php'];$keys=array_keys($m['after']);sort($keys);
 if($keys!==$allowed||$a['source_commit']!==$m['source_commit'])throw new RuntimeException('Scope mismatch');

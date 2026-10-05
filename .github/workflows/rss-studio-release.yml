@@ -18,7 +18,7 @@ jobs:
       - name: Verify pinned source bytes and PHP
         run: |
           set -euo pipefail
-          php scripts/rss-studio-artifact-check.php
+          php scripts/rss-studio-artifact-check.php # verified canonical Uniweb directory
           find /tmp/rss-studio-check -name '*.php' -print0 | xargs -0 -n1 php -l
           php -l scripts/rss-studio-install.php
           php -l scripts/rss-studio-live-test.php
