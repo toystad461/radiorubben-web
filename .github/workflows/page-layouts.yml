@@ -22,6 +22,7 @@ jobs:
         run: |
           python3 theme-next/scripts/check.py
           php theme-next/tests/home-universes.php
+          php theme-next/tests/match-day-embed.php
           python3 -m unittest discover -s theme-next/tests -p 'test_read_only_probes.py'
           npm test
           npm run build
