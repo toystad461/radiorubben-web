@@ -1,0 +1,6 @@
+/* The editor uses the same theme.json tokens as the public page. */
+.editor-styles-wrapper{background:var(--wp--preset--color--background,#000);color:var(--wp--preset--color--text,#fff);font-family:var(--wp--preset--font-family--body,Arial,Helvetica,sans-serif)}
+.editor-styles-wrapper a{color:var(--wp--preset--color--accent,#fff)}
+.editor-styles-wrapper .wp-block{max-width:var(--wp--style--global--content-size,900px)}
+.editor-styles-wrapper .alignwide{max-width:var(--wp--style--global--wide-size,1180px)}
+.editor-styles-wrapper .alignfull{max-width:none}

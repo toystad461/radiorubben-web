@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "source_ref": "d0cb1aa24157f7f3d732a97e3829c9cf42fe5f45",
+  "probe_sha256": "5819bb6d5d44b7a634958c2528347aea47ad8cab813ec9c4093aabbb73695133",
+  "started_at": "2026-09-27T06:20:47.944318Z",
+  "finished_at": "2026-09-27T06:20:52.121521Z",
+  "scope": "External GET/structure observations, not WordPress integration or production approval",
+  "production_approved": false,
+  "wordpress_bootstrapped": false,
+  "policy": {
+    "methods": [
+      "GET"
+    ],
+    "redirects": false,
+    "retries": 0,
+    "credentials": false,
+    "response_bodies_in_report": false,
+    "timeout_seconds_per_request": 20
+  },
+  "checks": [
+    {
+      "check": "MET Rubbestadneset",
+      "kind": "weather",
+      "url": "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.8156&lon=5.268",
+      "started_at": "2026-09-27T06:20:47.944323Z",
+      "http_status": 200,
+      "curl_exit": 0,
+      "bytes": 36955,
+      "sha256": "6a8ebc70ae32c5ad63b3019f78c71dadafb800a281a00f3e81cabbf86ab8d950",
+      "headers": {
+        "content-type": "application/json",
+        "age": "611",
+        "expires": "Sun, 27 Sep 2026 06:40:57 GMT",
+        "last-modified": "Sun, 27 Sep 2026 06:10:37 GMT",
+        "vary": "Accept, Accept-Encoding"
+      },
+      "status": "PASS",
+      "detail": "Forecast schema, update age (max 6h) and near-future coverage.",
+      "evidence": {
+        "updated_at": "2026-09-27T05:30:09Z",
+        "age_seconds": 3039,
+        "hours": 85
+      },
+      "finished_at": "2026-09-27T06:20:48.541263Z"
+    },
+    {
+      "check": "Bømlo kommune RSS",
+      "kind": "rss",
+      "url": "https://www.bomlo.kommune.no/ArtikkelRSS.ashx?NyhetsKategoriId=26&Spraak=Nynorsk",
+      "started_at": "2026-09-27T06:20:48.541275Z",
+      "http_status": 200,
+      "curl_exit": 0,
+      "bytes": 4577,
+      "sha256": "1f5ef8dcf6ee9d3b99501930662757bbc14db97edb39e6990ca837a9cb393e36",
+      "headers": {
+        "content-type": "application/rss+xml; charset=utf-8",
+        "cache-control": "private"
+      },
+      "status": "PASS",
+      "detail": "Usable feed; missing dates or item age over 30 days requires review.",
+      "evidence": {
+        "items": 5,
+        "usable_items": 5,
+        "newest_item": "2026-09-25T12:12:30Z",
+        "newest_age_days": 1.76
+      },
+      "finished_at": "2026-09-27T06:20:49.155746Z"
+    },
+    {
+      "check": "NFF roster structure",
+      "kind": "nff-rosters",
+      "url": "https://www.fotball.no/fotballdata/kamp/?fiksId=8985476&underside=kamptropper",
+      "started_at": "2026-09-27T06:20:49.155753Z",
+      "http_status": 200,
+      "curl_exit": 0,
+      "bytes": 120984,
+      "sha256": "9d924ccdb208985d64b618a7bddcd80bb07354c7b314be8789d0f31d13829b93",
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "public, max-age=300, s-maxage=600, stale-while-revalidate=30, stale-if-error=86400",
+        "vary": "Accept-Encoding"
+      },
+      "status": "PASS",
+      "detail": "Fresh GET and HTML markers only; PHP importer/identity/event semantics remain manual.",
+      "evidence": {
+        "section_present": true,
+        "fixture_id": 8985476
+      },
+      "finished_at": "2026-09-27T06:20:50.142671Z"
+    },
+    {
+      "check": "NFF event structure",
+      "kind": "nff-events",
+      "url": "https://www.fotball.no/fotballdata/kamp/?fiksId=8985476&underside=kamphendelser",
+      "started_at": "2026-09-27T06:20:50.142686Z",
+      "http_status": 200,
+      "curl_exit": 0,
+      "bytes": 120986,
+      "sha256": "c4a57436f6bc605d894071ba2a3b9358a1f0d56aac5d7339c65c775e64b0d211",
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "cache-control": "public, max-age=300, s-maxage=600, stale-while-revalidate=30, stale-if-error=86400",
+        "vary": "Accept-Encoding"
+      },
+      "status": "PASS",
+      "detail": "Fresh GET and HTML markers only; PHP importer/identity/event semantics remain manual.",
+      "evidence": {
+        "section_present": true,
+        "fixture_id": 8985476
+      },
+      "finished_at": "2026-09-27T06:20:50.933056Z"
+    },
+    {
+      "check": "Legacy static CSS/cache observation 1",
+      "kind": "static-cache",
+      "url": "https://www.radiorubben.no/wp-content/themes/radio-rubben-wordpress-v1/assets/css/theme.css",
+      "started_at": "2026-09-27T06:20:50.933076Z",
+      "http_status": 200,
+      "curl_exit": 0,
+      "bytes": 18141,
+      "sha256": "da15b0650823533192612b0161b08ff271354479ab42201b25b82dcdf18fb34e",
+      "headers": {
+        "content-type": "text/css",
+        "age": "305",
+        "last-modified": "Fri, 25 Sep 2026 15:11:47 GMT",
+        "vary": "Accept-Encoding"
+      },
+      "status": "PASS",
+      "detail": "Static CSS only; no application/cache invalidation tested.",
+      "evidence": {},
+      "finished_at": "2026-09-27T06:20:51.610200Z"
+    },
+    {
+      "check": "Legacy static CSS/cache observation 2",
+      "kind": "static-cache",
+      "url": "https://www.radiorubben.no/wp-content/themes/radio-rubben-wordpress-v1/assets/css/theme.css",
+      "started_at": "2026-09-27T06:20:51.610214Z",
+      "http_status": 200,
+      "curl_exit": 0,
+      "bytes": 18141,
+      "sha256": "da15b0650823533192612b0161b08ff271354479ab42201b25b82dcdf18fb34e",
+      "headers": {
+        "content-type": "text/css",
+        "age": "306",
+        "last-modified": "Fri, 25 Sep 2026 15:11:47 GMT",
+        "vary": "Accept-Encoding"
+      },
+      "status": "PASS",
+      "detail": "Static CSS only; no application/cache invalidation tested.",
+      "evidence": {},
+      "finished_at": "2026-09-27T06:20:52.121426Z"
+    },
+    {
+      "check": "Static CSS repeated-response consistency",
+      "kind": "static-cache",
+      "status": "PASS",
+      "detail": "Same asset hash in two GETs; not proof of CDN/cache isolation."
+    },
+    {
+      "check": "Audio transport sample",
+      "kind": "audio",
+      "status": "SKIP",
+      "detail": "No confirmed active stream URL supplied. Existing pause state is not changed."
+    }
+  ],
+  "summary": {
+    "PASS": 7,
+    "FAIL": 0,
+    "ERROR": 0,
+    "WARN": 0,
+    "SKIP": 1
+  },
+  "manual_gates": [
+    "vipps-return",
+    "wordpress-fresh-import",
+    "audible-browser-playback",
+    "mail-cron-payment-automation",
+    "cache-operations-release"
+  ]
+}

@@ -1,0 +1,334 @@
+[
+  {
+    "layout": "standard",
+    "width": 320,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "standard",
+    "width": 390,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "standard",
+    "width": 768,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 2,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "standard",
+    "width": 1440,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 2,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "application",
+    "width": 320,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "application",
+    "width": 390,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "application",
+    "width": 768,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 2,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "application",
+    "width": 1440,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 2,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "editorial",
+    "width": 320,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 1,
+    "links": [],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "editorial",
+    "width": 390,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 1,
+    "links": [],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "editorial",
+    "width": 768,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 2,
+    "links": [],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "editorial",
+    "width": 1440,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 2,
+    "links": [],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "football",
+    "width": 320,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "football",
+    "width": 390,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "football",
+    "width": 768,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 2,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  },
+  {
+    "layout": "football",
+    "width": 1440,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "gridColumns": 2,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "font": "Arial, Helvetica, system-ui, sans-serif",
+    "errors": []
+  }
+]

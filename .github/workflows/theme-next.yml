@@ -1,0 +1,73 @@
+name: Next theme — kontroll og ZIP
+on:
+  pull_request:
+    branches: [main]
+    paths: ['theme-next/**', '.github/workflows/theme-next.yml']
+  push:
+    branches: [main, 'theme/**']
+    paths: ['theme-next/**', '.github/workflows/theme-next.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Vis kontrollmiljø
+        run: |
+          php --version
+          node --version
+          python3 --version
+      - name: Kontroller kildekode og presentasjonsgrense
+        run: python3 theme-next/scripts/check.py
+      - name: Test lesekontroller uten nettverk
+        run: python3 -m unittest discover -s theme-next/tests -p 'test_read_only_probes.py'
+      - name: Bygg installasjonspakker og SHA-256
+        run: python3 theme-next/scripts/package.py
+      - name: Lagre installasjonspakker
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: radio-rubben-next-${{ github.sha }}
+          path: theme-next/dist/
+          if-no-files-found: error
+          retention-days: 30
+  read-only-observations:
+    # Avoid duplicate upstream requests from the simultaneous branch push run.
+    if: github.event_name != 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Observer offentlige kilder (ingen WordPress-handlinger)
+        env:
+          REVIEW_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          code=0
+          python3 theme-next/scripts/read-only-probes.py --source-ref "$REVIEW_SHA" --output read-only-observations.json || code=$?
+          test -s read-only-observations.json
+          if [ "$code" -gt 2 ]; then exit "$code"; fi
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          report = json.loads(Path('read-only-observations.json').read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('## Eksterne lesekontroller — ikke produksjonsgodkjenning\n\n')
+              summary.write('Nettverksavvik rapporteres separat fra byggstatus. Manuelle gates er fortsatt åpne.\n\n')
+              summary.write('| Kontroll | Resultat |\n|---|---|\n')
+              for check in report['checks']:
+                  summary.write(f"| {check['check']} | {check['status']} |\n")
+          PY
+      - name: Lagre dataminimert observasjonsrapport
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: read-only-observations-${{ github.sha }}
+          path: read-only-observations.json
+          if-no-files-found: error
+          retention-days: 14

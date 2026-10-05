@@ -1,0 +1,68 @@
+{
+  "contract_version": 1,
+  "reserved_prefixes": [
+    "rr-human-"
+  ],
+  "roles": {
+    "rr-fotball": {
+      "status": "active-presentation",
+      "role": "Digital fotballjournalist"
+    },
+    "rr-lokal": {
+      "status": "active-presentation",
+      "role": "Digital lokaljournalist"
+    },
+    "rr-redaksjon": {
+      "status": "reserved",
+      "role": "Koordinator"
+    },
+    "rr-sport": {
+      "status": "reserved",
+      "role": "Sport utenom fotball"
+    },
+    "rr-kultur": {
+      "status": "reserved",
+      "role": "Kultur"
+    },
+    "rr-musikk": {
+      "status": "reserved",
+      "role": "Musikk"
+    },
+    "rr-radio": {
+      "status": "reserved",
+      "role": "Radioinnhold"
+    },
+    "rr-desk": {
+      "status": "reserved",
+      "role": "Språk og redigering"
+    },
+    "rr-publisering": {
+      "status": "reserved",
+      "role": "Publiseringsflyt"
+    },
+    "rr-feed": {
+      "status": "reserved",
+      "role": "Kildeinnhenting"
+    },
+    "rr-live": {
+      "status": "reserved",
+      "role": "Live-desken"
+    },
+    "rr-data": {
+      "status": "reserved",
+      "role": "Strukturerte data"
+    },
+    "rr-foto": {
+      "status": "reserved",
+      "role": "Bildedesk"
+    },
+    "rr-some": {
+      "status": "reserved",
+      "role": "Sosiale medier"
+    },
+    "rr-arkiv": {
+      "status": "reserved",
+      "role": "Arkiv"
+    }
+  }
+}

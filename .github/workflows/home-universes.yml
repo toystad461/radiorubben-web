@@ -1,0 +1,46 @@
+name: Tre univers — isolert forsidekontroll
+on:
+  pull_request:
+    paths: ['theme-next/**', '.github/workflows/home-universes.yml']
+  push:
+    branches: ['design/home-three-universes']
+    paths: ['theme-next/**', '.github/workflows/home-universes.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: PHP, JavaScript og presentasjonsgrense
+        run: python3 theme-next/scripts/check.py
+      - name: Prioritering, publiseringsgrense og trygge fallback-verdier
+        run: php theme-next/tests/home-universes.php
+      - name: Render ekte maler med merket eksempelinnhold
+        run: |
+          for scenario in radio news sport; do
+            RR_PREVIEW_SCENARIO="$scenario" php theme-next/tests/home-preview.php > "preview-$scenario.html"
+          done
+      - name: Bygg stagingpakker
+        run: python3 theme-next/scripts/package.py
+      - name: Kontroller mobil, prioritering, meny og avspiller uten ekte lyd
+        run: |
+          npm install --prefix /tmp/rr-home-browser --no-save --package-lock=false playwright@1.62.1
+          /tmp/rr-home-browser/node_modules/.bin/playwright install --with-deps chromium
+          python3 -m http.server 12379 --bind 127.0.0.1 > /tmp/rr-home-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid"' EXIT
+          NODE_PATH=/tmp/rr-home-browser/node_modules node theme-next/tests/home-browser.cjs
+      - name: Lagre testpakker
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: home-universes-staging-${{ github.sha }}
+          path: |
+            theme-next/dist/
+            preview-*.html
+            theme-next/docs/home-preview/
+          if-no-files-found: error
+          retention-days: 14

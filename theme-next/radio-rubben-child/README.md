@@ -1,0 +1,1 @@
+Installer Radio Rubben Next først, deretter dette child theme. Overstyr template-parts, assets eller theme.json ved behov. Ingen applikasjonsmotorer skal ligge i child theme. Foreldertemaets dokumentasjon gjelder.

@@ -1,0 +1,2 @@
+<?php defined( 'ABSPATH' ) || exit; ?>
+<nav id="rr-primary-nav" class="rr-nav" aria-label="<?php esc_attr_e( 'Hovedmeny', 'radio-rubben-next' ); ?>"><?php if ( rr_home_universes_active() ) : ?><ul><li><a href="#nettradio">Nettradio</a></li><li><a href="#nyheter">Nyheter</a></li><li><a href="#sport">Sport</a></li><li><details class="rr-u-all-menu"><summary>Mer</summary><?php rr_theme_menu( 'primary' ); ?></details></li></ul><?php else : rr_theme_menu( 'primary' ); endif; ?></nav>
