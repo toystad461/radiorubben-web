@@ -1,0 +1,78 @@
+[
+  {
+    "width": 320,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "polls": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 69.1875
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "unresolved": false,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "polls": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "unresolved": false,
+    "errors": []
+  },
+  {
+    "width": 768,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "polls": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "unresolved": false,
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "overflow": false,
+    "main": 1,
+    "h1": 1,
+    "polls": 1,
+    "links": [
+      {
+        "exists": true,
+        "height": 44
+      },
+      {
+        "exists": true,
+        "height": 44
+      }
+    ],
+    "unresolved": false,
+    "errors": []
+  }
+]

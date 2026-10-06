@@ -3,7 +3,7 @@ Contributors: radiorubben
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.2
-Version: 2.0.0-rc.2
+Version: 2.0.0-rc.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,7 +18,7 @@ must be separated and tested before switching the live site. This package does
 not contain or start those engines. No production files have been changed.
 
 == Installation ==
-Upload radio-rubben-next-2.0.0-rc.2.zip via Appearance > Themes on staging.
+Upload radio-rubben-next-2.0.0-rc.3.zip via Appearance > Themes on staging.
 Optional separate plugin: rr-editorial-contract-1.0.0-rc.1.zip.
 No activation-time changes to pages, permalinks, menus or category IDs.
 
@@ -36,6 +36,9 @@ No external font or analytics asset is bundled.
 Screenshot: local QA rendering with illustrative fixture data, Radio Rubben AS.
 
 == Changelog ==
+= 2.0.0-rc.3 =
+* Opt-in football composition for the site-functions match/vote and player adapters.
+
 = 2.0.0-rc.2 =
 Presentation-only architecture; theme.json v3 tokens; PHP template parts;
 seven block patterns; digital bylines; source/sponsor/match/program components;
