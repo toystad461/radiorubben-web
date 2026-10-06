@@ -21,3 +21,18 @@ Temaets radioavspiller hadde tom strøm-URL og viste pause før og etter byttet.
 Fotballsiden ID 1235 er opprettet som utkast med `templates/football.php` og kortkodene fra mønsteret `combined-football-live`. Innlogget forhåndsvisning har ett H1, ett main-landemerke, én stemmemodul og 12 spillerkort; ingen horisontal overflyt ved 320, 390, 768 eller 1440 px. Publisering ble stoppet av automatisk godkjenningskontroll som ba om egen eksplisitt tillatelse til den nye offentlige siden. Tema-/pluginaktiveringen er fullført uavhengig av dette.
 
 Cache-kommandoen bekreftet tømming av Rank Math sitemap-cache og objektcache. Det er ikke bevis for tømming av enhver eventuell ekstern CDN-cache; offentlige HTTP-kontroller viste nye temaressurser.
+
+## Rettelse: Bømlo-spillere ute på eksisterende forside
+
+Etter temabytte oppdaget brukeren at spilleroversikten manglet på forsiden.
+Spillerplugin og alle 12 spillere var bevart, men Next sin klassiske forside
+manglet pluginens eksisterende `rrpw_homepage`-hook. Gjenopprettet denne etter
+nyheter og før vær. Pluginen bestemmer fortsatt synlighet, data og rendering.
+Tema 2.0.0-rc.4 er installert over rc.3 i produksjon; samme tema er aktivt.
+SHA256: `bb0830511490df0617a3f33cc7b303b44b57d62ab7d7636e5825e9d3dbd8396c`.
+
+Kontrollert: anonym offentlig forside inneholder seksjonen nøyaktig én gang;
+nettleseren viser 12 spillerkort, og 390 px mobilvisning har ingen horisontal
+side-overflyt. Ny kjørbar `tests/home-player-hook.php` kontrollerer én rendering,
+pluginstyrt synlighet og plassering. Kildekontroll: 135 PHP-filer og øvrige
+pakke-/syntakskontroller bestått. Dette publiserer ikke utkastet `/fotball/`.
