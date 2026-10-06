@@ -13,6 +13,8 @@ if ( 'posts' === get_option( 'show_on_front' ) ) {
 } else {
     foreach ( array( 'hero', 'member', 'latest', 'feed' ) as $part ) { get_template_part( 'template-parts/home/' . $part ); }
     do_action( 'rr_theme_home_after_news' );
+    // Existing player plugin owns visibility, data and rendering.
+    do_action( 'rrpw_homepage' );
     if ( function_exists( 'rr_weather_card' ) ) { rr_weather_card(); }
     get_template_part( 'template-parts/home/about' );
     rr_theme_sponsors( 'home-bottom' );

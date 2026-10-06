@@ -2,7 +2,6 @@
   <div class="rr-wrap rr-footer-grid">
     <div class="rr-footer-brand">
       <img class="rr-footer-logo" src="<?php echo esc_url(rr_one_logo_url()); ?>" alt="Radio Rubben">
-      <p>Ingen valg. Bare god radio.</p>
       <p class="rr-footer-values">LOKAL <b>•</b> INKLUDERENDE <b>•</b> VERDIG <b>•</b> ENGASJERENDE</p>
     </div>
     <div class="rr-footer-links">
