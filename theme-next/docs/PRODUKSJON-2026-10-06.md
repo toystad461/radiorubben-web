@@ -36,3 +36,9 @@ nettleseren viser 12 spillerkort, og 390 px mobilvisning har ingen horisontal
 side-overflyt. Ny kjørbar `tests/home-player-hook.php` kontrollerer én rendering,
 pluginstyrt synlighet og plassering. Kildekontroll: 135 PHP-filer og øvrige
 pakke-/syntakskontroller bestått. Dette publiserer ikke utkastet `/fotball/`.
+
+## Rettelse: tidligere fjernet footer-slagord
+
+Fjernet «Ingen valg. Bare god radio.» fra felles footer og lokal sideforhåndsvisning.
+Tema 2.0.0-rc.5 installert i produksjon. Offentlig HTML kontrollert: slagordet er
+borte fra footer, og Bømlo-spillere-seksjonen er fortsatt til stede.
