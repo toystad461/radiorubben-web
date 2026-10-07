@@ -1,0 +1,74 @@
+name: Next news — selective release
+on:
+  push:
+    branches: [feat/home-news-priority-20261007]
+    paths: ['.github/workflows/next-news-release.yml', 'scripts/next-news-release*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    environment: wordpress-production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify approved source and existing deployment gate
+        env:
+          DEPLOY_ENABLED: ${{ vars.WP_DEPLOY_ENABLED }}
+        run: |
+          set -Eeuo pipefail
+          test "$GITHUB_REF" = refs/heads/feat/home-news-priority-20261007
+          if [[ "$DEPLOY_ENABLED" != true ]]; then
+            echo '::error::Existing WP_DEPLOY_ENABLED gate is not enabled. No server changes.'
+            exit 1
+          fi
+          git diff --exit-code 332e443349a79d225f7b659ee22e798a831ef7df -- theme-next/radio-rubben-next/front-page.php theme-next/radio-rubben-next/template-parts/home/news-priority.php theme-next/radio-rubben-next/assets/css/news-priority.css
+          php -l theme-next/radio-rubben-next/front-page.php
+          php -l theme-next/radio-rubben-next/template-parts/home/news-priority.php
+          php -l scripts/next-news-release-query.php
+          bash -n scripts/next-news-release-remote.sh
+          php theme-next/tests/news-priority.php
+      - name: Configure verified SSH without exposing credentials
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          if [[ -z "$DEPLOY_KEY" || -z "$KNOWN_HOSTS" ]]; then
+            echo '::error::WordPress deployment SSH key or verified host key is missing.'
+            exit 1
+          fi
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Publish only the three approved Next files — no production backup
+        run: |
+          set -Eeuo pipefail
+          [[ "$GITHUB_RUN_ID" =~ ^[0-9]+$ && "$GITHUB_RUN_ATTEMPT" =~ ^[0-9]+$ ]]
+          release="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          bundle=$(mktemp -d)
+          paths=(template-parts/home/news-priority.php assets/css/news-priority.css front-page.php)
+          for path in "${paths[@]}"; do
+            install -D -m 644 "theme-next/radio-rubben-next/$path" "$bundle/new/$path"
+          done
+          git show f7cce8c4129e68361e65e86928aca71c24140026:theme-next/radio-rubben-next/front-page.php > "$bundle/git-baseline-front.php"
+          test "$(sha256sum "$bundle/git-baseline-front.php" | cut -d' ' -f1)" = 4f727fe11d63e64974b92ecd5a94ebd1c2fec3612497d584ef59461a89ddbf13
+          (cd "$bundle/new"; sha256sum "${paths[@]}") > "$bundle/SHA256SUMS"
+          cp scripts/next-news-release-query.php "$bundle/verify-query.php"
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          ssh "$host" "set -e; umask 077; test ! -L .radiorubben-deploy; test ! -L .radiorubben-deploy/staging; mkdir -p .radiorubben-deploy/staging; mkdir .radiorubben-deploy/staging/next-news-$release"
+          rsync -rlt --chmod=D700,F600 "$bundle/" "$host:.radiorubben-deploy/staging/next-news-$release/"
+          ssh "$host" bash -s -- "$release" 332e443349a79d225f7b659ee22e798a831ef7df < scripts/next-news-release-remote.sh
+          printf 'Source commit: `332e443349a79d225f7b659ee22e798a831ef7df`\n\nOnly three Next files deployed. No production backup or theme switch. See job output for server hashes and actual WordPress category checks.\n' >> "$GITHUB_STEP_SUMMARY"
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

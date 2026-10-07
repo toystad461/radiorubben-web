@@ -1,0 +1,33 @@
+name: Next news — public browser verification
+on:
+  push:
+    branches: [feat/home-news-priority-20261007]
+    paths: ['.github/workflows/next-news-public-check.yml', 'scripts/verify-next-news-public.py']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install isolated browser
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Read public homepage at four screen sizes
+        env:
+          RR_PUBLIC_CHECK_DIR: ${{ runner.temp }}/next-news-public-check
+        run: python scripts/verify-next-news-public.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: next-news-public-check
+          path: ${{ runner.temp }}/next-news-public-check/
+          if-no-files-found: warn
