@@ -19,9 +19,10 @@ function rr_theme_setup() {
 add_action( 'after_setup_theme', 'rr_theme_setup' );
 function rr_theme_assets() {
     $previous = array();
+    $asset_versions = array( 'mobile-shell' => '2026.10.07.1', 'components' => '2026.10.07.1', 'page-layouts' => '2026.10.05.1', 'brand-profile' => '2026.10.01.1' );
     foreach ( array( 'theme', 'design-v13', 'member-hub', 'mobile-shell', 'components', 'brand-profile', 'page-layouts' ) as $style ) {
         $handle = 'rr-next-' . $style;
-        wp_enqueue_style( $handle, get_theme_file_uri( '/assets/css/' . $style . '.css' ), $previous, 'page-layouts' === $style ? '2026.10.05.1' : ( 'brand-profile' === $style ? '2026.10.01.1' : RR_THEME_VERSION ) );
+        wp_enqueue_style( $handle, get_theme_file_uri( '/assets/css/' . $style . '.css' ), $previous, $asset_versions[ $style ] ?? RR_THEME_VERSION );
         $previous = array( $handle );
     }
     if ( is_front_page() ) {
@@ -64,3 +65,4 @@ function rr_theme_customize( $manager ) {
     $manager->add_control( new WP_Customize_Media_Control( $manager, 'rr_portrait_id', array( 'label' => __( 'Portrett på forsiden', 'radio-rubben-next' ), 'section' => 'rr_presentation', 'mime_type' => 'image' ) ) );
 }
 add_action( 'customize_register', 'rr_theme_customize' );
+

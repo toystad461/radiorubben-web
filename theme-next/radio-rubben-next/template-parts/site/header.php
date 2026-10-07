@@ -1,4 +1,5 @@
 <?php defined( 'ABSPATH' ) || exit; ?>
+<div class="rr-header-shell">
 <header class="rr-header">
 <div class="rr-wrap rr-header-inner">
 <a class="rr-brand" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Radio Rubben hjem', 'radio-rubben-next' ); ?>"><?php rr_brand_header_logo(); ?></a>
@@ -6,5 +7,7 @@
 <button class="rr-menu-toggle" type="button" aria-label="<?php esc_attr_e( 'Åpne meny', 'radio-rubben-next' ); ?>" aria-expanded="false" aria-controls="rr-primary-nav"><span></span><span></span><span></span></button>
 <?php get_template_part( 'template-parts/site/navigation' ); ?>
 </div>
-<?php if ( ! rr_home_universes_active() ) { get_template_part( 'template-parts/site/match-bar' ); } ?>
 </header>
+<?php if ( ! rr_home_universes_active() ) { get_template_part( 'template-parts/site/match-bar' ); } ?>
+</div>
+
