@@ -205,4 +205,3 @@ final class ClubAutomation {
         echo '</ul></div>';
     }
 }
-

@@ -102,4 +102,3 @@ final class Fotballdata {
         return ['url'=>'https://www.fotballdata.no/','provider'=>'Fotballdata','fetched_at'=>gmdate(DATE_ATOM)];
     }
 }
-

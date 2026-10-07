@@ -127,4 +127,3 @@ $before=$httpCalls;update_option('rrfr_club_enabled_at',0);ClubAutomation::tick(
 check(get_current_user_id()===0,'weekly restores cron user');
 $options['rrfr_club_enabled_at']=$clock;$options['rrfr_club_owner']=99;$before=$httpCalls;ClubAutomation::tick();check($httpCalls===$before&&get_current_user_id()===0,'revoked owner cannot run jobs');
 echo 'OK: '.$count." club coverage checks\n";
-
