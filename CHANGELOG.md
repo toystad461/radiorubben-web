@@ -2,21 +2,19 @@
 
 Alle vesentlige endringer i Radio Rubben-løsningen dokumenteres her.
 
-## Bremnes fra 13 år og søndagsoversikt – 2026-09-29
+## [site-functions 1.0.0-rc.1] - 2026-09-26
 
-- Fotballdata-basert lagutvalg for G13/J13 og oppover, med både hjemme- og bortekamper.
-- Halvtimeskontroll og faktakontrollerte ungdomsreferater etter eksplisitt godkjent sluttresultat; seniorreferatenes eksisterende jobb beholdes.
-- Ukesartikkel søndag kl. 18.00 Europe/Oslo om neste mandag–søndag, inkludert seniorlag.
-- Utkast, duplikatsperre, synlige kildefeil og administratorstyrt aktivering. Ikke deployet eller aktivert.
-- Se pluginens CLUB-COVERAGE.md for verifisering, datadekning og server-cron.
+- Fersk produksjonskode sikret i separat funksjonsutvidelse, inkludert dashboard-prototype fra Code Snippets.
+- Passiv innlasting med gammelt theme muliggjør kontrollert overgang og tilbakeføring.
+- 40 handlingstester og 37 kontraktkontroller på isolert, gjenopprettet lokal kopi; migreringsrapport med eksplisitte gjenstående sluttkontroller.
+- Ingen produksjonsdeploy eller private testdata i Git.
 
-## Fotballrobot 0.5.0 – 2026-09-26
+## [theme 2.0.0-rc.1] - 2026-09-26
 
-- Legger eksisterende Fotballrobot 0.3.2 under versjonskontroll og utvider med «Spillere jeg følger».
-- Offentlige NFF-profiler, hendelsesvalg, klubb- og statistikkendringer, kamper, tropp og spillerhendelser.
-- Gruppe for Bømlo-spillere ute, planlagt kontroll, kildebelagte arbeidsutkast og autentisert lesegrensesnitt.
-- Bevarer «Lær av mine rettelser» fra 0.4.1, inkludert godkjente eksempler, originaltekst og sporbarhet i AI-utkast.
-- Leveres for stagingkontroll; ikke installert på produksjon.
+- Nytt presentasjonslag med design tokens, maler, mønstre og utvidbare rr-* bylines.
+- Separat metadata-plugin og valgfritt child theme.
+- Dokumentert VPS-kontrakt, migreringskrav og faktisk utført lokal QA.
+- Egen kontroll-/ZIP-arbeidsflyt uten produksjonsdeploy.
 
 ## [1.0.0] - 2026-09-22
 

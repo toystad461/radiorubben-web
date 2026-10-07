@@ -1,0 +1,2 @@
+<?php get_header(); ?>
+<section class="rr-subhero"><div class="rr-wrap"><p class="rr-eyebrow">SØK</p><h1><?php printf( esc_html__( 'Søkeresultater for «%s»', 'radio-rubben-next' ), esc_html( get_search_query( false ) ) ); ?></h1><?php get_search_form(); ?></div></section><section class="rr-wrap rr-section"><?php get_template_part( 'template-parts/content/loop' ); ?></section><?php get_footer(); ?>

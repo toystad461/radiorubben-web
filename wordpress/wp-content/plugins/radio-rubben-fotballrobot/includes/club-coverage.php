@@ -66,3 +66,4 @@ final class ClubCoverage {
         return array_values(array_filter($matches,static fn($m)=>!self::blocked($m) && strtotime($m['kickoff'])>=strtotime($week['start']) && strtotime($m['kickoff'])<strtotime($week['end'])));
     }
 }
+

@@ -1,3 +1,13 @@
+# Radio Rubbens Fotballrobot 0.10.4 – bekreftet kodegrunnlag
+
+Se [produksjonsgrunnlag, filhasher og testkommandoer](../../../../docs/fotballrobot/production-baseline.md).
+Runtime er hentet uendret fra siste dokumenterte selektive produksjonsrelease.
+Avsnittene nedenfor er historikk og skal ikke brukes som gjeldende versjonsstatus.
+
+## Historikk: Fotballrobot 0.9.0
+
+Innebygd Microsoft 365-tilkobling for spillerforslag. Se [MICROSOFT-MAIL.md](MICROSOFT-MAIL.md) for oppsett, sikkerhet, tester og utrullingsstatus. Bevarer 0.8.0-funksjonene.
+
 # Radio Rubbens Fotballrobot 0.6.0
 
 Spillerfølging er implementert i denne versjonen. Se [PLAYERS.md](PLAYERS.md) for bruk, arkitektur, tester og begrensninger. 0.5.0 ble installert og Tiril (FIKS 3942773) ble kontrollert mot offentlige data. Se [PLAYER-REVIEW.md](PLAYER-REVIEW.md) for godkjenningsflyten i 0.6.0.
@@ -77,3 +87,23 @@ Lagring krever ingen nye AI-kall. Teksteksempler følger med den eksisterende AI
 Verifisering: 21 læringskontroller og 18 skriveflytkontroller med simulert leverandør, i tillegg til tidligere parser-/skriver-/rapportkontroller. Tester dekker feil rettigheter, manglende godkjenning, gamle tekstversjoner, deaktivering, gjenaktivering, navne-/tidskobling, dataminimering og at eksempler ikke sendes til faktaredaktøren.
 
 Tilbakerulling: installer `work/radio-rubben-fotballrobot-0.3.2-backup.zip`; metadata beholdes uten å bli brukt. Ved samtidig utvikling av spillerprofiler må læringsfilen, kroker, Writer-tilkobling og administrasjonslenker flettes før neste fullstendige pluginopplasting.
+
+
+## 0.7.1 – automatisk kampreferat etter bekreftet kampslutt
+
+Aktiveres på Fotballrobot-siden. Nye `rr_match_archive_<id>`-verdier med `state.finished`, samsvarende kamp-ID og Bremnes A-lag oppretter én varig jobb. Eksisterende arkiver kjøres ikke ved aktivering. Dashboard og tema endres ikke. Administratoren som aktiverer er jobbens redaksjonelle bruker, med ny rettighetssjekk for hvert steg; dette bevarer tilgangskontroll og godkjente læringseksempler.
+
+Første WP-Cron-steg planlegges etter to minutter, videre steg etter ti sekunder. Separate steg henter ferskt kampgrunnlag, skriver og faktakontrollerer via eksisterende Writer. Trafikkavhengig WP-Cron gir ingen garanti for eksakt leveringstid. Review-token for bakgrunnsjobber varer ett døgn. NFF og arkivert resultat må stemme. Best dokumenterte eksisterende vinkel velges etter Facts sin prioritering. Ingen ny genereringsmotor eller automatisk publisering.
+
+Atomisk kø-ID og steglås hindrer dobbeltkjøring. Eksisterende innlegg, også publiserte, gjenbrukes. Papirkurv, feil, kvotemangel, faktavvik og avbrutte jobber gir ikke automatisk nye betalte forsøk. Status vises for valgt kamp. Ved feil kan administrator kontrollere grunnlaget og bruke den manuelle skriveflyten. Ved hard PHP-timeout blir steglåsen stående; den må undersøkes før noen ny kjøring. Stopp-knappen hindrer videre steg; et allerede påbegynt API-kall kan ikke tilbakekalles. Historiske artikler og arkivdata beholdes.
+
+27 køkontroller i tests/match-jobs.php dekker utløsning, avgrensing, duplikater, steg, eksisterende publisert artikkel, papirkurv, manglende rettigheter, deaktivering, faktakontrollfeil, timeout og planleggingsfeil. Skrive-/læringstester bruker eksisterende Writer med simulert API; ingen kunstig kampslutt legges inn i produksjon for å teste.
+
+
+## 0.8.0 – ett arbeidsgrunnlag per kamp
+
+FactStore gjenbruker den private rr_robot_fact-posten som rrfr_fact_<id> peker på. Semantisk hash utelater hentetidspunkter; identiske fakta gir ingen ny post eller metaoppdatering og beholder eksisterende fact_hash. Endrede fakta erstatter arbeidskopien og endrer hash, slik at pågående faktakontroll avviser et utdatert grunnlag. Artiklenes innebygde _rrfr_fact_snapshot, originaltekst, læringsdata og kamparkivet røres ikke.
+
+Kampoversikten grupperer per kamp og lenker til eksisterende referat. Administrator kan rydde gamle private arbeidskopier til papirkurven med noncebeskyttet handling. Gjeldende peker og payload/kamp-ID valideres før opprydding; aktive skrivejobber og låste oppdateringer hoppes over. Papirkurv må være aktiv; ingen permanent sletting skjer i handlingen. WordPress sin vanlige EMPTY_TRASH_DAYS-policy bestemmer senere tømming. Kopier uten et gyldig gjeldende grunnlag beholdes for kontroll.
+
+12 lagringskontroller verifiserer gjenbruk, uendret hash ved ny hentetid, endrede fakta, krysskampvern, låser, reversibel/idempotent rydding og bevaring av artikkelsnapshot. Hele pluginens eksisterende testpakke består.

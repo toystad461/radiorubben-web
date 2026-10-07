@@ -1,0 +1,12 @@
+/* Preserve the supplied artwork and its built-in clear space. */
+.rr-brand picture{display:block}
+/* Override the older WordPress custom CSS that replaces this image with content:url(). */
+.rr-header .rr-header-inner .rr-brand img{content:normal;width:100%;height:auto;aspect-ratio:auto;object-fit:contain}
+.rr-brand img,.rr-footer-logo,.rr-radio-cover img,.poll-coverage img{height:auto;object-fit:contain}
+.rr-header .rr-header-inner .rr-brand{width:240px;max-width:100%}
+.rr-footer .rr-footer-logo{width:320px;max-width:100%}
+@media(max-width:720px){
+ .rr-header .rr-header-inner .rr-brand{width:clamp(120px,32vw,170px)}
+ .rr-header .rr-header-inner .rr-brand img{aspect-ratio:1700/670}
+ .rr-footer .rr-footer-logo{width:min(320px,100%)}
+}

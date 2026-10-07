@@ -1,6 +1,8 @@
 <?php
 // Load the actual combined plugin and run menu callbacks in WordPress priority order.
 const ABSPATH=__DIR__.'/';
+function get_option($k,$d=false){return $d;}
+
 $hooks=[];$menus=[];$styles=[];$deactivation=[];
 function add_action($name,$fn,$priority=10,...$unused){global $hooks;$hooks[$name][$priority][]=$fn;}
 function add_filter(...$unused){}
@@ -11,10 +13,9 @@ function wp_enqueue_style($handle,$url,$deps,$version){global $styles;$styles[]=
 function plugins_url($name,$file){return $name;}
 require __DIR__.'/../radio-rubben-fotballrobot.php';
 ksort($hooks['admin_menu']);foreach($hooks['admin_menu'] as $callbacks)foreach($callbacks as $fn)$fn();
-foreach(['rr-fotballrobot','rr-fotballrobot-players','rrfr-learning','rrfr-player-review'] as $slug)if(($menus[$slug]['cap']??null)!=='manage_options')throw new RuntimeException('Missing protected menu: '.$slug);
-foreach(['toplevel_page_rr-fotballrobot','fotballrobot_page_rr-fotballrobot-players','fotballrobot_page_rrfr-learning','fotballrobot_page_rrfr-player-review'] as $page){$styles=[];foreach($hooks['admin_enqueue_scripts'][10] as $fn)$fn($page);if($styles!==[['rrfr-admin','0.6.0']])throw new RuntimeException('Missing or duplicate styles: '.$page);}
-foreach(['admin_post_rrfr_action','admin_post_rrfr_player_action','admin_post_rrfr_learning','rrfr_players_tick'] as $hook)if(empty($hooks[$hook]))throw new RuntimeException('Missing handler: '.$hook);
-foreach ([RadioRubben\Fotballrobot\Players::class,RadioRubben\Fotballrobot\ClubAutomation::class] as $class) if(!in_array([$class,'stop'],$deactivation,true))throw new RuntimeException('Cron cleanup missing');
-if(($menus['rrfr-club']['cap']??'')!=='manage_options')throw new RuntimeException('Club menu access missing');
-foreach(['rrfr_club_tick','rrfr_club_match','rrfr_club_weekly','admin_post_rrfr_club'] as $hook)if(empty($hooks[$hook]))throw new RuntimeException('Club handler missing');
+foreach(['rr-fotballrobot','rr-fotballrobot-players','rrfr-learning','rrfr-player-review','rrfr-club'] as $slug)if(($menus[$slug]['cap']??null)!=='manage_options')throw new RuntimeException('Missing protected menu: '.$slug);
+foreach(['toplevel_page_rr-fotballrobot','fotballrobot_page_rr-fotballrobot-players','fotballrobot_page_rrfr-learning','fotballrobot_page_rrfr-player-review'] as $page){$styles=[];foreach($hooks['admin_enqueue_scripts'][10] as $fn)$fn($page);if($styles!==[['rrfr-admin','0.9.5']])throw new RuntimeException('Missing or duplicate styles: '.$page);}
+foreach(['admin_post_rrfr_action','admin_post_rrfr_player_action','admin_post_rrfr_learning','rrfr_players_tick','rrfr_club_tick','rrfr_club_match','rrfr_club_weekly'] as $hook)if(empty($hooks[$hook]))throw new RuntimeException('Missing handler: '.$hook);
+if(!in_array([RadioRubben\Fotballrobot\Players::class,'stop'],$deactivation,true)||!in_array([RadioRubben\Fotballrobot\ReviewDigest::class,'stop'],$deactivation,true))throw new RuntimeException('Cron cleanup missing');
+if(!in_array([RadioRubben\Fotballrobot\ClubAutomation::class,'stop'],$deactivation,true))throw new RuntimeException('Club cron cleanup missing');
 echo "OK: combined plugin bootstrap, menu ordering, access capabilities, styles and handlers\n";

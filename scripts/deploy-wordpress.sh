@@ -2,6 +2,9 @@
 # Run on the GitHub runner; authentication is configured by the workflow.
 set -Eeuo pipefail
 mode=${1:-dry-run}
+if [[ "$mode" == brand-dry-run || "$mode" == brand-apply ]]; then
+  exec bash scripts/deploy-brand.sh "$mode"
+fi
 [[ "$mode" == dry-run || "$mode" == apply ]] || exit 2
 host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
 root=/run/webroots/r1417157/wp-content
@@ -10,6 +13,8 @@ paths=(themes/radio-rubben-wordpress-v1 plugins/min-rubben plugins/RR_News plugi
 for path in "${paths[@]}"; do
   [[ -d "$source_dir/$path" && ! -L "$source_dir/$path" ]] || exit 3
 done
+# Read-only inventory is retained in the GitHub run before either deployment mode.
+ssh "$host" bash -s < scripts/audit-wordpress-brand.sh
 if [[ "$mode" == dry-run ]]; then
   for path in "${paths[@]}"; do
     rsync -rltz --dry-run --itemize-changes "$source_dir/$path/" "$host:$root/$path/"

@@ -1,0 +1,196 @@
+{
+  "$schema": "https://schemas.wp.org/wp/6.6/theme.json",
+  "version": 3,
+  "settings": {
+    "appearanceTools": true,
+    "layout": {
+      "contentSize": "900px",
+      "wideSize": "1180px"
+    },
+    "color": {
+      "defaultPalette": false,
+      "palette": [
+        {
+          "slug": "background",
+          "name": "Background",
+          "color": "#000000"
+        },
+        {
+          "slug": "surface",
+          "name": "Surface",
+          "color": "#111111"
+        },
+        {
+          "slug": "card",
+          "name": "Card",
+          "color": "#151515"
+        },
+        {
+          "slug": "border",
+          "name": "Border",
+          "color": "#363636"
+        },
+        {
+          "slug": "text",
+          "name": "Text",
+          "color": "#FFFFFF"
+        },
+        {
+          "slug": "muted",
+          "name": "Muted",
+          "color": "#BDBDBD"
+        },
+        {
+          "slug": "brand",
+          "name": "Brand",
+          "color": "#FF001B"
+        },
+        {
+          "slug": "accent",
+          "name": "Accent",
+          "color": "#FFFFFF"
+        },
+        {
+          "slug": "signal",
+          "name": "Signal",
+          "color": "#f5cb45"
+        },
+        {
+          "slug": "button",
+          "name": "Button",
+          "color": "#FF001B"
+        }
+      ]
+    },
+    "typography": {
+      "fluid": true,
+      "fontFamilies": [
+        {
+          "slug": "body",
+          "name": "Radio Rubben system",
+          "fontFamily": "Arial, Helvetica, system-ui, sans-serif"
+        }
+      ],
+      "fontSizes": [
+        {
+          "slug": "small",
+          "name": "Liten",
+          "size": "0.875rem"
+        },
+        {
+          "slug": "medium",
+          "name": "Normal",
+          "size": "1rem"
+        },
+        {
+          "slug": "large",
+          "name": "Stor",
+          "size": "1.5rem"
+        },
+        {
+          "slug": "x-large",
+          "name": "Overskrift",
+          "size": "2.5rem"
+        },
+        {
+          "slug": "hero",
+          "name": "Hero",
+          "size": "4rem"
+        }
+      ]
+    },
+    "spacing": {
+      "units": [
+        "px",
+        "rem",
+        "em",
+        "%",
+        "vw"
+      ],
+      "spacingSizes": [
+        {
+          "slug": "20",
+          "name": "20",
+          "size": ".5rem"
+        },
+        {
+          "slug": "30",
+          "name": "30",
+          "size": "1rem"
+        },
+        {
+          "slug": "40",
+          "name": "40",
+          "size": "1.5rem"
+        },
+        {
+          "slug": "50",
+          "name": "50",
+          "size": "2rem"
+        },
+        {
+          "slug": "60",
+          "name": "60",
+          "size": "3rem"
+        },
+        {
+          "slug": "70",
+          "name": "70",
+          "size": "4rem"
+        }
+      ],
+      "defaultSpacingSizes": false
+    },
+    "custom": {
+      "radius": {
+        "card": "10px",
+        "large": "14px"
+      },
+      "width": {
+        "site": "1180px",
+        "reading": "720px",
+        "application": "1440px"
+      },
+      "motion": {
+        "duration": "160ms"
+      }
+    }
+  },
+  "styles": {
+    "color": {
+      "background": "var:preset|color|background",
+      "text": "var:preset|color|text"
+    },
+    "typography": {
+      "fontFamily": "var:preset|font-family|body",
+      "fontSize": "var:preset|font-size|medium",
+      "lineHeight": "1.7"
+    },
+    "elements": {
+      "link": {
+        "color": {
+          "text": "var:preset|color|accent"
+        }
+      },
+      "button": {
+        "color": {
+          "background": "var:preset|color|button",
+          "text": "var:preset|color|background"
+        },
+        "border": {
+          "radius": "7px"
+        },
+        "typography": {
+          "fontWeight": "700"
+        }
+      },
+      "heading": {
+        "typography": {
+          "fontWeight": "800",
+          "lineHeight": "1.2"
+        }
+      }
+    }
+  },
+  "title": "Radio Rubben"
+}

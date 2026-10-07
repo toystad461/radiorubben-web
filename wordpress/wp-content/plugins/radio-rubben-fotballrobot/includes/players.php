@@ -6,8 +6,10 @@ final class Players {
     public static function register(): void {
         register_post_type('rr_robot_player',['label'=>'Spillere jeg følger','public'=>false,'show_ui'=>false,'show_in_rest'=>false,'rewrite'=>false,'supports'=>['title']]);
         if(!wp_next_scheduled('rrfr_players_tick')) wp_schedule_event(time()+300,'hourly','rrfr_players_tick');
+        if(!wp_next_scheduled('rrfr_profiles_tick')) wp_schedule_event(time()+60,'rrfr_five_minutes','rrfr_profiles_tick');
     }
-    public static function stop(): void { wp_clear_scheduled_hook('rrfr_players_tick'); }
+    public static function stop(): void { wp_clear_scheduled_hook('rrfr_players_tick'); wp_clear_scheduled_hook('rrfr_profiles_tick'); }
+    public static function schedules(array $s): array { $s['rrfr_five_minutes']=['interval'=>300,'display'=>'Spillerprofiler hvert femte minutt'];return $s; }
     public static function menu(): void { add_submenu_page('rr-fotballrobot','Spillere jeg følger','Spillere jeg følger','manage_options','rr-fotballrobot-players',[self::class,'page']); }
     public static function ids(): array { return get_posts(['post_type'=>'rr_robot_player','post_status'=>'private','numberposts'=>-1,'fields'=>'ids','orderby'=>'ID','order'=>'ASC']); }
     public static function state(int $id): array {
@@ -77,14 +79,27 @@ final class Players {
         uksort($candidates,static fn($a,$b)=>(($checked[$a]??0)<=>($checked[$b]??0)) ?: ($b<=>$a));
         foreach(array_slice(array_keys($candidates),0,6) as $mid) {
             try {
-                $detail=PlayerFacts::participation(self::fetch('/fotballdata/kamp/?fiksId='.$mid),(int)$mid,$id);
-                if($detail) $p['matches'][$mid]=$detail;
+                $matchHtml=self::fetch('/fotballdata/kamp/?fiksId='.$mid);
+                $detail=PlayerFacts::participation($matchHtml,(int)$mid,$id);
+                if($detail) $p['matches'][$mid]=self::newsContext($matchHtml,$detail,$p['matches'][$mid]??[]);
                 $checked[$mid]=time();
             } catch(\Throwable $e) { $checked[$mid]=time(); $p['warnings'][]='Kamp '.$mid.': '.$e->getMessage(); }
         }
         $p['detail_checked']=$checked; $p['detail_backlog']=max(0,count($candidates)-6);
         ksort($p['matches']); $p['source']=PlayerFacts::url($id); $p['fetched_at']=gmdate(DATE_ATOM);
         return $p;
+    }
+    /** Add verified match facts from the same response; never infer finish from score/time. */
+    private static function newsContext(string $html,array $detail,array $previous=[],?bool $finished=null): array {
+        try {
+            $match=Facts::match($html,(int)$detail['id']);
+            if($match['kickoff']!==$detail['kickoff'] || $match['source']!==$detail['source'])return $detail;
+            $old=$previous['news_context']??[];
+            if($finished===null)$finished=($old['id']??0)===$match['id']&&($old['kickoff']??null)===$match['kickoff']&&($old['finished']??false)===true;
+            $detail['news_context']=array_intersect_key($match,array_flip(['id','home','away','kickoff','competition','score','source']));
+            $detail['news_context']+=['finished'=>$finished,'checked_at'=>gmdate(DATE_ATOM)];
+        }catch(\Throwable $e){/* Existing player observations remain useful without article context. */}
+        return $detail;
     }
     public static function refresh(int $id): array {
         return self::locked((string)$id,static function() use($id) {
@@ -121,9 +136,40 @@ final class Players {
         });
     }
     public static function tick(): void {
-        // One player per cron invocation; each profile is checked at least once per rotation.
-        $ids=self::ids(); usort($ids,static fn($a,$b)=>strcmp(self::state((int)$a)['last_checked']??'',self::state((int)$b)['last_checked']??''));
-        foreach($ids as $id) { $s=self::state((int)$id); if(!$s['enabled']) continue; try {self::refresh((int)$id);} catch(\Throwable $e) {} break; }
+        // Post-match statistics first, otherwise a light six-hour profile rotation.
+        $ids=self::ids(); usort($ids,static fn($a,$b)=>((int)(bool)get_option('rrfr_profile_due_'.$b,0)<=>(int)(bool)get_option('rrfr_profile_due_'.$a,0))?:strcmp(self::state((int)$a)['last_checked']??'',self::state((int)$b)['last_checked']??''));
+        foreach($ids as $id) {
+            $s=self::state((int)$id); $due=get_option('rrfr_profile_due_'.$id,0);
+            if(!$s['enabled'] || (!$due && strtotime($s['last_checked']??'')>time()-21600)) continue;
+            if($due) delete_transient('rrfr_player_source_'.hash('sha256','/fotballdata/person/profil/?fiksId='.$s['fiks_id'].serialize([])));
+            try {self::refresh((int)$id);delete_option('rrfr_profile_due_'.$id);} catch(\Throwable $e) {} break;
+        }
+    }
+    public static function observeMatch(int $match,string $html,array $people,bool $finished): void {
+        set_transient('rrfr_player_source_'.hash('sha256','/fotballdata/kamp/?fiksId='.$match.serialize([])),$html,60);
+        foreach(self::ids() as $id) {
+            $s=self::state((int)$id); if(!$s['enabled'] || !in_array($s['fiks_id'],$people,true) || !$s['snapshot']) continue;
+            $detail=PlayerFacts::participation($html,$match,$s['fiks_id']); if(!$detail) continue;
+            $detail=self::newsContext($html,$detail,[],$finished);
+            self::locked((string)$id,static function() use($id,$match,$detail,$finished) {
+                $s=self::state((int)$id); $before=$s['snapshot']; $after=$before; $after['matches'][$match]=$detail;
+                foreach(PlayerFacts::diff($before,$after) as $change) if(in_array($change['kind'],$s['watch'],true)) {
+                    $key=hash('sha256','match-observation:'.$match.json_encode($change));
+                    if(isset($s['events'][$key])) continue;
+                    $s['events'][$key]=$change+['id'=>$key,'match_id'=>$match,'status'=>'observing','detected_at'=>gmdate(DATE_ATOM),'source'=>$detail['source'],'context'=>$detail['label'],'player_name'=>$s['name'],'fiks_id'=>$s['fiks_id'],'draft_id'=>null];
+                }
+                // One completed-match packet, not an article proposal for every minute.
+                if($finished) foreach($s['events'] as &$event) if(($event['match_id']??0)===$match && $event['status']==='observing') { $event['status']='new'; $event['detected_at']=gmdate(DATE_ATOM); } unset($event);
+                $s['snapshot']['matches'][$match]=$detail;
+                if(isset($s['comparison'])) $s['comparison']['matches'][$match]=$detail;
+                $s['snapshot']['detail_checked'][$match]=time();
+                $s['revision']++; self::put((int)$id,$s);
+                if($finished && !get_option('rrfr_match_profile_queued_'.$id.'_'.$match,0)) {
+                    update_option('rrfr_profile_due_'.$id,time(),false);
+                    update_option('rrfr_match_profile_queued_'.$id.'_'.$match,time(),false);
+                }
+            });
+        }
     }
     public static function eventAction(int $id,string $key,string $action): ?string {
         return self::locked((string)$id,static function() use($id,$key,$action) {

@@ -107,23 +107,7 @@ function rr_one_customize($wp_customize) {
 }
 add_action('customize_register', 'rr_one_customize');
 
-function rr_one_logo_url() {
-    $custom_logo_id = get_theme_mod('custom_logo');
-    if ($custom_logo_id) {
-        $src = wp_get_attachment_image_src($custom_logo_id, 'full');
-        if ($src) return $src[0];
-    }
-    return get_template_directory_uri() . '/assets/images/radio-rubben-logo.png';
-}
-
-function rr_one_fallback_icon() {
-    if (!has_site_icon()) {
-        $icon = get_template_directory_uri() . '/assets/images/site-icon.png';
-        echo '<link rel="icon" href="' . esc_url($icon) . '" sizes="512x512">' . "\n";
-        echo '<link rel="apple-touch-icon" href="' . esc_url($icon) . '">' . "\n";
-    }
-}
-add_action('wp_head', 'rr_one_fallback_icon', 5);
+require_once get_template_directory() . '/inc/brand.php';
 
 function rr_one_create_page($title, $slug, $content = '') {
     $existing = get_page_by_path($slug);

@@ -36,7 +36,10 @@ $next=['kickoff'=>$week['start'],'finished_confirmed'=>false,'score'=>null]+$m;
 $last=['id'=>101,'kickoff'=>'2026-10-11T23:59:59+02:00']+$next;
 check(count(ClubCoverage::weekMatches([$next,$last,['kickoff'=>$week['end']]+$next,['postponed'=>true]+$next],$week))===2,'week boundaries and postponed filter');
 // Isolated WordPress doubles: no network, paid AI or publication.
-$options=[];$posts=[];$meta=[];$queue=[];$seq=1;$builds=0;
+$options=[];$posts=[];$meta=[];$queue=[];$seq=1;$builds=0;$user=0;
+function get_current_user_id(){return $GLOBALS['user'];}
+function wp_set_current_user($id){$GLOBALS['user']=$id;}
+function user_can($id,$cap){return $id===7;}
 function get_option($k,$default=false){global $options;return $options[$k]??$default;}
 function update_option($k,$v,...$unused){global $options;$options[$k]=$v;return true;}
 function add_option($k,$v,...$unused){global $options;if(array_key_exists($k,$options))return false;$options[$k]=$v;return true;}
@@ -89,18 +92,30 @@ $apiMatches=['ClubId'=>827,'Matches'=>[$raw,['MatchId'=>501,'HomeTeamId'=>7]+$ra
 function wp_safe_remote_get($url,$args){global $apiMode,$httpCalls,$apiTeams,$apiMatches;$httpCalls++;if($apiMode==='failure')throw new \RuntimeException('transport secret must not escape');return ['body'=>json_encode(str_contains($url,'/teams?')?$apiTeams:$apiMatches),'code'=>200];}
 function wp_remote_retrieve_response_code($r){return $r['code'];}
 function wp_remote_retrieve_body($r){return $r['body'];}
-class Writer {public static function clubArticle($f){return ['title'=>'Kontrollert resultat','lead'=>'Bremnes vant 2–1.','paragraphs'=>['Kampen ble spilt på Testbanen.'],'checks'=>[['claim'=>'2–1','support'=>'match.score']]];}}
-$options=[];$queue=[];
+class Writer {
+    const DEFAULT_FEATURED_MEDIA=812;
+    public static function qualityReview($a,$f){return ['article'=>$a,'publishable'=>true];}
+    public static function body($a,$f){return '<p>'.esc_html($a['lead']).'</p><p>'.esc_html(implode(' ',$a['paragraphs'])).'</p>';}
+    public static function clubArticle($f){$a=['title'=>'Kontrollert resultat','lead'=>'Bremnes vant 2–1.','paragraphs'=>['Kampen ble spilt på Testbanen.'],'checks'=>[['claim'=>'2–1','support'=>'match.score']]];$a['_quality']=self::qualityReview($a,$f);return $a;}
+}
+class PublicationGate {public static function hash($p){$p=(array)$p;return hash('sha256',json_encode(array_map(static fn($k)=>$p[$k]??'', ['post_title','post_content','post_excerpt'])));}const META='_rrfr_quality_review';public static function bind($q,$p){return $q+['postHash'=>hash('sha256',json_encode($p))];}}
+
+$options=['rrfr_club_owner'=>7];$queue=[];
 update_option('rrfr_club_enabled_at',$clock-7200);
 ClubAutomation::tick();check(count(get_option('rrfr_club_seen'))===1,'youth queued, senior owned by existing automation');
 check(!wp_next_scheduled('rrfr_club_match',[500]),'no draft immediately after observing final');
-$clock+=1800;ClubAutomation::tick();check(wp_next_scheduled('rrfr_club_match',[500])!==false,'30 minute observation wait');
+$clock+=1800;ClubAutomation::tick();check(!wp_next_scheduled('rrfr_club_match',[500]),'no draft after only half an hour');
+$clock+=1800;ClubAutomation::tick();check(wp_next_scheduled('rrfr_club_match',[500])!==false,'one hour observation wait');
 ClubAutomation::match(500);$pid=ClubAutomation::existing('match:500');check($pid>0&&$meta[$pid]['_rrfr_club_status']==='review','end to end cron draft');
+check(get_current_user_id()===0&&$posts[$pid]->post_author===7,'cron owner restored and author recorded');
+check($meta[$pid]['_rrfr_editor_decision']['status']==='pending'&&$meta[$pid]['_thumbnail_id']===812&&isset($meta[$pid][PublicationGate::META]['postHash']),'current inbox state, image and bound quality');
+$bodyBefore=$posts[$pid]->post_content;$apiMatches['Matches'][0]['AwayTeamGoals']=0;ClubAutomation::tick();
+check($posts[$pid]->post_content===$bodyBefore&&$meta[$pid]['_rrfr_fact_snapshot']['match']['score']===[2,0],'new raw facts invalidate review without overwriting text');
 $oldCount=count($posts);ClubAutomation::match(500);check(count($posts)===$oldCount,'repeated job is idempotent');
 $apiMatches['Matches']=[['MatchId'=>502]+$raw];ClubAutomation::tick();$clock+=1800;$apiMatches['Matches'][0]['AwayTeamGoals']=0;ClubAutomation::tick();check(!wp_next_scheduled('rrfr_club_match',[502]),'result change restarts wait');
 $before=get_option('rrfr_club_seen');$apiMode='failure';ClubAutomation::tick();check(get_option('rrfr_club_seen')===$before,'API failure preserves prior state');
 check(!str_contains(json_encode(get_option('rrfr_club_error_matches')),'secret'),'transport details redacted');
-$clock=strtotime('2026-10-04T18:00:00+02:00');$options=[];$queue=[];
+$clock=strtotime('2026-10-04T18:00:00+02:00');$options=['rrfr_club_owner'=>7];$queue=[];
 update_option('rrfr_club_enabled_at',$clock-86400);update_option('rrfr_club_weekly_due',$clock);
 ClubAutomation::weekly();check(!ClubAutomation::existing('week:2026-10-05'),'API error is not empty schedule');
 check(wp_next_scheduled('rrfr_club_weekly')===$clock+1800,'weekly source failure retries in 30 minutes');
@@ -109,4 +124,7 @@ $apiMode='ok';$apiMatches['Matches']=[];unset($queue['rrfr_club_weekly[]']);$clo
 $weeklyId=ClubAutomation::existing('week:2026-10-05');check($weeklyId>0&&$posts[$weeklyId]->post_status==='draft','successful empty week creates draft');
 check(get_option('rrfr_club_weekly_due')===strtotime('2026-10-11T18:00:00+02:00'),'next local Sunday scheduled');
 $before=$httpCalls;update_option('rrfr_club_enabled_at',0);ClubAutomation::tick();ClubAutomation::weekly();ClubAutomation::match(500);check($httpCalls===$before,'disabled jobs perform no network');
+check(get_current_user_id()===0,'weekly restores cron user');
+$options['rrfr_club_enabled_at']=$clock;$options['rrfr_club_owner']=99;$before=$httpCalls;ClubAutomation::tick();check($httpCalls===$before&&get_current_user_id()===0,'revoked owner cannot run jobs');
 echo 'OK: '.$count." club coverage checks\n";
+

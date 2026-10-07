@@ -10,6 +10,11 @@ final class Fotballdata {
     }
     private static function setting(string $key): string {
         $value=defined($key)?constant($key):getenv($key);
+        // Reuse the site's existing private NFF settings; never copy credentials to code or logs.
+        if($value===false||$value==='') {
+            $options=['RRFR_FOTBALLDATA_CID'=>'rr_fd_cid','RRFR_FOTBALLDATA_CWD'=>'rr_fd_cwd'];
+            if(isset($options[$key])) $value=get_option($options[$key],'');
+        }
         return is_scalar($value)?trim((string)$value):'';
     }
     private static function request(string $path,array $query=[]): array {
@@ -97,3 +102,4 @@ final class Fotballdata {
         return ['url'=>'https://www.fotballdata.no/','provider'=>'Fotballdata','fetched_at'=>gmdate(DATE_ATOM)];
     }
 }
+

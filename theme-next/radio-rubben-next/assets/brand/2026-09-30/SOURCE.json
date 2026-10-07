@@ -1,0 +1,15 @@
+{
+  "source": "RadioRubben-Logopakke.zip",
+  "handbook": "RadioRubben-Profileringshandbok-v1.0.pdf, arbeidsutgave 30.09.2026",
+  "source_zip_sha256": "d428d0fbf10fdd78b68264d0c1fa3d5008bb787751127e6e6ecb13123ab1f2eb",
+  "files": {
+    "SVG/07-Uten-verdilinje-hvit.svg": "06b6dc2bb644aaf2fd19fc0cb1829a84e9108506c0ce87acad524119c642f425",
+    "SVG/11-Liggende-transparent.svg": "3ed58b00550e09b36ea5d0da3f75c0248d783773308f77dca8a11801be951958",
+    "Ikoner/ikon-16.png": "db42def2b949b1123b924624f0712e2c6fb2bf72c019cce5c6de8ad84fb51076",
+    "Ikoner/ikon-32.png": "927e394e72158c0319b968b9d96f48b68c261109fc2d82d8e11942abf1f03cf0",
+    "Ikoner/ikon-48.png": "40621ea719f01bbc804bb580cd30198f5226f217954be2a81a8355a210fa8622",
+    "Ikoner/ikon-180.png": "fca76b6f7b0c887cb76893d8f82e1a70b62e43f539c37524ffa65616086043f1",
+    "Ikoner/ikon-192.png": "1cef3bf93ccccd49cf52c87091c8ed893e33e1346fee4fcefb08bdebf78e4f7e",
+    "Ikoner/ikon-512.png": "c98051ce669b068f10e661db6317def1bcf8a98a6ff626259153fe399da7981a"
+  }
+}

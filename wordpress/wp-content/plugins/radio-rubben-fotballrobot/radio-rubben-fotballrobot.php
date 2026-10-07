@@ -2,24 +2,13 @@
 /**
  * Plugin Name: Radio Rubbens Fotballrobot
  * Description: Kontrollert kampgrunnlag, laghistorikk og separate prøveutkast for Radio Rubben.
- * Version: 0.6.0
+ * Version: 0.10.5
  * Requires PHP: 8.0
  * Author: Radio Rubben
  */
 namespace RadioRubben\Fotballrobot;
 if (!defined('ABSPATH')) exit;
 require_once __DIR__.'/includes/facts.php';
-require_once __DIR__.'/includes/fotballdata.php';
-require_once __DIR__.'/includes/club-coverage.php';
-require_once __DIR__.'/includes/club-automation.php';
-add_filter('cron_schedules',[ClubAutomation::class,'schedules']);
-add_action('init',[ClubAutomation::class,'register']);
-add_action('admin_menu',[ClubAutomation::class,'menu'],11);
-add_action('admin_post_rrfr_club',[ClubAutomation::class,'action']);
-add_action('rrfr_club_tick',[ClubAutomation::class,'tick']);
-add_action('rrfr_club_match',[ClubAutomation::class,'match']);
-add_action('rrfr_club_weekly',[ClubAutomation::class,'weekly']);
-register_deactivation_hook(__FILE__,[ClubAutomation::class,'stop']);
 require_once __DIR__.'/includes/robot.php';
 require_once __DIR__.'/includes/writer.php';
 require_once __DIR__.'/includes/report.php';
@@ -29,7 +18,7 @@ add_action('admin_menu', [Robot::class,'menu']);
 add_action('rest_api_init', [Robot::class,'routes']);
 add_action('admin_post_rrfr_action', [Robot::class,'action']);
 add_action('admin_enqueue_scripts', static function($hook) {
-    if($hook==='toplevel_page_rr-fotballrobot'||strpos($hook,'rrfr-learning')!==false) wp_enqueue_style('rrfr-admin',plugins_url('admin.css',__FILE__),[], '0.6.0');
+    if($hook==='toplevel_page_rr-fotballrobot'||strpos($hook,'rrfr-learning')!==false) wp_enqueue_style('rrfr-admin',plugins_url('admin.css',__FILE__),[], '0.9.5');
 });
 
 require_once __DIR__.'/includes/player-facts.php';
@@ -38,13 +27,46 @@ add_action('init', [Players::class,'register']);
 add_action('admin_menu', [Players::class,'menu']);
 add_action('rest_api_init', [Players::class,'routes']);
 add_action('admin_post_rrfr_player_action', [Players::class,'action']);
-add_action('rrfr_players_tick', [Players::class,'tick']);
+add_filter('cron_schedules', [Players::class,'schedules']);
+add_action('rrfr_profiles_tick', [Players::class,'tick']);
 register_deactivation_hook(__FILE__, [Players::class,'stop']);
 add_action('admin_enqueue_scripts', static function($hook) {
-    if($hook==='fotballrobot_page_rr-fotballrobot-players') wp_enqueue_style('rrfr-admin',plugins_url('admin.css',__FILE__),[], '0.6.0');
+    if($hook==='fotballrobot_page_rr-fotballrobot-players') wp_enqueue_style('rrfr-admin',plugins_url('admin.css',__FILE__),[], '0.9.5');
 });
 
 require_once __DIR__.'/includes/player-review.php';
+require_once __DIR__.'/includes/player-corrections.php';
+require_once __DIR__.'/includes/player-candidates.php';
 add_action('admin_enqueue_scripts', static function($hook) {
-    if(strpos($hook,'rrfr-player-review')!==false) wp_enqueue_style('rrfr-admin',plugins_url('admin.css',__FILE__),[], '0.6.0');
+    if(strpos($hook,'rrfr-player-review')!==false) wp_enqueue_style('rrfr-admin',plugins_url('admin.css',__FILE__),[], '0.9.5');
 });
+
+require_once __DIR__.'/includes/match-jobs.php';
+
+require_once __DIR__.'/includes/fact-store.php';
+
+require_once __DIR__.'/includes/microsoft-mail.php';
+require_once __DIR__.'/includes/newsroom.php';
+add_action('rest_api_init',[Newsroom::class,'routes']);
+add_action('init',[ReviewDigest::class,'register'],20);
+add_action('rrfr_newsroom_prepare',[ReviewDigest::class,'prepare']);
+add_action('rrfr_newsroom_digest',[ReviewDigest::class,'tick']);
+register_deactivation_hook(__FILE__,[ReviewDigest::class,'stop']);
+
+// Enforce review on every publication path.
+add_filter('wp_insert_post_data',[PublicationGate::class,'guard'],99,2);
+add_action('publish_future_post',[PublicationGate::class,'future'],9);
+add_action('add_meta_boxes_post',[PublicationGate::class,'box']);
+add_action('admin_notices',[PublicationGate::class,'notice']);
+
+require_once __DIR__.'/includes/fotballdata.php';
+require_once __DIR__.'/includes/club-coverage.php';
+require_once __DIR__.'/includes/club-automation.php';
+add_filter('cron_schedules',[ClubAutomation::class,'schedules']);
+add_action('init',[ClubAutomation::class,'register']);
+add_action('admin_menu',[ClubAutomation::class,'menu']);
+add_action('admin_post_rrfr_club',[ClubAutomation::class,'action']);
+add_action('rrfr_club_tick',[ClubAutomation::class,'tick']);
+add_action('rrfr_club_match',[ClubAutomation::class,'match']);
+add_action('rrfr_club_weekly',[ClubAutomation::class,'weekly']);
+register_deactivation_hook(__FILE__,[ClubAutomation::class,'stop']);

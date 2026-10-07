@@ -23,8 +23,16 @@ final class PlayerFacts {
         foreach($x->query('//*['.Facts::cls('a_roleCard').'][normalize-space(*['.Facts::cls('roleName').'])="Spiller"]//a[contains(@href,"/klubb/hjem/")]') as $a) if($cid=Facts::id($a)) $clubs[$cid]=['id'=>$cid,'name'=>Facts::text($a)];
         ksort($clubs); $stats=[];
         foreach($x->query('.//tr[td]',$table) as $tr) {
-            $td=$x->query('./td',$tr); $a=$x->query('.//a[@data-stat-type="any"]',$tr)->item(0);
-            if($td->length!==8 || !$a || (int)$a->getAttribute('data-fiksid')!==$id) throw new \RuntimeException('Ukjent format eller spiller-ID i sesongstatistikken.');
+            $td=$x->query('./td',$tr); $links=$x->query('.//a[@data-stat-type]',$tr); $a=$links->item(0);
+            if($td->length!==8 || !$a) throw new \RuntimeException('Ukjent format i sesongstatistikken.');
+            // Older zero-appearance seasons can contain only a yellow/red-card link.
+            // Every statistical link must identify the same player, team and season.
+            foreach($links as $link) {
+                if((int)$link->getAttribute('data-fiksid')!==$id || !in_array($link->getAttribute('data-stat-type'),['any','goal','yellowcards','redcards'],true)
+                    || $link->getAttribute('data-team-id')!==$a->getAttribute('data-team-id')
+                    || $link->getAttribute('data-season-id')!==$a->getAttribute('data-season-id')
+                    || strtolower($link->getAttribute('data-is-national-stats'))==='true') throw new \RuntimeException('Motstridende spiller-, lag- eller sesong-ID i statistikken.');
+            }
             $year=Facts::text($td->item(0)); $team=(int)$a->getAttribute('data-team-id'); $season=(int)$a->getAttribute('data-season-id');
             if(!preg_match('/^20[0-9]{2}$/',$year)||!$team||!$season) throw new \RuntimeException('Sesong eller lag-ID mangler.');
             $r=['year'=>(int)$year,'team_id'=>$team,'season_id'=>$season,'team'=>Facts::text($td->item(1))];
@@ -55,16 +63,30 @@ final class PlayerFacts {
         $title=Facts::text($x->query('//title')->item(0));
         if(!preg_match('/^(.*?) - (\d{2}\.\d{2}\.\d{4}) (\d{2}:\d{2}) - /u',$title,$parts) || !($kickoff=Facts::date($parts[2].' '.$parts[3]))) throw new \RuntimeException('Kampdato mangler.');
         $events=[];
-        // The player's own card links to exact timeline IDs; names are never used as identity.
+        // Exact card/timeline IDs only. NFF may omit the outgoing sub icon from the player card.
+        $eventIds=[];
         foreach($x->query('.//a[starts-with(@href,"#")]',$container) as $link) {
             $eid=substr($link->getAttribute('href'),1);
-            if(!ctype_digit($eid)) continue;
+            if(ctype_digit($eid)) $eventIds[$eid]=$eid;
+        }
+        foreach($x->query('//*[@data-tab="kamphendelser"]//a[contains(@href,"/person/profil/")]') as $link) if(Facts::id($link)===$player) {
+            $eventRow=$x->query('ancestor::*['.Facts::cls('timelineEventLine').'][1]',$link)->item(0);
+            $eid=$eventRow?$eventRow->getAttribute('id'):'';
+            if(ctype_digit($eid)) $eventIds[$eid]=$eid;
+        }
+        foreach($eventIds as $eid) {
             $row=$x->query('//*[@data-tab="kamphendelser"]//*[@id="'.$eid.'"]')->item(0);
             if(!$row) continue;
             $content=$x->query('.//*['.Facts::cls('timelineEventContent').']',$row)->item(0);
             if(!$content) continue;
             $minute=trim(str_replace(["'",'′'],'',Facts::text($x->query('.//*['.Facts::cls('timelineMinute').']',$row)->item(0))));
-            $events[$eid]=['id'=>$eid,'minute'=>$minute,'type'=>Facts::text($x->query('./div',$content)->item(0)),'name'=>Facts::text($a)];
+            $type=Facts::text($x->query('./div',$content)->item(0));
+            foreach($x->query('./div',$content) as $part) foreach($x->query('.//a[contains(@href,"/person/profil/")]',$part) as $person) if(Facts::id($person)===$player) {
+                $text=Facts::text($part);
+                if(str_starts_with($text,'Inn:')) $type='Innbytte';
+                elseif(str_starts_with($text,'Ut:')) $type='Utbytte';
+            }
+            $events[$eid]=['id'=>$eid,'minute'=>$minute,'type'=>$type,'name'=>Facts::text($a)];
         }
         ksort($events);
         return ['id'=>$match,'label'=>$parts[1],'kickoff'=>$kickoff,'role'=>$role,'events'=>$events,'source'=>'https://www.fotball.no/fotballdata/kamp/?fiksId='.$match];
@@ -86,7 +108,7 @@ final class PlayerFacts {
             foreach($row['events']??[] as $eid=>$event) {
                 $before=$prev['events'][$eid]??null;
                 if($before===$event) continue;
-                $kind=in_array($event['type'],['Spillemål','Straffemål','Selvmål'],true)?'goals':(in_array($event['type'],['Advarsel','Utvisning'],true)?'cards':null);
+                $kind=in_array($event['type'],['Spillemål','Straffemål','Selvmål'],true)?'goals':(in_array($event['type'],['Advarsel','Utvisning'],true)?'cards':(in_array($event['type'],['Innbytte','Utbytte'],true)?'lineup':null));
                 if($kind) $add($kind,$id.':'.$eid,$before,$event);
             }
         }
