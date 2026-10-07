@@ -1,4 +1,10 @@
 /* Shared header and player; no changes to audio behaviour. */
+/* Desktop keeps the complete header sticky. On mobile only navigation stays. */
+.rr-header-shell{position:sticky;top:0;z-index:50}
+.rr-header-shell>.rr-header{position:relative;top:0}
+.admin-bar .rr-header-shell{top:32px}
+.rr-next:not(.rr-js) .rr-header-shell{position:relative}
+@media(max-width:782px){.admin-bar .rr-header-shell{top:46px}}
 body.rr-stream-unavailable{padding-bottom:calc(52px + env(safe-area-inset-bottom,0px))}
 .rr-mini-player.rr-mini-unavailable{height:auto;min-height:0;gap:10px;padding:12px max(16px,calc((100vw - 1180px)/2));padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));font-size:13px;line-height:20px;background:#141820}
 .rr-mini-unavailable strong{font-size:13px;white-space:nowrap}
@@ -10,7 +16,13 @@ body.rr-stream-configured{padding-bottom:calc(88px + env(safe-area-inset-bottom,
 .rr-header .rr-nav a{display:flex;align-items:center;min-height:44px}
 }
 @media(max-width:720px){
-.rr-header .rr-header-inner{min-height:68px;gap:10px;width:calc(100% - 28px);padding-block:8px}
+/* No containing box: the header can stay sticky after the match has scrolled out. */
+.rr-header-shell{display:contents}
+.rr-header-shell>.rr-header{position:sticky;top:0}
+.rr-next:not(.rr-js) .rr-header-shell>.rr-header{position:relative}
+html{scroll-padding-top:84px}
+.rr-header-shell>.rr-header .rr-nav{max-height:calc(100dvh - 88px - env(safe-area-inset-bottom,0px))}
+.rr-header .rr-header-inner{flex-wrap:nowrap;min-height:68px;gap:10px;width:calc(100% - 28px);padding-block:8px}
 .rr-header .rr-header-inner .rr-brand{width:clamp(106px,29vw,145px)}
 .rr-header .rr-header-inner>.rr-member-entry{min-height:44px;padding:8px 10px;font-size:12px;border-radius:9px;margin-left:auto}
 .rr-header .rr-menu-toggle{width:44px;height:44px;padding:10px;flex:0 0 44px}
@@ -24,7 +36,18 @@ body.rr-stream-configured{padding-bottom:calc(88px + env(safe-area-inset-bottom,
 body.rr-stream-configured{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 }
 @media(max-width:360px){
+.rr-header .rr-header-inner>.rr-member-entry{min-width:44px}
+.rr-header .rr-member-entry span{display:none}
 .rr-mini-player.rr-mini-unavailable{gap:7px;font-size:12px;padding-inline:12px}
 .rr-mini-unavailable strong{font-size:12px}
 .rr-mini-player:not(.rr-mini-unavailable) .rr-broadcast{max-width:70px}
 }
+
+
+/* The WordPress toolbar is fixed above 600px, but scrolls away on smaller phones. */
+@media(min-width:601px) and (max-width:720px){
+.admin-bar .rr-header-shell>.rr-header{top:46px}
+html:has(body.admin-bar){scroll-padding-top:130px}
+.admin-bar .rr-header-shell>.rr-header .rr-nav{max-height:calc(100dvh - 134px - env(safe-area-inset-bottom,0px))}
+}
+@media print{.rr-header-shell{display:none}}
