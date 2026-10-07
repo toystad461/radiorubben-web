@@ -32,6 +32,8 @@ jobs:
           git diff --exit-code 332e443349a79d225f7b659ee22e798a831ef7df -- theme-next/radio-rubben-next/front-page.php theme-next/radio-rubben-next/template-parts/home/news-priority.php theme-next/radio-rubben-next/assets/css/news-priority.css
           php -l theme-next/radio-rubben-next/front-page.php
           php -l theme-next/radio-rubben-next/template-parts/home/news-priority.php
+          php -l scripts/next-news-release-query.php
+          bash -n scripts/next-news-release-remote.sh
           php theme-next/tests/news-priority.php
       - name: Configure verified SSH without exposing credentials
         env:
@@ -48,30 +50,25 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
           printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
-      - name: Read-only production preflight — no backup or writes
+      - name: Publish only the three approved Next files — no production backup
         run: |
           set -Eeuo pipefail
-          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one bash -s <<'REMOTE'
-          set -Eeuo pipefail
-          root=/run/webroots/r1417157
-          theme="$root/wp-content/themes/radio-rubben-next"
-          test -d "$theme" && test ! -L "$theme"
-          command -v wp
-          test "$(wp --path="$root" --skip-plugins --skip-themes option get stylesheet)" = radio-rubben-next
-          home=$(wp --path="$root" --skip-plugins --skip-themes option get home)
-          [[ "$home" = https://www.radiorubben.no || "$home" = https://www.radiorubben.no/ ]]
-          test ! -f "$root/.maintenance"
-          echo 'NEXT_NEWS_AUDIT_BEGIN'
-          for path in front-page.php template-parts/home/news-priority.php assets/css/news-priority.css; do
-            target="$theme/$path"
-            test ! -L "$target"
-            if [[ -f "$target" ]]; then sha256sum "$target"; else printf 'MISSING  %s\n' "$path"; fi
+          [[ "$GITHUB_RUN_ID" =~ ^[0-9]+$ && "$GITHUB_RUN_ATTEMPT" =~ ^[0-9]+$ ]]
+          release="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          bundle=$(mktemp -d)
+          paths=(template-parts/home/news-priority.php assets/css/news-priority.css front-page.php)
+          for path in "${paths[@]}"; do
+            install -D -m 644 "theme-next/radio-rubben-next/$path" "$bundle/new/$path"
           done
-          wp --path="$root" --skip-plugins --skip-themes option get show_on_front
-          wp --path="$root" --skip-plugins --skip-themes option get theme_mods_radio-rubben-next --format=json
-          wp --path="$root" --skip-plugins --skip-themes term list category --fields=term_id,slug,parent --format=json
-          echo 'NEXT_NEWS_AUDIT_END'
-          REMOTE
+          git show f7cce8c4129e68361e65e86928aca71c24140026:theme-next/radio-rubben-next/front-page.php > "$bundle/git-baseline-front.php"
+          test "$(sha256sum "$bundle/git-baseline-front.php" | cut -d' ' -f1)" = 4f727fe11d63e64974b92ecd5a94ebd1c2fec3612497d584ef59461a89ddbf13
+          (cd "$bundle/new"; sha256sum "${paths[@]}") > "$bundle/SHA256SUMS"
+          cp scripts/next-news-release-query.php "$bundle/verify-query.php"
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          ssh "$host" "set -e; umask 077; test ! -L .radiorubben-deploy; test ! -L .radiorubben-deploy/staging; mkdir -p .radiorubben-deploy/staging; mkdir .radiorubben-deploy/staging/next-news-$release"
+          rsync -rlt --chmod=D700,F600 "$bundle/" "$host:.radiorubben-deploy/staging/next-news-$release/"
+          ssh "$host" bash -s -- "$release" 332e443349a79d225f7b659ee22e798a831ef7df < scripts/next-news-release-remote.sh
+          printf 'Source commit: `332e443349a79d225f7b659ee22e798a831ef7df`\n\nOnly three Next files deployed. No production backup or theme switch. See job output for server hashes and actual WordPress category checks.\n' >> "$GITHUB_STEP_SUMMARY"
       - name: Remove runner SSH key
         if: always()
         run: rm -f ~/.ssh/id_ed25519
