@@ -1,0 +1,77 @@
+name: Next news — selective release
+on:
+  push:
+    branches: [feat/home-news-priority-20261007]
+    paths: ['.github/workflows/next-news-release.yml', 'scripts/next-news-release*']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    environment: wordpress-production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify approved source and existing deployment gate
+        env:
+          DEPLOY_ENABLED: ${{ vars.WP_DEPLOY_ENABLED }}
+        run: |
+          set -Eeuo pipefail
+          test "$GITHUB_REF" = refs/heads/feat/home-news-priority-20261007
+          if [[ "$DEPLOY_ENABLED" != true ]]; then
+            echo '::error::Existing WP_DEPLOY_ENABLED gate is not enabled. No server changes.'
+            exit 1
+          fi
+          git diff --exit-code 332e443349a79d225f7b659ee22e798a831ef7df -- theme-next/radio-rubben-next/front-page.php theme-next/radio-rubben-next/template-parts/home/news-priority.php theme-next/radio-rubben-next/assets/css/news-priority.css
+          php -l theme-next/radio-rubben-next/front-page.php
+          php -l theme-next/radio-rubben-next/template-parts/home/news-priority.php
+          php theme-next/tests/news-priority.php
+      - name: Configure verified SSH without exposing credentials
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          if [[ -z "$DEPLOY_KEY" || -z "$KNOWN_HOSTS" ]]; then
+            echo '::error::WordPress deployment SSH key or verified host key is missing.'
+            exit 1
+          fi
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Read-only production preflight — no backup or writes
+        run: |
+          set -Eeuo pipefail
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one bash -s <<'REMOTE'
+          set -Eeuo pipefail
+          root=/run/webroots/r1417157
+          theme="$root/wp-content/themes/radio-rubben-next"
+          test -d "$theme" && test ! -L "$theme"
+          command -v wp
+          test "$(wp --path="$root" --skip-plugins --skip-themes option get stylesheet)" = radio-rubben-next
+          home=$(wp --path="$root" --skip-plugins --skip-themes option get home)
+          [[ "$home" = https://www.radiorubben.no || "$home" = https://www.radiorubben.no/ ]]
+          test ! -f "$root/.maintenance"
+          echo 'NEXT_NEWS_AUDIT_BEGIN'
+          for path in front-page.php template-parts/home/news-priority.php assets/css/news-priority.css; do
+            target="$theme/$path"
+            test ! -L "$target"
+            if [[ -f "$target" ]]; then sha256sum "$target"; else printf 'MISSING  %s\n' "$path"; fi
+          done
+          wp --path="$root" --skip-plugins --skip-themes option get show_on_front
+          wp --path="$root" --skip-plugins --skip-themes option get theme_mods_radio-rubben-next --format=json
+          wp --path="$root" --skip-plugins --skip-themes term list category --fields=term_id,slug,parent --format=json
+          echo 'NEXT_NEWS_AUDIT_END'
+          REMOTE
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
