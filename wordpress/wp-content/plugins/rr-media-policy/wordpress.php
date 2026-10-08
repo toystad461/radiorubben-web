@@ -161,3 +161,10 @@ add_filter('add_post_metadata','rrmp_thumbnail_gate',20,4);
 add_filter('update_post_metadata','rrmp_thumbnail_gate',20,4);
 
 add_filter('rest_request_after_callbacks',function($response){unset($GLOBALS['rrmp_rest_candidate']);return $response;});
+
+// Core's scheduled publisher writes status directly, bypassing wp_insert_post_data.
+add_action('publish_future_post',function(int $id):void{
+    $post=get_post($id);
+    if(!$post||$post->post_status!=='future'||!in_array($post->post_type,['post','page'],true))return;
+    if(rrmp_post_error($id,$post->post_content,(int)get_post_thumbnail_id($id)))wp_update_post(['ID'=>$id,'post_status'=>'draft']);
+},1);

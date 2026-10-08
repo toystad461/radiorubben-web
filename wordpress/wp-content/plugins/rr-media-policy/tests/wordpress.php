@@ -34,7 +34,11 @@ rr_test(rr_publish($post,['content'=>'<img class="wp-image-'.$image.'" src="http
 rr_test(rr_publish($post,['content'=>'<img class="wp-image-'.$image.'" src="'.esc_url($url).'" srcset="https://example.invalid/other.png 2x">'])->get_status()===409,'unapproved srcset substitution rejected');
 rr_test(rr_publish($post,['content'=>'[gallery]'])->get_status()===409,'implicit gallery cannot bypass image inventory');
 rr_test(rr_publish($post,['content'=>'[gallery ids="'.$image.'"]'])->get_status()===200,'explicit approved gallery passes');
+$scheduled=wp_insert_post(['post_title'=>'Scheduled image test','post_content'=>$inline,'post_status'=>'future','post_date'=>gmdate('Y-m-d H:i:s',time()+3600),'post_date_gmt'=>gmdate('Y-m-d H:i:s',time()+3600),'meta_input'=>['_thumbnail_id'=>$image]]);
+rr_test(get_post_status($scheduled)==='future','approved image can be scheduled');
 file_put_contents($variant,$png.'changed');clearstatcache();
+do_action('publish_future_post',$scheduled);
+rr_test(get_post_status($scheduled)==='draft','scheduled publishing rechecks changed image before core publisher');
 rr_test(!rrmp_valid($image),'changed derived file invalidates approval');
 rr_test(!str_contains(get_the_post_thumbnail($post),'<img')&&str_contains(get_the_post_thumbnail($post),'venter på ny kontroll'),'changed live image is withheld until reviewed');
 rr_test(rr_publish($post)->get_status()===409,'stale image blocks update through real REST');
