@@ -17,6 +17,9 @@ med vern mot samtidige endringer. Ingen innholdsgenerering eller publiseringstes
 Gamle kvalitetskontroller uten policyversjon blir ugyldige for senere
 publiseringsforsøk. De må kjøres på nytt; eksisterende artikler omskrives ikke.
 
-Planlagt kontroll etter installasjon: WordPress laster policy 1.0.0, hjemmesiden
+Planlagt kontroll etter installasjon: WordPress laster policy 1.0.0, den kanoniske hjemmesiden `https://www.radiorubben.no/`
 svarer HTTP 200, og samtlige 40 pluginhasher samsvarer med ettermanifestet.
 Faktisk resultat dokumenteres separat etter fullført utrulling.
+
+Første preflight stoppet før kodeendring fordi domenet uten www normalt gir 301.
+Videresendingen er kontrollert; helsesjekken bruker nå kanonisk www-adresse.

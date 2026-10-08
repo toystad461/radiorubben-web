@@ -18,7 +18,7 @@ finish() {
 }
 trap finish EXIT
 health() {
-  code=$(curl --silent --show-error --output /dev/null --max-time 30 --write-out '%{http_code}' https://radiorubben.no/)
+  code=$(curl --silent --show-error --output /dev/null --max-time 30 --write-out '%{http_code}' https://www.radiorubben.no/)
   [[ "$code" == 200 ]] || { echo "Homepage returned $code" >&2; return 1; }
 }
 health
