@@ -19,14 +19,17 @@ if ( 'posts' === get_option( 'show_on_front' ) ) {
 } else {
     echo '<div class="rr-news-first">';
     get_template_part( 'template-parts/home/hero' );
+    echo '<div class="rr-wrap rr-home-columns"><div class="rr-home-main">';
     get_template_part( 'template-parts/home/news-priority' );
-    get_template_part( 'template-parts/home/member' );
+    echo '</div>';
+    get_template_part( 'template-parts/home/sidebar' );
+    echo '</div>';
     get_template_part( 'template-parts/home/news-priority', null, array( 'sport' => true ) );
     // Existing player plugin owns visibility, data and rendering.
     do_action( 'rrpw_homepage' );
     get_template_part( 'template-parts/home/feed' );
     do_action( 'rr_theme_home_after_news' );
-    if ( function_exists( 'rr_weather_card' ) ) { rr_weather_card(); }
+    // Weather now belongs to the sidebar.
     get_template_part( 'template-parts/home/about' );
     rr_theme_sponsors( 'home-bottom' );
     // Preserve editor content and all existing downstream integrations.
@@ -34,3 +37,4 @@ if ( 'posts' === get_option( 'show_on_front' ) ) {
     echo '</div>';
 }
 get_footer();
+

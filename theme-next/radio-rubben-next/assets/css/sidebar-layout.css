@@ -1,0 +1,43 @@
+/* Radio Rubben: menu and classic homepage sidebar, 2026-10-08. */
+.rr-home-columns{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:start}
+.rr-home-main,.rr-home-sidebar,.rr-home-player{min-width:0}
+.rr-home-main>.rr-wrap{width:100%;margin:0}
+.rr-home-sidebar{display:grid;gap:20px;padding-block:26px 36px}
+.rr-home-sidebar .rr-match-card,.rr-home-sidebar .rr-sponsor{width:100%;max-width:none;margin:0;padding:20px}
+.rr-home-sidebar .rr-match-card h2{font-size:22px}
+.rr-home-sidebar .rr-match-card time{font-size:14px}
+.rr-home-sidebar .rr-match-card .rr-text-link{display:inline-flex;align-items:center;min-height:44px}
+.rr-member-inline{font-size:14px;margin:10px 0 0;color:var(--signal)}
+.rr-member-inline a{display:inline-block;padding-block:8px;text-decoration:underline;text-underline-offset:3px}
+.rr-home-player>.rr-radio-card{width:100%}
+.rr-sidebar-weather{border:1px solid var(--line);border-radius:18px;background:var(--panel);overflow:hidden}
+.rr-home-sidebar .rr-weather{width:100%;margin:0;padding:18px;box-shadow:none;border:0;border-radius:0}
+.rr-home-sidebar .rr-weather .rr-weather-head{flex-wrap:wrap;gap:8px}
+.rr-home-sidebar .rr-weather h2{font-size:22px}
+.rr-home-sidebar .rr-weather .rr-weather-head label{width:100%;max-width:100%}
+.rr-home-sidebar .rr-weather .rr-weather-now{padding:14px 0;gap:12px;flex-wrap:wrap}
+.rr-home-sidebar .rr-weather .rr-weather-temp{font-size:52px}
+.rr-home-sidebar .rr-weather .rr-weather-now>.rr-weather-icon{width:64px;height:64px}
+.rr-home-sidebar .rr-weather .rr-weather-now p{font-size:14px}
+.rr-home-sidebar .rr-weather .rr-weather-now dl,.rr-home-sidebar .rr-weather .rr-weather-hours,.rr-home-sidebar .rr-weather .rr-weather-extended{display:none}
+.rr-home-sidebar .rr-weather .rr-weather-credit{font-size:10px}
+.rr-weather-full-link{display:block;padding:0 18px 18px;font-size:14px;text-decoration:underline}
+.rr-nav-more{position:relative}
+.rr-nav-more>summary{display:flex;align-items:center;gap:6px;min-height:44px;cursor:pointer;font-size:.92rem;font-weight:650;color:#dbe8f3;list-style:none}
+.rr-nav-more>summary::-webkit-details-marker{display:none}
+.rr-nav-more>summary::after{content:"▾";font-size:12px}
+.rr-header .rr-nav .rr-nav-more>ul{position:absolute;top:100%;right:0;width:280px;display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px #0005;z-index:110}
+.rr-header .rr-nav .rr-nav-more:not([open])>ul{display:none}
+.rr-header .rr-nav .rr-nav-more>ul a{padding:8px;white-space:normal}
+@media(max-width:1100px){
+.rr-header .rr-nav .rr-nav-more>ul{position:static;width:100%;box-shadow:none;margin-block:4px}
+.rr-nav-more>summary{padding-block:8px}
+}
+@media(max-width:900px){
+.rr-home-columns{grid-template-columns:minmax(0,1fr)}
+.rr-home-sidebar{grid-template-columns:repeat(2,minmax(0,1fr));padding-top:0}
+}
+@media(max-width:600px){
+.rr-home-sidebar{grid-template-columns:minmax(0,1fr)}
+}
+
