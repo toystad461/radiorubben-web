@@ -1,0 +1,60 @@
+name: Homepage refinement — approved two-file release
+on:
+  push:
+    branches: [codex/homepage-tidy-20261008]
+    paths: ['.github/workflows/homepage-refinement-release.yml', 'scripts/homepage-refinement-release.sh']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    environment: wordpress-production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify approved source and run existing checks
+        env:
+          DEPLOY_ENABLED: ${{ vars.WP_DEPLOY_ENABLED }}
+        run: |
+          set -Eeuo pipefail
+          test "$GITHUB_REF" = refs/heads/codex/homepage-tidy-20261008
+          test "$DEPLOY_ENABLED" = true
+          git diff --exit-code e0e04ba79fcfc47dd27a0e3880325ae18cfaa642 -- theme-next
+          bash -n scripts/homepage-refinement-release.sh
+          python3 theme-next/scripts/check.py
+          php theme-next/tests/news-priority.php
+      - name: Configure existing verified deployment connection
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          test -n "$DEPLOY_KEY" && test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Publish two files with baseline check and rollback
+        run: |
+          set -Eeuo pipefail
+          release="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          bundle=$(mktemp -d)
+          for path in assets/css/homepage-refinement.css front-page.php; do
+            install -D -m 644 "theme-next/radio-rubben-next/$path" "$bundle/new/$path"
+          done
+          git show 14995a0:theme-next/radio-rubben-next/front-page.php > "$bundle/baseline-front.php"
+          (cd "$bundle/new"; sha256sum assets/css/homepage-refinement.css front-page.php) > "$bundle/SHA256SUMS"
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          ssh "$host" "set -e; umask 077; test ! -L .radiorubben-deploy; test ! -L .radiorubben-deploy/staging; mkdir -p .radiorubben-deploy/staging; mkdir .radiorubben-deploy/staging/homepage-refinement-$release"
+          rsync -rlt --chmod=D700,F600 "$bundle/" "$host:.radiorubben-deploy/staging/homepage-refinement-$release/"
+          ssh "$host" bash -s -- "$release" < scripts/homepage-refinement-release.sh
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

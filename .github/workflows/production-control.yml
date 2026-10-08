@@ -27,6 +27,9 @@ jobs:
           import json, subprocess
           from pathlib import Path
           c = json.loads(Path('docs/production-candidate.json').read_text())
+          expected = c.get('review_source_trees', c['assembly'])
+          if 'review_source_trees' in c:
+              print('Review overlay Git trees; historical production evidence remains in assembly.')
           paths = {
               'theme-next': 'theme_next_tree',
               'theme-next/radio-rubben-next': 'next_theme_tree',
@@ -35,7 +38,7 @@ jobs:
           }
           for path, key in paths.items():
               actual = subprocess.check_output(['git', 'rev-parse', f'HEAD:{path}'], text=True).strip()
-              if actual != c['assembly'][key]:
+              if actual != expected[key]:
                   raise SystemExit(f'Pinned source mismatch: {path}')
               print(f'Pinned source OK: {path}')
           print('Source checks only; no live inventory or deployment approval.')

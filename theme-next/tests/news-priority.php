@@ -55,7 +55,7 @@ $fixture = [(object)['ID'=>1,'title'=>'TESTUTKAST: En lang lokal overskrift som 
 if (($argv[1] ?? '') === '--render') {
     $renderFull = true;
     echo '<!doctype html><html lang="nb"><head><meta name="viewport" content="width=device-width,initial-scale=1"><meta charset="utf-8"><title>Radio Rubben · syntetisk skjermtest</title><style>';
-    foreach (['theme','design-v13','member-hub','mobile-shell','components','brand-profile','page-layouts','home-tidy','news-priority'] as $css) {
+    foreach (['theme','design-v13','member-hub','mobile-shell','components','brand-profile','page-layouts','home-tidy','news-priority','sidebar-layout','homepage-refinement'] as $css) {
         $path = $root . '/assets/css/' . $css . '.css'; if (is_file($path)) echo file_get_contents($path);
     }
     echo '</style></head><body class="rr-next rr-front">'; include $root . '/front-page.php'; echo '</body></html>'; exit;
@@ -83,7 +83,9 @@ $fixture=[]; $html = renderNews(); check(!str_contains($html, '<article ') && st
 foreach (['classic','content','universes','posts','password'] as $mode) {
     $styles=[]; ob_start(); include $root . '/front-page.php'; $page=ob_get_clean();
     if ($mode === 'classic') {
-        check(strpos($page, 'home/news-priority') < strpos($page, 'home/member'), 'News precedes member section');
+        check(strpos($page, 'home/news-priority') < strpos($page, 'home/sidebar'), 'News precedes sidebar on mobile');
+        check(!str_contains($page, 'home/member'), 'No duplicate member section');
+        check(isset($styles['rr-next-homepage-refinement']) && $styles['rr-next-homepage-refinement'][1] === ['rr-next-news-priority', 'rr-next-sidebar-layout'], 'Refinements follow news and sidebar styles');
         check(substr_count($page, 'data-hook="rrpw_homepage"') === 1, 'Existing player hook exactly once');
         check(substr_count($page, 'home/hero') === 1 && !str_contains($page, 'home/latest'), 'Existing radio reused and old duplicate removed');
         check(isset($styles['rr-next-news-priority']) && $styles['rr-next-news-priority'][1] === ['rr-next-home'], 'Scoped CSS depends on existing homepage stylesheet');

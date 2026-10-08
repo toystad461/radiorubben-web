@@ -33,6 +33,12 @@ function rr_theme_assets() {
     if ( is_child_theme() ) {
         wp_enqueue_style( 'rr-next-child', get_stylesheet_uri(), $previous, wp_get_theme()->get( 'Version' ) );
     }
+    $rr_sidebar_deps = array( 'rr-next-page-layouts' );
+    if ( is_front_page() ) {
+        $rr_sidebar_deps[] = 'rr-next-home';
+        if ( function_exists( 'rr_weather_card' ) ) { $rr_sidebar_deps[] = 'rr-weather'; }
+    }
+    wp_enqueue_style( 'rr-next-sidebar-layout', get_theme_file_uri( '/assets/css/sidebar-layout.css' ), $rr_sidebar_deps, '2026.10.08.1' );
     wp_enqueue_script( 'rr-next-ui', get_theme_file_uri( '/assets/js/ui.js' ), array(), RR_THEME_VERSION, array( 'strategy' => 'defer', 'in_footer' => true ) );
     wp_localize_script( 'rr-next-ui', 'RR_ONE', array( 'streamUrl' => esc_url_raw( rr_theme_mod( 'rr_stream_url', '' ), array( 'https', 'http' ) ) ) );
     if ( is_singular() && comments_open() && get_option( 'thread_comments' ) ) {
@@ -60,7 +66,15 @@ function rr_theme_customize( $manager ) {
     $manager->add_control( 'rr_live_status', array( 'label' => __( 'Sendingen er direkte', 'radio-rubben-next' ), 'type' => 'checkbox', 'section' => 'rr_presentation' ) );
     $manager->add_setting( 'rr_front_layout', array( 'default' => 'classic', 'sanitize_callback' => static function ( $value ) { return in_array( $value, array( 'classic', 'content' ), true ) ? $value : 'classic'; } ) );
     $manager->add_control( 'rr_front_layout', array( 'label' => __( 'Forsidelayout', 'radio-rubben-next' ), 'type' => 'select', 'choices' => array( 'classic' => 'Dagens Radio Rubben-layout', 'content' => 'Sideinnhold / blokkmønstre' ), 'section' => 'rr_presentation' ) );
+    $manager->add_section( 'rr_sidebar_ad', array( 'title' => 'Radio Rubben – annonse i sidefelt' ) );
+    foreach ( array( 'rr_sidebar_ad_name' => array( 'Annonsørnavn (tomt felt skjuler annonsen)', 'text', 'sanitize_text_field' ), 'rr_sidebar_ad_url' => array( 'Lenke', 'url', 'esc_url_raw' ), 'rr_sidebar_ad_text' => array( 'Kort annonsetekst', 'textarea', 'sanitize_textarea_field' ) ) as $key => $field ) {
+        $manager->add_setting( $key, array( 'default' => '', 'sanitize_callback' => $field[2] ) );
+        $manager->add_control( $key, array( 'label' => $field[0], 'type' => $field[1], 'section' => 'rr_sidebar_ad' ) );
+    }
+    $manager->add_setting( 'rr_sidebar_ad_image', array( 'default' => 0, 'sanitize_callback' => 'absint' ) );
+    $manager->add_control( new WP_Customize_Media_Control( $manager, 'rr_sidebar_ad_image', array( 'label' => 'Annonsebilde', 'section' => 'rr_sidebar_ad', 'mime_type' => 'image' ) ) );
     $manager->add_setting( 'rr_portrait_id', array( 'default' => rr_theme_mod( 'rr_portrait_id', 0 ), 'sanitize_callback' => 'absint' ) );
     $manager->add_control( new WP_Customize_Media_Control( $manager, 'rr_portrait_id', array( 'label' => __( 'Portrett på forsiden', 'radio-rubben-next' ), 'section' => 'rr_presentation', 'mime_type' => 'image' ) ) );
 }
 add_action( 'customize_register', 'rr_theme_customize' );
+

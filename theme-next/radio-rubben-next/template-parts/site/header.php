@@ -6,5 +6,6 @@
 <button class="rr-menu-toggle" type="button" aria-label="<?php esc_attr_e( 'Åpne meny', 'radio-rubben-next' ); ?>" aria-expanded="false" aria-controls="rr-primary-nav"><span></span><span></span><span></span></button>
 <?php get_template_part( 'template-parts/site/navigation' ); ?>
 </div>
-<?php if ( ! rr_home_universes_active() ) { get_template_part( 'template-parts/site/match-bar' ); } ?>
+<?php if ( ! ( is_front_page() && 'posts' !== get_option( 'show_on_front' ) && ! post_password_required() && 'content' !== rr_theme_mod( 'rr_front_layout', 'classic' ) && ! rr_home_universes_enabled() ) && ! rr_home_universes_active() ) { get_template_part( 'template-parts/site/match-bar' ); } ?>
 </header>
+
