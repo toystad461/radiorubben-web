@@ -34,7 +34,13 @@ jobs:
             git archive 75326d1c26cd3b30f7c52ead8246b4e99df950a4 | tar -x -C "$RUNNER_TEMP/rrfr-baseline"
             python3 "$RUNNER_TEMP/rrfr-baseline/scripts/verify-fotballrobot-runtime.py"
             python3 "$RUNNER_TEMP/rrfr-baseline/scripts/test-fotballrobot-runtime.py"
-            python3 scripts/verify-pr30-release.py
+            # PR30's immutable receipt describes its release, not subsequent policy edits.
+            mkdir "$RUNNER_TEMP/rrfr-pr30"
+            git archive e7452072e51884e93e41e131abcbbdd086451bb1 | tar -x -C "$RUNNER_TEMP/rrfr-pr30"
+            python3 "$RUNNER_TEMP/rrfr-pr30/scripts/verify-pr30-release.py"
+            cmp scripts/pr30-release.json "$RUNNER_TEMP/rrfr-pr30/scripts/pr30-release.json"
+            cmp docs/fotballrobot/runtime-manifest.json "$RUNNER_TEMP/rrfr-baseline/docs/fotballrobot/runtime-manifest.json"
+            diff -r docs/fotballrobot/evidence "$RUNNER_TEMP/rrfr-baseline/docs/fotballrobot/evidence"
           else
             python3 scripts/verify-fotballrobot-runtime.py
             python3 scripts/test-fotballrobot-runtime.py
