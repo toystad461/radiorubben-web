@@ -40,6 +40,7 @@ rr_test(rr_publish($post)->get_status()===409,'stale image blocks update through
 $classic=wp_insert_post(['post_title'=>'Classic invalid image','post_content'=>$inline,'post_status'=>'publish']);
 rr_test(get_post_status($classic)==='draft','classic publish with stale image remains draft');
 $clean=wp_insert_post(['post_title'=>'No image yet','post_content'=>'Text','post_status'=>'publish']);
+rr_test(get_post_status($clean)==='publish','new text-only post does not inherit global post image');
 rr_test(set_post_thumbnail($clean,$image)===false&&!get_post_thumbnail_id($clean),'late thumbnail assignment cannot attach unapproved image to published post');
 file_put_contents($variant,$png);clearstatcache();
 $before=rrmp_get($image);$edit=array_replace($input,['revision'=>$before['revision'],'approve'=>'','generator'=>'Changed model']);rrmp_save($image,$edit);

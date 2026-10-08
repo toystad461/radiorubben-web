@@ -44,7 +44,7 @@ Eksisterende artikler blir ikke masseoppdatert, men senere publiseringsforsøk m
 ukjent bildeopphav blir sperret. Manuelt lagrede, aktive artikler blir ikke trukket
 tilbake av en bakgrunnsjobb ved filendring.
 
-Arbitrary temakode, CSS-bakgrunner, eksterne bildebyggere og sosiale tjenester som
+Vilkårlig temakode, CSS-bakgrunner, eksterne bildebyggere og sosiale tjenester som
 henter bare bildefilens URL ligger utenfor standard WordPress-bildeflyt. De må
 kontrolleres separat før AI-bilder brukes der. Dette verktøyet brenner ikke
 merking inn i bildefilen og kan ikke garantere at tredjepart beholder bildeteksten.

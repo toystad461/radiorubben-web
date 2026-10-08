@@ -91,7 +91,7 @@ function rrmp_rest_gate($prepared,$request){
     $id=(int)($prepared->ID??$request['id']??0);$old=$id?get_post($id):null;
     $status=$prepared->post_status??($old->post_status??'draft');
     if(!in_array($status,['publish','future','private'],true))return $prepared;
-    $featured=$request->has_param('featured_media')?(int)$request['featured_media']:(int)get_post_thumbnail_id($id);
+    $featured=$request->has_param('featured_media')?(int)$request['featured_media']:($id>0?(int)get_post_thumbnail_id($id):0);
     $error=rrmp_post_error($id,(string)($prepared->post_content??$old->post_content??''),$featured);
     if($error)return new WP_Error('rr_media_policy',$error,['status'=>409]);
     $GLOBALS['rrmp_rest_candidate']=['id'=>$id,'content'=>(string)($prepared->post_content??$old->post_content??''),'featured'=>$featured];
@@ -100,7 +100,7 @@ function rrmp_rest_gate($prepared,$request){
 foreach(['post','page']as$type)add_filter('rest_pre_insert_'.$type,'rrmp_rest_gate',20,2);
 add_filter('wp_insert_post_data',function(array $data,array $postarr):array{
     if(!in_array($data['post_type']??'',['post','page'],true)||!in_array($data['post_status']??'',['publish','future','private'],true))return $data;
-    $id=(int)($postarr['ID']??0);$featured=(int)($postarr['meta_input']['_thumbnail_id']??$postarr['_thumbnail_id']??get_post_thumbnail_id($id));
+    $id=(int)($postarr['ID']??0);$featured=(int)($postarr['meta_input']['_thumbnail_id']??$postarr['_thumbnail_id']??($id>0?get_post_thumbnail_id($id):0));
     $candidate=$GLOBALS['rrmp_rest_candidate']??null;
     if($candidate&&$candidate['id']===$id&&$candidate['content']===wp_unslash($data['post_content']??'')){
         $featured=$candidate['featured'];unset($GLOBALS['rrmp_rest_candidate']);
@@ -112,7 +112,7 @@ add_filter('wp_insert_post_data',function(array $data,array $postarr):array{
 add_action('admin_notices',function():void{$key='rrmp_notice_'.get_current_user_id();$error=get_transient($key);if($error){delete_transient($key);echo '<div class="notice notice-error"><p>'.esc_html($error).' Saken er beholdt som utkast.</p></div>';}});
 function rrmp_wrap(string $html,int $id): string {
     $label=rrmp_public_label(rrmp_get($id));if($label==='')return $html;
-    return '<span class="rr-ai-image" data-rr-media-label="'.esc_attr($label).'" style="display:inline-block;position:relative;max-width:100%;vertical-align:middle">'.$html.'<span class="rr-ai-image-label" style="position:absolute;bottom:0;left:0;max-width:100%;box-sizing:border-box;background:#171717;color:#fff;padding:4px 7px;font:600 12px/1.4 sans-serif;white-space:normal">'.esc_html($label).'</span></span>';
+    return '<span class="rr-ai-image" data-rr-media-label="'.esc_attr($label).'" style="display:inline-block;position:relative;width:100%;height:100%;max-width:100%;vertical-align:middle">'.$html.'<span class="rr-ai-image-label" style="position:absolute;bottom:0;left:0;max-width:100%;box-sizing:border-box;background:#171717;color:#fff;padding:4px 7px;font:600 12px/1.4 sans-serif;white-space:normal">'.esc_html($label).'</span></span>';
 }
 add_filter('wp_get_attachment_image',function($html,$id){return rrmp_wrap($html,(int)$id);},99,2);
 add_filter('wp_get_attachment_caption',function($caption,$id){$label=rrmp_public_label(rrmp_get((int)$id));return $label&&!str_contains($caption,$label)?$label.($caption?' — '.$caption:''):$caption;},20,2);
@@ -148,3 +148,5 @@ function rrmp_thumbnail_gate($check,$objectId,$key,$value){
 }
 add_filter('add_post_metadata','rrmp_thumbnail_gate',20,4);
 add_filter('update_post_metadata','rrmp_thumbnail_gate',20,4);
+
+add_filter('rest_request_after_callbacks',function($response){unset($GLOBALS['rrmp_rest_candidate']);return $response;});
