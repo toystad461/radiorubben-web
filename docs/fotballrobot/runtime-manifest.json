@@ -1,0 +1,679 @@
+{
+  "schema_version": 1,
+  "repository": "toystad461/radiorubben-web",
+  "main_base": "9006e82e1ebc91e2a128cf2d3e263470e16db8e0",
+  "plugin_path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot",
+  "plugin_version": "0.10.4",
+  "runtime_source_commit": "29e49e75b7890dd885050b4ad83d97ad266288fa",
+  "source_plugin_tree": "420f40adfc01850fe17e7de478787ab62c28e253",
+  "latest_plugin_release": {
+    "commit": "dd6b775ee2f80365c3b55b123ae8f418c9a9eea1",
+    "run": 37243206615,
+    "completed_at": "2026-10-04T23:17:48Z"
+  },
+  "runtime_sha256": "c84631aefaedf53f37b74f3c855b46921ad3bb7dcf36d1d0d9df879398df03a8",
+  "runtime_files": [
+    {
+      "path": "admin.css",
+      "mode": "100644",
+      "sha256": "1bef09eb598ad9b8cbccbcd8006cf8ae035d102f1ecfc7baaf0b7d32fb4fc01e",
+      "git_blob": "b142478f3311614d70de9f1d52a922b0286f0b8c",
+      "receipt": {
+        "file": "fotballrobot-baseline.sha256",
+        "section": "sha256sum",
+        "path": "admin.css"
+      }
+    },
+    {
+      "path": "includes/editorial-notice.php",
+      "mode": "100644",
+      "sha256": "38b3164ede0a59aa28598281c798abf0baeb40873fc7ea3fa913a87027698b3c",
+      "git_blob": "84c239cafcbcab20885dade1c4518b1bc3c61f28",
+      "receipt": {
+        "file": "fotballrobot-monitor-baseline.sha256",
+        "section": "sha256sum",
+        "path": "includes/editorial-notice.php"
+      }
+    },
+    {
+      "path": "includes/editorial-quality.php",
+      "mode": "100644",
+      "sha256": "a3b7dcf06e4dc88fad1f9e95a2265460bd8a0bd6fa5d5028934da6219fa68a9c",
+      "git_blob": "3fe054ed678bb61ae74057e4619c5471de0c4085",
+      "receipt": {
+        "file": "fotballrobot-inline-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/editorial-quality.php"
+      }
+    },
+    {
+      "path": "includes/fact-store.php",
+      "mode": "100644",
+      "sha256": "4d0cf137184563441f5558413f4c95faa9497864fb4b254737c60c08cd22be6f",
+      "git_blob": "0193de51fbac482fb9a86308ebe2ca2ae1b00353",
+      "receipt": {
+        "file": "fotballrobot-monitor-baseline.sha256",
+        "section": "sha256sum",
+        "path": "includes/fact-store.php"
+      }
+    },
+    {
+      "path": "includes/facts.php",
+      "mode": "100644",
+      "sha256": "083da2b928bb88b9fbaa30af02c1b9e64b8efa2364ffc7cee421b3d55aae4138",
+      "git_blob": "196cf9eabf2c75eca56b3fe5696429b3a1ddb843",
+      "receipt": {
+        "file": "fotballrobot-monitor-baseline.sha256",
+        "section": "sha256sum",
+        "path": "includes/facts.php"
+      }
+    },
+    {
+      "path": "includes/inline-sources.php",
+      "mode": "100644",
+      "sha256": "30eea3ccd845dc719de9123e8319bd9801810e7ee4f5293dc7e65b062f4301c1",
+      "git_blob": "6aa23d4614a849197f34921e6149484e5daa2a13",
+      "receipt": {
+        "file": "fotballrobot-discovery-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/inline-sources.php"
+      }
+    },
+    {
+      "path": "includes/learning.php",
+      "mode": "100644",
+      "sha256": "a4b90d4989df2b420a3b8369d8806becb86986e72cf6ef25db2800cd5292c753",
+      "git_blob": "52c3fa9c38bbb1c2fede4e5531970471feb8b06e",
+      "receipt": {
+        "file": "fotballrobot-monitor-baseline.sha256",
+        "section": "sha256sum",
+        "path": "includes/learning.php"
+      }
+    },
+    {
+      "path": "includes/lineups.php",
+      "mode": "100644",
+      "sha256": "0e5bdba48ac99e14223bc2dfcdb2ab5ca6fe9d8aa49cd2792223fec23a2d6162",
+      "git_blob": "f6120aeafcb2bb92a5cd1237905359a1db72a648",
+      "receipt": {
+        "file": "fotballrobot-monitor-baseline.sha256",
+        "section": "sha256sum",
+        "path": "includes/lineups.php"
+      }
+    },
+    {
+      "path": "includes/match-jobs.php",
+      "mode": "100644",
+      "sha256": "3042e21c4adee1342d136ebe644286f8383b47f60228747f731ac31a55c6f444",
+      "git_blob": "7c6b026793f77eb3359adfc201c7d335a63b7d3e",
+      "receipt": {
+        "file": "fotballrobot-approval-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/match-jobs.php"
+      }
+    },
+    {
+      "path": "includes/media-sources.php",
+      "mode": "100644",
+      "sha256": "0f51d2cafaf0bc10afaa7303c42b6cdb4611439aecd22bae1721ddf51d054c51",
+      "git_blob": "1d65bcb696fe5cab188b8f22beea4ea02e0c514a",
+      "receipt": {
+        "file": "fotballrobot-discovery-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/media-sources.php"
+      }
+    },
+    {
+      "path": "includes/microsoft-mail-page.php",
+      "mode": "100644",
+      "sha256": "e46f2eeac5431f0e8d782b06850384c91361bd1f9cb58d0a2049cd563fc63f04",
+      "git_blob": "114c79197122099c8b1cb6a4589792c2f9c43a7a",
+      "receipt": {
+        "file": "fotballrobot-monitor-baseline.sha256",
+        "section": "sha256sum",
+        "path": "includes/microsoft-mail-page.php"
+      }
+    },
+    {
+      "path": "includes/microsoft-mail.php",
+      "mode": "100644",
+      "sha256": "e67abc664e7e381ef01de224da6886409aeac0a5635a865c2c926b2c14ae4c71",
+      "git_blob": "b14a2a97c8e75f97593ddd43a10b74c045c82863",
+      "receipt": {
+        "file": "fotballrobot-monitor-baseline.sha256",
+        "section": "sha256sum",
+        "path": "includes/microsoft-mail.php"
+      }
+    },
+    {
+      "path": "includes/newsroom.php",
+      "mode": "100644",
+      "sha256": "9aca2d684d2277743291424a3758c99cb2846bc8b91d410aa4e096161aa94590",
+      "git_blob": "00f4403eb39a5cfbfa6939fc00901bee0d26f7ee",
+      "receipt": {
+        "file": "mobile-newsroom-release.json",
+        "section": "after",
+        "path": "wp-content/plugins/radio-rubben-fotballrobot/includes/newsroom.php"
+      }
+    },
+    {
+      "path": "includes/player-candidates-page.php",
+      "mode": "100644",
+      "sha256": "ace77a1ad3417e7dc96a9bcb2db79a606fe465aff3a7cad67b8cca154f9956f0",
+      "git_blob": "d47d96b410195eaf9c19ce6780403f8b2f73b12c",
+      "receipt": {
+        "file": "fotballrobot-discovery-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/player-candidates-page.php"
+      }
+    },
+    {
+      "path": "includes/player-candidates.php",
+      "mode": "100644",
+      "sha256": "f0f84e58badf5c514b5f52b13011eadfcd5202c9db456676d8a522e6dae17848",
+      "git_blob": "484125ce35e20904b652f9cbeae3ef1569ace97f",
+      "receipt": {
+        "file": "fotballrobot-discovery-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/player-candidates.php"
+      }
+    },
+    {
+      "path": "includes/player-corrections.php",
+      "mode": "100644",
+      "sha256": "340452cbfdd28221de3bb4a0b51a96331a98e1336ca90e9bc36f264e098664f3",
+      "git_blob": "fd9fcd4805ef1ae8716a681da6179e8f900dd571",
+      "receipt": {
+        "file": "mobile-newsroom-release.json",
+        "section": "after",
+        "path": "wp-content/plugins/radio-rubben-fotballrobot/includes/player-corrections.php"
+      }
+    },
+    {
+      "path": "includes/player-facts.php",
+      "mode": "100644",
+      "sha256": "d9ee32b47e96cad5b4f2aa9163f15ca12bae30c81409dc778f396ab350f5accd",
+      "git_blob": "b4247cd811fea606f031846f6421579959ae2ab8",
+      "receipt": {
+        "file": "player-followup-target.sha256",
+        "section": "sha256sum",
+        "path": "radio-rubben-fotballrobot/includes/player-facts.php"
+      }
+    },
+    {
+      "path": "includes/player-monitor.php",
+      "mode": "100644",
+      "sha256": "77482c834650288a41b33c372a30f773a0c12d72140613f3aaf031b907df1c7f",
+      "git_blob": "786258c31f740334fd2623b0d0edfac8b2d26fc8",
+      "receipt": {
+        "file": "mobile-newsroom-release.json",
+        "section": "after",
+        "path": "wp-content/plugins/radio-rubben-fotballrobot/includes/player-monitor.php"
+      }
+    },
+    {
+      "path": "includes/player-news-filter.php",
+      "mode": "100644",
+      "sha256": "a8e79312c18c92d0fc4e93f6393a24eaa21b1d400016a4b0ab036aeeb5c0071c",
+      "git_blob": "7d1c8a75c18c7c4afc6ccd926609965b87b452ba",
+      "receipt": {
+        "file": "player-news-filter-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/player-news-filter.php"
+      }
+    },
+    {
+      "path": "includes/player-review-page.php",
+      "mode": "100644",
+      "sha256": "4af5192e144cf9fa969c65d5d4065d100f58995c439f5939903797108d954f0b",
+      "git_blob": "c02189e6012fdfd0350cf5d567df5feccfbce3e9",
+      "receipt": {
+        "file": "fotballrobot-approval-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/player-review-page.php"
+      }
+    },
+    {
+      "path": "includes/player-review.php",
+      "mode": "100644",
+      "sha256": "4c3552f17c16083e65547f5b4ee7b6eb65a8cfc17deefc65c6c325250eb24f32",
+      "git_blob": "82a225832885b33fc4cc3a7096ba72c6417ab02f",
+      "receipt": {
+        "file": "player-story-release.json",
+        "section": "after",
+        "path": "wp-content/plugins/radio-rubben-fotballrobot/includes/player-review.php"
+      }
+    },
+    {
+      "path": "includes/players-page.php",
+      "mode": "100644",
+      "sha256": "19366c93eb3696cefeabad569149a947f21d102656fa3a4b58ffaf538fd2d8f9",
+      "git_blob": "9a3b36a510507c7a384aaf6aea33e0ba190f5f32",
+      "receipt": {
+        "file": "fotballrobot-discovery-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/players-page.php"
+      }
+    },
+    {
+      "path": "includes/players.php",
+      "mode": "100644",
+      "sha256": "725203ccf3c419b30a247db549873706323229e801255ef057683053e84ee0b2",
+      "git_blob": "52dc0882082f9820025b2e69e3593190cf385882",
+      "receipt": {
+        "file": "player-news-filter-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/players.php"
+      }
+    },
+    {
+      "path": "includes/publication-gate.php",
+      "mode": "100644",
+      "sha256": "bd9f70aca0b2de881be3eebe25572c5bd6848563ae85907457bc927fe7992b17",
+      "git_blob": "b3c7dc917828269fcca92d70d49d78375b9e85b0",
+      "receipt": {
+        "file": "fotballrobot-approval-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/publication-gate.php"
+      }
+    },
+    {
+      "path": "includes/report.css",
+      "mode": "100644",
+      "sha256": "983f0bf3b77918d7dc2861508897eafd8b739ff2581f738248133e2b3c7eba27",
+      "git_blob": "4002a04aefc59b5a85246b8fc0eb0f22cf47cee6",
+      "receipt": {
+        "file": "fotballrobot-baseline.sha256",
+        "section": "sha256sum",
+        "path": "includes/report.css"
+      }
+    },
+    {
+      "path": "includes/report.php",
+      "mode": "100644",
+      "sha256": "e4c81590e1593c8ad30d95d4a4e4cc9c610be5627bdde3e07b957cef838cc61c",
+      "git_blob": "bf919d8ce948dc33c3a8c234df89e19a533df909",
+      "receipt": {
+        "file": "fotballrobot-monitor-baseline.sha256",
+        "section": "sha256sum",
+        "path": "includes/report.php"
+      }
+    },
+    {
+      "path": "includes/review-desk-style.php",
+      "mode": "100644",
+      "sha256": "5c7e712d4934f1ba773a950098272a2eeb09912ddf3ad34d19867772c2012bf2",
+      "git_blob": "0d13c5c1bc9fd875045afa20aee6145e21707256",
+      "receipt": {
+        "file": "fotballrobot-approval-target.sha256",
+        "section": "sha256sum",
+        "path": "includes/review-desk-style.php"
+      }
+    },
+    {
+      "path": "includes/review-desk.php",
+      "mode": "100644",
+      "sha256": "7b617fe1690f88a089f103a84bfa64d82f898178e871941a17dbaed2e5f2e1b9",
+      "git_blob": "11066f320234dad9f585e29137aa9f41663d7f92",
+      "receipt": {
+        "file": "player-story-release.json",
+        "section": "after",
+        "path": "wp-content/plugins/radio-rubben-fotballrobot/includes/review-desk.php"
+      }
+    },
+    {
+      "path": "includes/review-digest.php",
+      "mode": "100644",
+      "sha256": "0cd10e9fa73e127613970c1daafd25d3580fe996f82b91d62c4532feaa64dd9a",
+      "git_blob": "ae2245604bab326c059cf19ad025b3f5099ff965",
+      "receipt": {
+        "file": "newsroom-release.json",
+        "section": "after",
+        "path": "wp-content/plugins/radio-rubben-fotballrobot/includes/review-digest.php"
+      }
+    },
+    {
+      "path": "includes/robot.php",
+      "mode": "100644",
+      "sha256": "ebb19c1fb2be027b2b9a2c5a70020d792c0e97b7f483a605c333bc072a88287d",
+      "git_blob": "4eb8ac5fd62ea1c973f7bfa355d3599962570442",
+      "receipt": {
+        "file": "monitor-robot.json",
+        "section": "after",
+        "path": "includes/robot.php"
+      }
+    },
+    {
+      "path": "includes/writer.php",
+      "mode": "100644",
+      "sha256": "2ea6ffd35cc50c1336716c4c7040c78e6727e71cb43c0a7bf4232ab1d238ebe7",
+      "git_blob": "ca52bfbd420665543f261e4414b2e738df7c93f4",
+      "receipt": {
+        "file": "player-story-release.json",
+        "section": "after",
+        "path": "wp-content/plugins/radio-rubben-fotballrobot/includes/writer.php"
+      }
+    },
+    {
+      "path": "radio-rubben-fotballrobot.php",
+      "mode": "100644",
+      "sha256": "60ae29812f5f29d810800c740b24e367ad10f20d6b86d5d9fed395735da20544",
+      "git_blob": "f96cd2c6d9133cd4bfa293c7c56f9161195f8836",
+      "receipt": {
+        "file": "mobile-newsroom-release.json",
+        "section": "after",
+        "path": "wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php"
+      }
+    }
+  ],
+  "support_files": [
+    {
+      "path": "DISCOVERY-MEDIA.md",
+      "mode": "100644",
+      "sha256": "d3ce4e4639eeae64f46831d0b22757ab54a9271b86d00f41fc44942195d6a136",
+      "git_blob": "512fd46b1ad34a2fe8aa589727282ae4bb23f733",
+      "source_git_blob": "512fd46b1ad34a2fe8aa589727282ae4bb23f733"
+    },
+    {
+      "path": "EDITORIAL-RULES.md",
+      "mode": "100644",
+      "sha256": "a7ebec1b4ce207b57c4a7a9b240b6c26420516af4cd37249e791dd80a4f6bcde",
+      "git_blob": "b7dedce9b421ffd801907cde55f4d7197cd9e3e8",
+      "source_git_blob": "b7dedce9b421ffd801907cde55f4d7197cd9e3e8"
+    },
+    {
+      "path": "MICROSOFT-MAIL.md",
+      "mode": "100644",
+      "sha256": "a53042b874980cefe6bfe96a76303d790eebf5f119d62b0ebfde887605aed6d6",
+      "git_blob": "66743a95e9396845e48a55b7f34a559bce21cfef",
+      "source_git_blob": "66743a95e9396845e48a55b7f34a559bce21cfef"
+    },
+    {
+      "path": "PLAYER-REVIEW.md",
+      "mode": "100644",
+      "sha256": "26fcc3bcd8991a54e708cdd556eeb5e4c1e68e27c0135519e3a66b42255df64e",
+      "git_blob": "d0dec85e3f805d10f1c9d8bbfd26e612059a4b7d",
+      "source_git_blob": "d0dec85e3f805d10f1c9d8bbfd26e612059a4b7d"
+    },
+    {
+      "path": "PLAYERS.md",
+      "mode": "100644",
+      "sha256": "92f9c3e62c7118e04fe1ba460f08c0ebd07d49cae9e98d020ff1c0a0a116c7d6",
+      "git_blob": "3175e2ff8d78688671355e5e20d178791ffac1c7",
+      "source_git_blob": "3175e2ff8d78688671355e5e20d178791ffac1c7"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "sha256": "9c7af4e2bd8c671d5407286c137b53a3149384e9799a0558f0917f2c64f0ec15",
+      "git_blob": "538c8f50f9778d2959fd58987e8cbbd9fa7a0390",
+      "source_git_blob": "18bc3b6a0ac6db032814f058e3e98d14bc1c78ef"
+    },
+    {
+      "path": "tests/bootstrap.php",
+      "mode": "100644",
+      "sha256": "90bdd30b9b5a40c850628f15f45340c120daf812e6517995f503d0687884ba0b",
+      "git_blob": "02d263de641d54e1b011b2a8619bdafd38624bab",
+      "source_git_blob": "02d263de641d54e1b011b2a8619bdafd38624bab"
+    },
+    {
+      "path": "tests/candidates-media.php",
+      "mode": "100644",
+      "sha256": "e1680b22ab6b2fdb2bb39a2db5cc7ea70e5c34340d04fdfbe7caf568e27d35f0",
+      "git_blob": "15470a24838d78e8d09de9b5581950783a480012",
+      "source_git_blob": "15470a24838d78e8d09de9b5581950783a480012"
+    },
+    {
+      "path": "tests/editorial-quality.php",
+      "mode": "100644",
+      "sha256": "f851a2a05cca3713a9364f81cf1e44e1507cb20f98e443ca4b3e2ba3efe0f8fe",
+      "git_blob": "8ad601ee556af00cfbfd81d833feccb3bf065e87",
+      "source_git_blob": "8ad601ee556af00cfbfd81d833feccb3bf065e87"
+    },
+    {
+      "path": "tests/fixtures/bremnes.html",
+      "mode": "100644",
+      "sha256": "25084a60e69f5a41ce29bae78dd1b325cbadee60c37bead85696a688b558b434",
+      "git_blob": "c2c40f1b99e616aa923cf851289c6bead0ed3357",
+      "source_git_blob": "c2c40f1b99e616aa923cf851289c6bead0ed3357"
+    },
+    {
+      "path": "tests/fixtures/completed-match.html",
+      "mode": "100644",
+      "sha256": "818bb2f09ef6a05f2827929fc9aaf38f10112436e1a14a6aa757c6e9d11cbc94",
+      "git_blob": "c2b161a1108d9dd364b54273efb878b00268b403",
+      "source_path": "wordpress/wp-content/plugins/radio-rubben-player-widget/tests/fixtures/completed-match.html"
+    },
+    {
+      "path": "tests/fixtures/match.html",
+      "mode": "100644",
+      "sha256": "d2c60ba67b540b6679a49e19f6e2aba47fd387f1fb6484237dc73514183e0277",
+      "git_blob": "3edac1b68d79d74d6c2d480e34012db3a9bb54bb",
+      "source_git_blob": "3edac1b68d79d74d6c2d480e34012db3a9bb54bb"
+    },
+    {
+      "path": "tests/fixtures/player-games.html",
+      "mode": "100644",
+      "sha256": "984f7881b29293832b660476e11ab044e65a798cb56c27f49eb629dbf6e7e0bc",
+      "git_blob": "740698d4ba29ec6337749f2c98417ef4d8d84992",
+      "source_git_blob": "740698d4ba29ec6337749f2c98417ef4d8d84992"
+    },
+    {
+      "path": "tests/fixtures/player-match.html",
+      "mode": "100644",
+      "sha256": "9694ff8a36546b5f5d9bd298f45a2e89002134fb0596f93bd7a02060e1da71c1",
+      "git_blob": "26c30c41a807342cd619aca09edf67957ebbb7ea",
+      "source_git_blob": "26c30c41a807342cd619aca09edf67957ebbb7ea"
+    },
+    {
+      "path": "tests/fixtures/player-profile.html",
+      "mode": "100644",
+      "sha256": "b85865218805aa9a52d50ac3cdb5574f9f477e6b8323a07836a9c7910c1a0b83",
+      "git_blob": "1075e368f8759bc1bd06632fc20cfd6306b0e3ab",
+      "source_git_blob": "1075e368f8759bc1bd06632fc20cfd6306b0e3ab"
+    },
+    {
+      "path": "tests/fixtures/torbjorn-profile.html",
+      "mode": "100644",
+      "sha256": "ef3bb65b9eeab00837eff0b8535f50e9f3a7ad537763eec28660d5de5eb73c7a",
+      "git_blob": "a2753bd499d318becf83b71326999b9f3b7a65ba",
+      "source_git_blob": "a2753bd499d318becf83b71326999b9f3b7a65ba"
+    },
+    {
+      "path": "tests/fixtures/viggo.html",
+      "mode": "100644",
+      "sha256": "f4ff3aa522dd6bf17f9b3774335a55f9f66ce97db336a94dd306a682f1e85e73",
+      "git_blob": "bbc34d582aebc4104cde848603282aae345763f4",
+      "source_git_blob": "bbc34d582aebc4104cde848603282aae345763f4"
+    },
+    {
+      "path": "tests/inline-sources.php",
+      "mode": "100644",
+      "sha256": "14fab4562bdd344cb1bf453be23e3299bee65f5bea5f410d1e8d511d14338b7c",
+      "git_blob": "7403fb7d13d68c63ffb644dae4e89b34a2ac5ffa",
+      "source_git_blob": "7403fb7d13d68c63ffb644dae4e89b34a2ac5ffa"
+    },
+    {
+      "path": "tests/learning.php",
+      "mode": "100644",
+      "sha256": "5a4d17516af9b76469d73155da19098d712c06dde04cee36c3d553e0080c29e3",
+      "git_blob": "fcaec18c53d3aa67f0f97a68703a04f6028b222d",
+      "source_git_blob": "fcaec18c53d3aa67f0f97a68703a04f6028b222d"
+    },
+    {
+      "path": "tests/lineups.php",
+      "mode": "100644",
+      "sha256": "c9f8a4b418f64736125212ce168cffdf1ba340f275ecfecc8edb950092108486",
+      "git_blob": "611ee04c030893d703a3378cf6d74e58bee1d0d3",
+      "source_git_blob": "611ee04c030893d703a3378cf6d74e58bee1d0d3"
+    },
+    {
+      "path": "tests/match-jobs.php",
+      "mode": "100644",
+      "sha256": "84fb2219884519342c3bf44b96c228832752d56b713dc0dd371b1b7e755d49c7",
+      "git_blob": "97cb1fd30ab9830a29431251f2854b0f1da68254",
+      "source_git_blob": "97cb1fd30ab9830a29431251f2854b0f1da68254"
+    },
+    {
+      "path": "tests/newsroom.php",
+      "mode": "100644",
+      "sha256": "155b44d35e2e6b891bdaebfbde58d44f902220a6463ea8d5765b39a2d8a8d0b6",
+      "git_blob": "f21f67e29531face5c3bb5a4cf2c1ebdd0062696",
+      "source_git_blob": "f21f67e29531face5c3bb5a4cf2c1ebdd0062696"
+    },
+    {
+      "path": "tests/player-corrections.php",
+      "mode": "100644",
+      "sha256": "0b94267d980538497bc2d241e630be792e7a98573ef9412ebcf43645eb880f89",
+      "git_blob": "c6cc40c78690efa1b8a7af264845a8191608afcb",
+      "source_git_blob": "c6cc40c78690efa1b8a7af264845a8191608afcb"
+    },
+    {
+      "path": "tests/player-news-filter.php",
+      "mode": "100644",
+      "sha256": "b399825b318968f8252e360499dd80cf547a7a9bad663cffa448dc8fd8184424",
+      "git_blob": "b6dbf824e1c6433a6773a45584cfa4bf2af42145",
+      "source_git_blob": "b6dbf824e1c6433a6773a45584cfa4bf2af42145"
+    },
+    {
+      "path": "tests/player-review.php",
+      "mode": "100644",
+      "sha256": "e2bc69c17fa324ac87e5fa7fbebb3e947f98925abf96b8975a4c94ef318d1cb5",
+      "git_blob": "912716470db8d19351a78f64c3e01a0942333cae",
+      "source_git_blob": "912716470db8d19351a78f64c3e01a0942333cae"
+    },
+    {
+      "path": "tests/players.php",
+      "mode": "100644",
+      "sha256": "fdc8ae1f0bfdfaff57df7401f503a4a04f1c1efa480216546ed12982b63a6a13",
+      "git_blob": "7f1045cc0ec88521463c98f3033a14ee40c8bde1",
+      "source_git_blob": "70ca6cdd5e2fac7944d31af5473520b6fafb3adf"
+    },
+    {
+      "path": "tests/publication-gate.php",
+      "mode": "100644",
+      "sha256": "19835567bb29aa0539dcdd299bcc963b2453813a3de65e0c1182babba6c877ba",
+      "git_blob": "b2725fa6d4d2da8ea21a22f09cdea190cdbd5138",
+      "source_git_blob": "b2725fa6d4d2da8ea21a22f09cdea190cdbd5138"
+    },
+    {
+      "path": "tests/report.php",
+      "mode": "100644",
+      "sha256": "8cb73eb5c0f0a2ad31f117d15bbc35b9f94e603c21a7622869d13235a859de4d",
+      "git_blob": "390ba07e2247cb4d22cf2db0e0c29be83a3b9752",
+      "source_git_blob": "390ba07e2247cb4d22cf2db0e0c29be83a3b9752"
+    },
+    {
+      "path": "tests/review-desk.php",
+      "mode": "100644",
+      "sha256": "951c74fe3f6951dd842318130a2fe2d5571605f40c1a2870a17a2c587ef10036",
+      "git_blob": "c6b3b4edadb54fc284bc383878ba655634306b6f",
+      "source_git_blob": "c6b3b4edadb54fc284bc383878ba655634306b6f"
+    },
+    {
+      "path": "tests/review-digest.php",
+      "mode": "100644",
+      "sha256": "58b80a82d8d473947bb41d1eaed205e53d50bbd9fe6d05d00823a626fd92c873",
+      "git_blob": "e23d195d8eb4760edf72e16369dbcbd5bf5cbdad",
+      "source_git_blob": "e23d195d8eb4760edf72e16369dbcbd5bf5cbdad"
+    },
+    {
+      "path": "tests/run.php",
+      "mode": "100644",
+      "sha256": "d3e14a4068f4272021b9da46bf0a2e316301153391dcff156892d901cd527568",
+      "git_blob": "60a633ff3fc13a5a1f09f2f7adb43f9cb4765395",
+      "source_git_blob": "60a633ff3fc13a5a1f09f2f7adb43f9cb4765395"
+    },
+    {
+      "path": "tests/staged-quality.php",
+      "mode": "100644",
+      "sha256": "66c7a97aad2d9d70fa329bea3045d48c91d11d5a5b03f629310bb14c6cb8ee3e",
+      "git_blob": "fd60e1e58403d74eaf9b95a9f884903cc696d0af",
+      "source_git_blob": "fd60e1e58403d74eaf9b95a9f884903cc696d0af"
+    },
+    {
+      "path": "tests/writer-flow.php",
+      "mode": "100644",
+      "sha256": "f5285ff58d6cf9847dab107bcf7b188d2080d6f9fb91996945423a58bce5c2b5",
+      "git_blob": "a1b64aaa2aabc76fea25b4f97ac6a5878de22d6f",
+      "source_git_blob": "a1b64aaa2aabc76fea25b4f97ac6a5878de22d6f"
+    },
+    {
+      "path": "tests/writer.php",
+      "mode": "100644",
+      "sha256": "bb0ef8a07d48707bb634b0d70db18ef6440846481dde0867643da5310f0bc04b",
+      "git_blob": "9b1918fcc19c019e84a17503c4ea07c5be92defe",
+      "source_git_blob": "9b1918fcc19c019e84a17503c4ea07c5be92defe"
+    }
+  ],
+  "evidence": {
+    "fotballrobot-baseline.sha256": {
+      "source_commit": "d43ec970182baeda8f84ad916c9dcf2bd8036d8c",
+      "source_path": "scripts/fotballrobot-baseline.sha256",
+      "release_run": 37108010279,
+      "sha256": "b7664426cce989c0b93ed0ba5aead82f59bc66e3ee3040e1b9439478e126c38f"
+    },
+    "fotballrobot-monitor-baseline.sha256": {
+      "source_commit": "bf8d586af88f370732a2aa0c424c4f799c9106c9",
+      "source_path": "scripts/fotballrobot-monitor-baseline.sha256",
+      "release_run": 37144418125,
+      "sha256": "14c0cc03d9b76a72d72cc71a1245f0e8d681c80165d22bc659f31c7e8b958b79"
+    },
+    "fotballrobot-inline-target.sha256": {
+      "source_commit": "59cbfbd6d82b97a8d3cf7f5f4456467710174484",
+      "source_path": "scripts/fotballrobot-inline-target.sha256",
+      "release_run": 37153585377,
+      "sha256": "438c98a58d0316f95fdd25cef3638e1facfab5dd80fddb2af2bca1df25c775d7"
+    },
+    "fotballrobot-approval-target.sha256": {
+      "source_commit": "77bf90af9c0006b2c9fef6b5694612073bf289ea",
+      "source_path": "scripts/fotballrobot-approval-target.sha256",
+      "release_run": 37155321824,
+      "sha256": "c29d19cd9c58de039bb6a1cd069a27e54ce2a6e88ae52c26edb97facb7f889bd"
+    },
+    "fotballrobot-discovery-target.sha256": {
+      "source_commit": "5e6b787870d584ad154809d4f89f475a62aa5b31",
+      "source_path": "scripts/fotballrobot-discovery-target.sha256",
+      "release_run": 37201229773,
+      "sha256": "1995f1a7bb4d61b73bb631fc54b80a7454dc41c9ac61de14b03a2fb0a4135f0f"
+    },
+    "player-followup-target.sha256": {
+      "source_commit": "8083fe324521ac208d9304dfb096b75d5a71134e",
+      "source_path": "scripts/player-followup-target.sha256",
+      "release_run": 37213226425,
+      "sha256": "0292ba2bfd946bb1afc58858565a412808c1b2f60a1e0555662cff857a0e0521"
+    },
+    "player-news-filter-target.sha256": {
+      "source_commit": "8fa0395c07dcc78a2b6c4909190928d11c60678d",
+      "source_path": "scripts/player-news-filter-target.sha256",
+      "release_run": 37232042917,
+      "sha256": "04554064f8c2f23325e9847ee8f20d907b6fbaf6372eda30665e7dc2e0ce3424"
+    },
+    "newsroom-release.json": {
+      "source_commit": "05eca254c7ad3d071f021925bf94de5fd8e1342b",
+      "source_path": "scripts/newsroom-release.json",
+      "release_run": 37237964444,
+      "sha256": "68df6b0ca2c8066d8eb47acd0babb48ec047393322b79e0c4328a8c3c860a0b8"
+    },
+    "player-story-release.json": {
+      "source_commit": "10b70edf246f2c1acd7a05682d4cbd88f9f63cf8",
+      "source_path": "scripts/player-story-release.json",
+      "release_run": 37241759848,
+      "sha256": "35f991dff4f8940c6a3066338be735eb27d8196a1665309d086ceaa98759d7cf"
+    },
+    "mobile-newsroom-release.json": {
+      "source_commit": "dd6b775ee2f80365c3b55b123ae8f418c9a9eea1",
+      "source_path": "scripts/mobile-newsroom-release.json",
+      "release_run": 37243206615,
+      "sha256": "c4872b705cf16b58469f4abb5fd123648508b902e9998b8d11138e80a044a5c4"
+    },
+    "monitor-robot.json": {
+      "source_commit": "bf8d586af88f370732a2aa0c424c4f799c9106c9",
+      "source_path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/robot.php",
+      "release_run": 37144418125,
+      "kind": "source-file-and-successful-selective-release",
+      "source_git_blob": "4eb8ac5fd62ea1c973f7bfa355d3599962570442",
+      "sha256": "9019846af27e0e7966202fd11d1130b1887133230cd2e5deb07237add0d70a8b"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+name: Fotballrobot production baseline
+on:
+  push:
+    branches: [main, 'reconcile/fotballrobot-production-20261006']
+    paths:
+      - 'wordpress/wp-content/plugins/radio-rubben-fotballrobot/**'
+      - 'docs/fotballrobot/**'
+      - 'scripts/*fotballrobot*.py'
+      - 'scripts/review-desk-visual.cjs'
+      - '.github/workflows/fotballrobot-baseline.yml'
+  pull_request:
+    paths:
+      - 'wordpress/wp-content/plugins/radio-rubben-fotballrobot/**'
+      - 'docs/fotballrobot/**'
+      - 'scripts/*fotballrobot*.py'
+      - 'scripts/review-desk-visual.cjs'
+      - '.github/workflows/fotballrobot-baseline.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Exact runtime and immutable release receipts
+        run: |
+          python3 scripts/verify-fotballrobot-runtime.py
+          python3 scripts/test-fotballrobot-runtime.py
+      - name: PHP syntax and isolated regression suites
+        run: python3 scripts/test-fotballrobot.py
+      - name: Mobile reading and approval states
+        env:
+          RRFR_RENDER_DIR: ${{ runner.temp }}/rrfr-render
+          RRFR_PLAYWRIGHT: ${{ runner.temp }}/rrfr-ui/node_modules/playwright
+          CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          set -euo pipefail
+          php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/review-desk.php
+          npm install --prefix "$RUNNER_TEMP/rrfr-ui" --no-audit --no-fund playwright@1.62.1
+          node scripts/review-desk-visual.cjs > "$RUNNER_TEMP/rrfr-visual.log"
+          tail -n 1 "$RUNNER_TEMP/rrfr-visual.log"
+      - name: Whitespace check
+        # Preserve exact captured upstream HTML fixture bytes, including whitespace.
+        run: git diff --check HEAD^ HEAD -- . ':(exclude)wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/fixtures/**'
