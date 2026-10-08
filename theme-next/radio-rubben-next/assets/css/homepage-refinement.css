@@ -45,9 +45,9 @@
 .rr-news-first .rr-weather-place{min-height:44px}
 .rr-news-first .rr-weather-location{margin-block:8px;font-size:12px}
 .rr-news-first .rr-weather-status{font-size:11px;margin-block:8px}
-.rr-news-first .rr-home-sidebar .rr-weather-now{gap:12px;padding-block:8px}
-.rr-news-first .rr-home-sidebar .rr-weather-icon{width:48px;height:48px}
-.rr-news-first .rr-home-sidebar .rr-weather-temp{font-size:38px;line-height:1.1}
+.rr-news-first .rr-home-sidebar .rr-weather .rr-weather-now{gap:12px;padding-block:8px}
+.rr-news-first .rr-home-sidebar .rr-weather .rr-weather-now>.rr-weather-icon{width:48px;height:48px}
+.rr-news-first .rr-home-sidebar .rr-weather .rr-weather-temp{font-size:38px;line-height:1.1}
 .rr-news-first .rr-weather-now p{margin:4px 0;font-size:13px}
 .rr-news-first .rr-weather-now small,.rr-news-first .rr-weather-hourly,.rr-news-first .rr-weather-extended{display:none}
 .rr-news-first .rr-weather-credit{margin-top:10px;padding-top:10px;font-size:10px;line-height:1.5}
