@@ -23,3 +23,13 @@ Faktisk resultat dokumenteres separat etter fullført utrulling.
 
 Første preflight stoppet før kodeendring fordi domenet uten www normalt gir 301.
 Videresendingen er kontrollert; helsesjekken bruker nå kanonisk www-adresse.
+
+## Faktisk resultat
+
+Utrullingen er fullført. WordPress lastet policy 1.0.0, kanonisk hjemmeside
+svarte HTTP 200, og en ny uavhengig audit bekreftet alle 40 etter-hasher.
+Bare `includes/publication-gate.php` ble erstattet. Privat backup finnes på
+`~/.radiorubben-deploy/backups/ai-policy-aa6232316967`.
+Eksakt tidspunkt og kildeidentitet: `ai-policy-production-receipt.json`.
+Ingen artikler er opprettet, endret eller publisert som del av denne utrullingen.
+Ingen innlogget redaksjonell ende-til-ende-test er gjennomført i produksjon.
