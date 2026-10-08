@@ -16,13 +16,19 @@ function rrmp_files(int $id): array {
     ksort($files);return $files;
 }
 function rrmp_get(int $id): array { $r=get_post_meta($id,RRMP_META,true);return is_array($r)?$r:[]; }
+function rrmp_presentation(int $id):array {
+    $values=['caption'=>(string)get_post_field('post_excerpt',$id),'alt'=>(string)get_post_meta($id,'_wp_attachment_image_alt',true),
+        'title'=>(string)get_post_field('post_title',$id),'description'=>(string)get_post_field('post_content',$id)];
+    return array_map(static fn($value)=>hash('sha256',$value),$values);
+}
+function rrmp_valid(int $id):bool {return rrmp_current(rrmp_get($id),rrmp_files($id),rrmp_presentation($id));}
 function rrmp_can_review(int $id): bool {return current_user_can('edit_post',$id)&&current_user_can('publish_posts');}
 function rrmp_save(int $id,array $input): void {
     if(!rrmp_can_review($id)||!wp_verify_nonce((string)($input['nonce']??''),'rrmp-'.$id))throw new RuntimeException('Du mangler tilgang eller må laste siden på nytt.');
     $before=rrmp_get($id);
     if((int)($input['revision']??-1)!==(int)($before['revision']??0))throw new RuntimeException('Bildets opplysninger er endret. Last siden på nytt.');
     $clean=[];foreach(['origin','generator','producedOn','reference','description','correction']as$key)$clean[$key]=sanitize_text_field(is_string($input[$key]??null)?$input[$key]:'');
-    $record=rrmp_record($clean,rrmp_files($id),$before,get_current_user_id(),($input['approve']??'')==='1');
+    $record=rrmp_record($clean,rrmp_files($id),$before,get_current_user_id(),($input['approve']??'')==='1',rrmp_presentation($id));
     $saved=$before?update_post_meta($id,RRMP_META,$record,$before):add_post_meta($id,RRMP_META,$record,true);
     if(!$saved)throw new RuntimeException('Opplysningene kunne ikke lagres. Last siden på nytt.');
 }
@@ -34,7 +40,7 @@ add_filter('attachment_fields_to_edit',function(array $fields,$post):array{
     foreach(['unknown'=>'Uavklart','photo'=>'Fotografi uten generativ AI','illustration'=>'Illustrasjon uten generativ AI','ai_generated'=>'AI-generert illustrasjon','ai_edited'=>'AI-redigert bilde']as$value=>$label)$html.='<option value="'.$value.'"'.selected($r['origin']??'unknown',$value,false).'>'.esc_html($label).'</option>';
     $html.='</select></label></p>';
     foreach(['generator'=>'Generator/modell (skriv Ukjent når dette er avklart som ukjent)','producedOn'=>'Produksjonsdato','reference'=>'Kilde og rettighetsgrunnlag','description'=>'Hva er AI-redigert?','correction'=>'Begrunnelse for rettelse']as$key=>$label)$html.='<p><label>'.esc_html($label).'<input class="widefat" type="'.($key==='producedOn'?'date':'text').'" name="'.esc_attr($name.'['.$key.']').'" value="'.esc_attr($r[$key]??'').'"></label></p>';
-    try{$ready=rrmp_current($r,rrmp_files($post->ID));}catch(Throwable){$ready=false;}
+    try{$ready=rrmp_valid($post->ID);}catch(Throwable){$ready=false;}
     $html.='<p>'.($ready?'Gjeldende bilde er godkjent.':'Bildet trenger avklaring eller ny godkjenning.').'</p><label><input type="checkbox" name="'.esc_attr($name.'[approve]').'" value="1"> Jeg har kontrollert bildet, opphavet, rettighetene og publikumsmerkingen og godkjenner denne versjonen</label><p>AI-merking følger bildet automatisk. Endret fil eller metadata krever ny godkjenning.</p>';
     $fields['rrmp']=['label'=>'Radio Rubben – bildeopphav','input'=>'html','html'=>$html];return $fields;
 },10,2);
@@ -45,7 +51,7 @@ add_filter('attachment_fields_to_save',function(array $post,array $attachment):a
 /** Public consumers get a read-only contract; approval identities/history remain private. */
 add_action('rest_api_init',function():void{
     register_rest_field('attachment','rr_media_policy',['get_callback'=>function(array $post):array{
-        $r=rrmp_get((int)$post['id']);try{$valid=rrmp_current($r,rrmp_files((int)$post['id']));}catch(Throwable){$valid=false;}
+        $r=rrmp_get((int)$post['id']);try{$valid=rrmp_valid((int)$post['id']);}catch(Throwable){$valid=false;}
         return ['version'=>RRMP_VERSION,'origin'=>$r['origin']??'unknown','label'=>rrmp_public_label($r),'generator'=>$r['generator']??'','producedOn'=>$r['producedOn']??'','approved'=>$valid,'files'=>$r['files']??[]];
     },'schema'=>['type'=>'object','context'=>['view','edit'],'readonly'=>true]]);
 });
@@ -83,7 +89,7 @@ function rrmp_post_error(int $id,string $content,int $featured): ?string {
     // Gallery images are resolved without executing arbitrary shortcodes.
     if(preg_match_all('/\[gallery\b[^\]]*\bids=["\x27]([0-9, ]+)["\x27][^\]]*\]/i',$content,$matches))foreach($matches[1]as$csv)foreach(explode(',',$csv)as$image)$ids[]=(int)$image;
     if(preg_match('/\[gallery\b/i',$content)&&!$matches[1])return 'Velg eksplisitte bilder i galleriet før publisering.';
-    foreach(array_unique($ids)as$image){try{if(rrmp_current(rrmp_get($image),rrmp_files($image)))continue;}catch(Throwable){}return 'Bilde '.$image.' mangler avklart opphav eller gjeldende menneskelig godkjenning i mediebiblioteket.';}
+    foreach(array_unique($ids)as$image){try{if(rrmp_valid($image))continue;}catch(Throwable){}return 'Bilde '.$image.' mangler avklart opphav eller gjeldende menneskelig godkjenning i mediebiblioteket.';}
     return null;
 }
 function rrmp_rest_gate($prepared,$request){
@@ -143,7 +149,7 @@ add_filter('the_content_feed','rrmp_render_content',30);
 /** Late thumbnail assignments by classic editor, REST, cron or integrations. */
 function rrmp_thumbnail_gate($check,$objectId,$key,$value){
     if($key!=='_thumbnail_id'||(int)$value<=0||!in_array(get_post_type($objectId),['post','page'],true)||!in_array(get_post_status($objectId),['publish','future','private'],true))return $check;
-    try{if(rrmp_current(rrmp_get((int)$value),rrmp_files((int)$value)))return $check;}catch(Throwable){}
+    try{if(rrmp_valid((int)$value))return $check;}catch(Throwable){}
     return false;
 }
 add_filter('add_post_metadata','rrmp_thumbnail_gate',20,4);

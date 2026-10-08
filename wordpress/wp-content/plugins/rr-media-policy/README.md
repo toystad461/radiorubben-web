@@ -9,14 +9,14 @@ Den følger identisk AI-policy 1.0.0 fra policyarbeidet.
 I Mediebiblioteket → Rediger bilde → Radio Rubben – bildeopphav oppgir redaktøren
 opphav, generator/modell (eventuelt uttrykkelig Ukjent), produksjonsdato,
 kilde/rettighetsgrunnlag og hva som eventuelt er AI-redigert. Redaktøren kontrollerer
-bildet og godkjenner. Ukjent opphav kan lagres, men ikke godkjennes.
+bildet og godkjenner. Lagre endringer i bildetekst/alternativ tekst først, og godkjenn deretter opphavet. Ukjent opphav kan lagres, men ikke godkjennes.
 
 AI-genererte bilder får «AI-generert illustrasjon». Delvis generativt redigerte
 bilder får «AI-redigert bilde». Fotos og vanlige illustrasjoner får ingen falsk
 AI-påstand. Klassifisering er en menneskelig vurdering, ingen automatisk detektor.
 
 Godkjenningen binder alle tilgjengelige original-/variantfiler med SHA-256,
-metadata, policyversjon, redaktør-ID og tidspunkt. Endringer krever ny godkjenning;
+metadata, bildetekst, alternativ tekst, policyversjon, redaktør-ID og tidspunkt. Endringer krever ny godkjenning;
 historikk og begrunnelse bevares. Rettelse fra AI til annet opphav krever særskilt
 begrunnelse. Metadata i et ugodkjent mellomstadium kan ikke fjerne kjent AI-merking.
 

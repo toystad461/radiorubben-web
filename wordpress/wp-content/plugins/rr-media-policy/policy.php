@@ -9,12 +9,12 @@ function rrmp_fingerprint(array $record): string {
     unset($record['approval'], $record['history']);
     return hash('sha256', json_encode($record, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));
 }
-function rrmp_record(array $input, array $files, array $previous, int $actor, bool $approve): array {
+function rrmp_record(array $input, array $files, array $previous, int $actor, bool $approve, array $presentation=[]): array {
     $origin=(string)($input['origin']??'unknown');
     if(!in_array($origin,['unknown','photo','illustration','ai_generated','ai_edited'],true))throw new InvalidArgumentException('Velg et gyldig bildeopphav.');
     $r=['version'=>RRMP_VERSION,'origin'=>$origin,'generator'=>trim((string)($input['generator']??'')),
         'producedOn'=>trim((string)($input['producedOn']??'')),'reference'=>trim((string)($input['reference']??'')),
-        'description'=>trim((string)($input['description']??'')),'files'=>$files,
+        'description'=>trim((string)($input['description']??'')),'files'=>$files,'presentation'=>$presentation,
         'previousLabel'=>$previous['previousLabel']??rrmp_label($previous['origin']??''),
         'revision'=>(int)($previous['revision']??0)+1,'approval'=>null];
     foreach(['generator','reference','description']as$key)if(strlen($r[$key])>2000)throw new InvalidArgumentException('Metadatafeltet er for langt.');
@@ -32,9 +32,9 @@ function rrmp_record(array $input, array $files, array $previous, int $actor, bo
     if($previous){unset($previous['history']);$r['history'][]=['previous'=>$previous,'actor'=>$actor,'at'=>gmdate('c'),'reason'=>trim((string)($input['correction']??''))];}
     return $r;
 }
-function rrmp_current(array $record,array $files): bool {
+function rrmp_current(array $record,array $files,array $presentation=[]): bool {
     return ($record['version']??'')===RRMP_VERSION&&($record['origin']??'unknown')!=='unknown'
-        &&$files&&($record['files']??null)===$files&&($record['approval']['actor']??0)>0
+        &&$files&&($record['files']??null)===$files&&($record['presentation']??null)===$presentation&&($record['approval']['actor']??0)>0
         &&!empty($record['approval']['at'])&&hash_equals(rrmp_fingerprint($record),(string)($record['approval']['hash']??''));
 }
 function rrmp_public_label(array $record): string {
