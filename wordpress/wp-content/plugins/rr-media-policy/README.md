@@ -1,7 +1,12 @@
 # Radio Rubben – bildeopphav og AI-merking
 
-Valgfri separat WordPress-utvidelse, versjon 1.0.0. Ikke installert eller aktivert
-av denne PR-en. Basert på ren main, uten avhengighet til åpne theme-/robotgrener.
+Valgfri separat WordPress-utvidelse, versjon 1.0.0. Installert inaktivt
+08.10.2026 fra `341f72045aa8a9df7bee34e3a3bdbcc742a9cdba` etter eksplisitt
+produksjonsbestilling. Alle tre kjørefiler er kontrollert med SHA-256 og PHP-lint.
+Eksisterende utvidelser er bevart. Aktivering avventer dokumentert opphav og
+redaksjonell vurdering av standardbilder, blant annet bilde 1079. Virkelig
+theme/CDN-visning er derfor ennå ikke verifisert. Basert på ren main, uten
+avhengighet til åpne theme-/robotgrener.
 Den følger identisk AI-policy 1.0.0 fra policyarbeidet.
 
 ## Bruk
