@@ -6,6 +6,8 @@ on:
       - 'wordpress/wp-content/plugins/radio-rubben-fotballrobot/**'
       - 'docs/fotballrobot/**'
       - 'scripts/*fotballrobot*.py'
+      - 'scripts/*policy*.php'
+      - 'scripts/deploy-ai-policy-remote.sh'
       - 'scripts/review-desk-visual.cjs'
       - '.github/workflows/fotballrobot-baseline.yml'
   pull_request:
@@ -13,6 +15,8 @@ on:
       - 'wordpress/wp-content/plugins/radio-rubben-fotballrobot/**'
       - 'docs/fotballrobot/**'
       - 'scripts/*fotballrobot*.py'
+      - 'scripts/*policy*.php'
+      - 'scripts/deploy-ai-policy-remote.sh'
       - 'scripts/review-desk-visual.cjs'
       - '.github/workflows/fotballrobot-baseline.yml'
 permissions:
@@ -46,7 +50,10 @@ jobs:
             python3 scripts/test-fotballrobot-runtime.py
           fi
       - name: PHP syntax and isolated regression suites
-        run: python3 scripts/test-fotballrobot.py
+        run: |
+          python3 scripts/test-fotballrobot.py
+          php scripts/test-fotballrobot-policy-deploy.php
+          bash -n scripts/deploy-ai-policy-remote.sh
       - name: Mobile reading and approval states
         env:
           RRFR_RENDER_DIR: ${{ runner.temp }}/rrfr-render
