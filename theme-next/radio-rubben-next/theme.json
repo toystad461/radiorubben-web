@@ -154,7 +154,8 @@
       "motion": {
         "duration": "160ms"
       }
-    }
+    },
+    "useRootPaddingAwareAlignments": true
   },
   "styles": {
     "color": {
@@ -190,7 +191,56 @@
           "lineHeight": "1.2"
         }
       }
+    },
+    "spacing": {
+      "padding": {
+        "left": "clamp(1rem, 4vw, 2rem)",
+        "right": "clamp(1rem, 4vw, 2rem)"
+      },
+      "blockGap": "var:preset|spacing|40"
     }
   },
-  "title": "Radio Rubben"
+  "title": "Radio Rubben",
+  "customTemplates": [
+    {
+      "name": "content",
+      "title": "RR · Standard innhold",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "application",
+      "title": "RR · Bred funksjonsside",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "editorial",
+      "title": "RR · Redaksjonell",
+      "postTypes": [
+        "page"
+      ]
+    },
+    {
+      "name": "football",
+      "title": "RR · Fotball / live",
+      "postTypes": [
+        "page"
+      ]
+    }
+  ],
+  "templateParts": [
+    {
+      "name": "header",
+      "title": "Radio Rubben – topp og meny",
+      "area": "header"
+    },
+    {
+      "name": "footer",
+      "title": "Radio Rubben – bunn",
+      "area": "footer"
+    }
+  ]
 }

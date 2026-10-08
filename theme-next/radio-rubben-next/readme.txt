@@ -3,12 +3,12 @@ Contributors: radiorubben
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.2
-Version: 2.0.0-rc.5
+Version: 3.0.0-alpha.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
-Hybrid WordPress presentation theme based on Radio Rubben One 1.3.6.
+Block theme staging candidate with native templates and retained PHP application compatibility.
 Copyright (C) 2026 Radio Rubben AS.
 This theme is distributed under the GNU General Public License v2 or later.
 
@@ -18,7 +18,7 @@ must be separated and tested before switching the live site. This package does
 not contain or start those engines. No production files have been changed.
 
 == Installation ==
-Upload radio-rubben-next-2.0.0-rc.5.zip via Appearance > Themes on staging.
+Upload radio-rubben-next-3.0.0-alpha.1.zip via Appearance > Themes on staging.
 Optional separate plugin: rr-editorial-contract-1.0.0-rc.1.zip.
 No activation-time changes to pages, permalinks, menus or category IDs.
 
@@ -36,8 +36,9 @@ No external font or analytics asset is bundled.
 Screenshot: local QA rendering with illustrative fixture data, Radio Rubben AS.
 
 == Changelog ==
-= 2.0.0-rc.5 =
-* Opt-in football composition for the site-functions match/vote and player adapters.
+= 3.0.0-alpha.1 =
+* Native block templates, editable header/footer, existing navigation and editor shortcuts.
+* Homepage preserved in a temporary compatibility block; no production activation.
 
 = 2.0.0-rc.2 =
 Presentation-only architecture; theme.json v3 tokens; PHP template parts;

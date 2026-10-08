@@ -4,7 +4,7 @@ on:
     branches: [main]
     paths: ['theme-next/**', '.github/workflows/theme-next.yml']
   push:
-    branches: [main, 'theme/**']
+    branches: [main, 'theme/**', 'feature/radio-rubben-block-theme']
     paths: ['theme-next/**', '.github/workflows/theme-next.yml']
   workflow_dispatch:
 permissions:
@@ -24,6 +24,11 @@ jobs:
           python3 --version
       - name: Kontroller kildekode og presentasjonsgrense
         run: python3 theme-next/scripts/check.py
+      - name: Test bevaring av forside og kampgrenser
+        run: |
+          php theme-next/tests/home-player-hook.php
+          php theme-next/tests/match-day-embed.php
+          php theme-next/tests/home-universes.php
       - name: Test lesekontroller uten nettverk
         run: python3 -m unittest discover -s theme-next/tests -p 'test_read_only_probes.py'
       - name: Bygg installasjonspakker og SHA-256

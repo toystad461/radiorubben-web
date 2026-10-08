@@ -1,0 +1,19 @@
+<!-- wp:template-part {"slug":"header","tagName":"header"} /-->
+<!-- wp:group {"tagName":"main","anchor":"content","className":"rr-block-main rr-block-main--standard","layout":{"type":"constrained"}} -->
+<main id="content" class="wp-block-group rr-block-main rr-block-main--standard">
+<!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Aktuelt fra Radio Rubben</h1><!-- /wp:heading -->
+<!-- wp:query {"query":{"inherit":true}} -->
+<div class="wp-block-query"><!-- wp:post-template -->
+<!-- wp:group {"className":"is-style-rr-panel","layout":{"type":"constrained"}} --><div class="wp-block-group is-style-rr-panel">
+<!-- wp:post-featured-image {"isLink":true,"aspectRatio":"16/9"} /-->
+<!-- wp:post-title {"isLink":true,"level":2} /-->
+<!-- wp:post-date /--><!-- wp:post-excerpt /-->
+</div><!-- /wp:group -->
+<!-- /wp:post-template -->
+<!-- wp:query-pagination {"layout":{"type":"flex","justifyContent":"space-between"}} --><!-- wp:query-pagination-previous /--><!-- wp:query-pagination-numbers /--><!-- wp:query-pagination-next /--><!-- /wp:query-pagination -->
+<!-- wp:query-no-results --><!-- wp:paragraph --><p>Ingen innlegg å vise ennå.</p><!-- /wp:paragraph --><!-- /wp:query-no-results -->
+</div><!-- /wp:query -->
+</main>
+<!-- /wp:group -->
+<!-- wp:template-part {"slug":"footer","tagName":"footer"} /-->
+<!-- wp:radio-rubben/player /-->

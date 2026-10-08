@@ -31,7 +31,7 @@ for package in packages:
         assert not file.is_symlink(), str(file)
         if file.is_file():
             assert file.name not in ['wp-config.php', '.env', '.DS_Store'], str(file)
-            assert file.suffix.lower() in ['.php', '.css', '.js', '.json', '.md', '.txt', '.png', '.webp', '.jpg', '.svg'], str(file)
+            assert file.suffix.lower() in ['.php', '.html', '.css', '.js', '.json', '.md', '.txt', '.png', '.webp', '.jpg', '.svg'], str(file)
             if file.suffix.lower() == '.svg':
                 # Bundled logo outlines only; no scripts, external resources or embedded markup.
                 svg = ET.parse(file).getroot()
