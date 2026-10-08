@@ -1,0 +1,46 @@
+name: Media policy
+on:
+  pull_request:
+    paths: ['wordpress/wp-content/plugins/rr-media-policy/**', '.github/workflows/media-policy.yml']
+  push:
+    branches: [main, 'feat/ai-image-provenance']
+    paths: ['wordpress/wp-content/plugins/rr-media-policy/**', '.github/workflows/media-policy.yml']
+permissions:
+  contents: read
+jobs:
+  wordpress:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: fixture-only
+          MYSQL_DATABASE: wordpress
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mysqli, dom, gd
+          coverage: none
+          tools: wp-cli:2.12.0
+      - name: Test against the production WordPress version in an isolated database
+        run: |
+          set -euo pipefail
+          find wordpress/wp-content/plugins/rr-media-policy -name '*.php' -exec php -l {} \;
+          mkdir "$RUNNER_TEMP/media-policy-wp"
+          cd "$RUNNER_TEMP/media-policy-wp"
+          wp core download --version=7.1.3 --locale=en_US
+          wp config create --dbname=wordpress --dbuser=root --dbpass=fixture-only --dbhost=127.0.0.1:3306
+          wp config set DISABLE_WP_CRON true --raw
+          wp core install --url=http://rr-media-policy.test --title='Disposable policy test' --admin_user=fixture-admin --admin_password=fixture-only-local --admin_email=fixture@example.invalid --skip-email
+          cp -R "$GITHUB_WORKSPACE/wordpress/wp-content/plugins/rr-media-policy" wp-content/plugins/
+          wp plugin activate rr-media-policy
+          wp eval-file wp-content/plugins/rr-media-policy/tests/wordpress.php
