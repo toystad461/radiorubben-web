@@ -28,10 +28,12 @@ trap 'rmdir "$state/lock"' EXIT
 php -l "$stage/new/$front"
 # Compare the freshly observed live source to the reviewed baseline. CRLF only
 # is normalized for comparison; backup and recorded server hashes keep raw bytes.
-sed 's/\r$//' "$theme/$front" > "$stage/live-front-lf.php"
-cmp --silent "$stage/live-front-lf.php" "$stage/baseline-front.php" || { echo 'Live entry point differs from reviewed baseline; no changes'; exit 4; }
 sha256sum "$theme/$front" > "$stage/live-before.sha256"
 cat "$stage/live-before.sha256"
+normalize() { php -r 'echo rtrim(str_replace("\r\n", "\n", file_get_contents($argv[1])), "\n") . "\n";' "$1"; }
+normalize "$theme/$front" > "$stage/live-front-lf.php"
+normalize "$stage/baseline-front.php" > "$stage/baseline-front-lf.php"
+cmp --silent "$stage/live-front-lf.php" "$stage/baseline-front-lf.php" || { echo 'Live entry point differs from reviewed baseline; no changes'; diff -u "$stage/baseline-front-lf.php" "$stage/live-front-lf.php" || true; exit 4; }
 [[ ! -L "$state/backups" ]]
 mkdir -p "$state/backups"
 mkdir "$backup"
