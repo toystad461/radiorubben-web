@@ -36,6 +36,7 @@ rr_test(rr_publish($post,['content'=>'[gallery]'])->get_status()===409,'implicit
 rr_test(rr_publish($post,['content'=>'[gallery ids="'.$image.'"]'])->get_status()===200,'explicit approved gallery passes');
 file_put_contents($variant,$png.'changed');clearstatcache();
 rr_test(!rrmp_valid($image),'changed derived file invalidates approval');
+rr_test(!str_contains(get_the_post_thumbnail($post),'<img')&&str_contains(get_the_post_thumbnail($post),'venter på ny kontroll'),'changed live image is withheld until reviewed');
 rr_test(rr_publish($post)->get_status()===409,'stale image blocks update through real REST');
 $classic=wp_insert_post(['post_title'=>'Classic invalid image','post_content'=>$inline,'post_status'=>'publish']);
 rr_test(get_post_status($classic)==='draft','classic publish with stale image remains draft');

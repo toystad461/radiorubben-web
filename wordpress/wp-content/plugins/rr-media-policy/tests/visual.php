@@ -1,10 +1,17 @@
 <?php
 // Visual fixture only. Real WordPress behavior is covered separately by wordpress.php.
 function add_filter(...$args){} function add_action(...$args){}
-function get_post_meta(...$args){return ['origin'=>'ai_generated'];}
+function get_post_meta($id,$key,...$args){return $key==='_rr_media_policy'?$GLOBALS['fixture_record']:'';}
+function get_post_field(...$args){return '';}
+function wp_attachment_is_image(...$args){return true;}
+function wp_get_upload_dir(){return ['basedir'=>__DIR__];}
+function get_attached_file(...$args){return __FILE__;}
+function wp_get_attachment_metadata(...$args){return [];}
+
 function esc_attr($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}
 function esc_html($s){return esc_attr($s);}
 require dirname(__DIR__).'/policy.php';require dirname(__DIR__).'/wordpress.php';
+$GLOBALS['fixture_record']=rrmp_record(['origin'=>'ai_generated','generator'=>'Fixture','producedOn'=>gmdate('Y-m-d'),'reference'=>'Fixture'],rrmp_files(1),[],1,true,rrmp_presentation(1));
 $root=dirname(__DIR__,5);
 $svg='<svg xmlns="http://www.w3.org/2000/svg" width="640" height="960"><rect width="640" height="960" fill="#497f88"/><circle cx="320" cy="300" r="140" fill="#efc375"/><path d="M0 900L300 500L640 900Z" fill="#153747"/></svg>';
 $img=rrmp_wrap('<img src="data:image/svg+xml;base64,'.base64_encode($svg).'" width="640" height="960" alt="Syntetisk testfigur">',1);

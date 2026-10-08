@@ -40,7 +40,7 @@ begrunnelse. Metadata i et ugodkjent mellomstadium kan ikke fjerne kjent AI-merk
 Ingen eksisterende bilder klassifiseres ved gjetning. Ingen vedlegg, innlegg eller
 innstillinger endres ved aktivering. Før aktivering må redaksjonen klassifisere
 bilder som brukes ved neste publisering, særlig Studios standardbilde ID 1079.
-Eksisterende artikler blir ikke masseoppdatert, men senere publiseringsforsøk med
+Eksisterende artikler blir ikke masseoppdatert. Registrerte bilder som blir ugyldige vises som «Bildet venter på ny kontroll» i støttet bildevisning; ugodkjent bildetekst holdes tilbake. Senere publiseringsforsøk med
 ukjent bildeopphav blir sperret. Manuelt lagrede, aktive artikler blir ikke trukket
 tilbake av en bakgrunnsjobb ved filendring.
 

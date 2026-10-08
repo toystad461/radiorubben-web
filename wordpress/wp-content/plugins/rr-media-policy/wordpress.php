@@ -117,11 +117,16 @@ add_filter('wp_insert_post_data',function(array $data,array $postarr):array{
 },20,2);
 add_action('admin_notices',function():void{$key='rrmp_notice_'.get_current_user_id();$error=get_transient($key);if($error){delete_transient($key);echo '<div class="notice notice-error"><p>'.esc_html($error).' Saken er beholdt som utkast.</p></div>';}});
 function rrmp_wrap(string $html,int $id): string {
-    $label=rrmp_public_label(rrmp_get($id));if($label==='')return $html;
+    $record=rrmp_get($id);$label=rrmp_public_label($record);
+    if($record){
+        try{$current=rrmp_valid($id);}catch(Throwable){$current=false;}
+        if(!$current)return '<span class="rr-media-pending" role="note">'.esc_html(($label?$label.' — ':'').'Bildet venter på ny kontroll.').'</span>';
+    }
+    if($label==='')return $html;
     return '<span class="rr-ai-image" data-rr-media-label="'.esc_attr($label).'" style="display:inline-block;position:relative;width:100%;height:100%;max-width:100%;vertical-align:middle">'.$html.'<span class="rr-ai-image-label" style="position:absolute;bottom:0;left:0;max-width:100%;box-sizing:border-box;background:#171717;color:#fff;padding:4px 7px;font:600 12px/1.4 sans-serif;white-space:normal">'.esc_html($label).'</span></span>';
 }
 add_filter('wp_get_attachment_image',function($html,$id){return rrmp_wrap($html,(int)$id);},99,2);
-add_filter('wp_get_attachment_caption',function($caption,$id){$label=rrmp_public_label(rrmp_get((int)$id));return $label&&!str_contains($caption,$label)?$label.($caption?' — '.$caption:''):$caption;},20,2);
+add_filter('wp_get_attachment_caption',function($caption,$id){$record=rrmp_get((int)$id);$label=rrmp_public_label($record);if($record){try{$valid=rrmp_valid((int)$id);}catch(Throwable){$valid=false;}if(!$valid)return $label;}return $label&&!str_contains($caption,$label)?$label.($caption?' — '.$caption:''):$caption;},20,2);
 function rrmp_render_content(string $html): string {
     if(!str_contains(strtolower($html),'<img'))return $html;
     [$dom,$body]=rrmp_dom($html);if(!$body)return $html;
