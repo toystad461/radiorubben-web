@@ -140,6 +140,38 @@ if (!$rr_archive_public && !empty($rr_state['opened']) && $rr_state['period']===
                 $description.=' · Stemmevinner er trukket, men navnet mangler i registreringen';
             }
         }
+        // One-match exception requested for 26 September: retain the two announced winners.
+        if ($rr_match_id===8984413 && ($rr_state['session']??'')==='fe10c131dd40471d907ecc04f2bdebda') {
+            $three_key='rr_poll_three_prizes_8984413_'.$session;
+            $three=get_option($three_key,false);
+            if ($three===false) {
+                $unique=[];
+                foreach ($entrants as $hash) {
+                    $id=(int)get_option($rr_key.'_entrant_'.$session.'_'.$hash,0);
+                    if ($id && get_userdata($id)) $unique[$id]=$id;
+                }
+                $fixed=[26923,28361];
+                $pool=array_values(array_diff($unique,$fixed));
+                if (isset($unique[$fixed[0]],$unique[$fixed[1]]) && $pool) {
+                    $candidate=['match_id'=>8984413,'session'=>$session,'winner_ids'=>[$fixed[0],$fixed[1],$pool[random_int(0,count($pool)-1)]],
+                        'drawn_at'=>time(),'eligible_count'=>count($unique),'additional_pool_count'=>count($pool)];
+                    add_option($three_key,$candidate,'',false);
+                    $three=get_option($three_key,false);
+                }
+            }
+            if (is_array($three) && count(array_unique($three['winner_ids']??[]))===3) {
+                $names=[];
+                foreach ($three['winner_ids'] as $id) {
+                    $person=get_userdata((int)$id);
+                    $name=trim((string)get_user_meta($id,'first_name',true).' '.(string)get_user_meta($id,'last_name',true));
+                    $names[]=sanitize_text_field($name!==''?$name:($person?$person->display_name:'Navn mangler – konto '.(int)$id));
+                }
+                $description=preg_replace('/ · Trukket stemmevinner: .*$/u','',$description);
+                $description.=' · Premievinnere (3): '.implode(' / ',$names);
+            } else {
+                $description.=' · OBS: Tre premievinnere kunne ikke bekreftes. Kontroller trekningen.';
+            }
+        }
         $rr_state['poll_award']=[
             'source_id'=>'rr_poll_award_'.$rr_match_id.'_'.($rr_state['session']??''),
             'side'=>'home','type'=>'award','minute'=>'86','label'=>'Dagens Bremnesing',
@@ -197,6 +229,10 @@ $rr_archive_save_current=static function($state) use ($rr_match,$rr_nff,$rr_nff_
 if ($rr_admin && !$rr_archive_public && !empty($rr_state['finished'])) $rr_archive_save_current($rr_state);
 
 if (isset($_GET['rr_poll_api'])) {
+    // Every response is session-specific, including errors and unauthenticated responses.
+    nocache_headers();
+    header('Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0');
+    header('Vary: Cookie', false);
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = isset($_POST['action']) ? sanitize_key(wp_unslash($_POST['action'])) : '';
         if ($action === 'vote') {
@@ -286,6 +322,10 @@ if (isset($_GET['rr_poll_api'])) {
     $payload = ['ok'=>true,'match_events'=>$rr_api_admin_view?$rr_dashboard_events:$rr_public_events,'elapsed'=>$rr_seconds($rr_state,(int)$rr_api_now),'server_now_ms'=>(int)round($rr_api_now*1000),'session'=>$rr_state['session'],'clock_revision'=>$rr_state['clock_revision']??'','started'=>(int)$rr_state['started'],'period'=>$rr_state['period'],'running'=>$rr_state['running'],
         'finished'=>!empty($rr_state['finished']),'opened'=>$rr_state['opened'],'closed'=>(bool)$rr_closed($rr_state),'token'=>$rr_token,
         'event_credit'=>$rr_event_credit,'score'=>$rr_display_score,'eligible'=>$rr_eligible,'roster_ready'=>rr_poll_lineup_ready($rr_match),'candidates'=>rr_poll_allowed_players($rr_match,$rr_state),'entered'=>$rr_state['entered']??[],
+        'authenticated'=>is_user_logged_in(),
+        'account_name'=>is_user_logged_in() ? trim((string)get_user_meta(get_current_user_id(),'first_name',true)) : '',
+        'logout_nonce'=>is_user_logged_in() ? wp_create_nonce('rr_poll_logout') : '',
+        'login_nonce'=>wp_create_nonce('rr_poll_vipps_'.$rr_match_id),
         'voted'=>$rr_eligible && get_option($rr_key.'_vote_'.$rr_state['session'].'_'.$rr_voter,false)!==false];
     if ($rr_admin) {
         $payload['nff_source']=$rr_nff_source;
@@ -323,11 +363,12 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['rr_vipps_begin'])) {
     exit;
 }
 if ($rr_archive_public) { nocache_headers(); }
-get_header();
+if (empty($rr_embedded)) get_header();
 ?>
 <style>
 .rr-poll{max-width:760px;margin:30px auto;padding:0 18px 120px;color:#f5f6fa}
 .rr-poll *{box-sizing:border-box}.rr-poll .card{background:#171d29;border:1px solid #515d74;padding:24px;border-radius:18px;margin:18px 0}
+.rr-poll.rr-poll-embedded{max-width:100%;margin:0;padding:0}
 .rr-poll h1{font-size:clamp(30px,7vw,48px);line-height:1.1}.rr-poll .tag{color:#ffd479;font-weight:bold;letter-spacing:.08em}
 .rr-poll .muted{color:#c3cddd;line-height:1.6}.rr-poll .clock{font-size:48px;font-variant-numeric:tabular-nums;font-weight:800}
 .rr-poll button,.rr-poll select,.rr-poll input{font:inherit;min-height:48px;padding:12px;border-radius:9px;border:1px solid #76839c}
@@ -507,9 +548,9 @@ get_header();
 .rr-poll:not(.rr-speaker) .poll-public-layout.rr-site-match-clock .poll-team img{width:54px;height:54px;max-width:none}
 }
 </style>
-<section class="rr-poll<?php echo $rr_control ? ' rr-speaker' : ''; ?><?php echo ($rr_control && $rr_live_section) ? ' rr-speaker-live' : ''; ?>">
+<section class="rr-poll<?php echo !empty($rr_embedded) ? ' rr-poll-embedded' : ''; ?><?php echo $rr_control ? ' rr-speaker' : ''; ?><?php echo ($rr_control && $rr_live_section) ? ' rr-speaker-live' : ''; ?>">
 <p class="tag"><?php echo $rr_control ? 'Dagens Bremnesing · Kampstyring' : ($rr_archive_public?'Kamparkiv':'Dagens Kamp'); ?></p>
-<h1><?php echo $rr_control ? 'Speakerboard' : ($rr_archive_public?esc_html($rr_match['home'].' – '.$rr_match['away']):'Kampdag med Bremnes'); ?></h1>
+<?php if (empty($rr_embedded)): ?><h1><?php echo $rr_control ? 'Speakerboard' : ($rr_archive_public?esc_html($rr_match['home'].' – '.$rr_match['away']):'Kampdag med Bremnes'); ?></h1><?php endif; ?>
 <?php if ($rr_control && $rr_admin && $rr_match_error): ?>
 <p class="card" role="alert">Kampen ble ikke endret: <?php echo esc_html($rr_match_error); ?></p>
 <?php elseif ($rr_control && $rr_admin && isset($_GET['rr_match_saved'])): ?>
@@ -617,39 +658,29 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 .rr-poll #poll-clock{font-size:clamp(30px,8vw,56px);line-height:1.2;letter-spacing:.02em;overflow-wrap:anywhere}
 .rr-poll #poll-clock-note{font-size:14px;margin:10px 0 0}
 </style>
-<?php if (is_user_logged_in()): ?>
-<div class="poll-account">
-<p>Logget inn<?php $rr_first=trim((string)get_user_meta(get_current_user_id(),'first_name',true)); if ($rr_first!==''): ?> som <strong><?php echo esc_html($rr_first); ?></strong><?php endif; ?>.</p>
-<?php if ($rr_admin_vote && !$rr_control): ?><p class="muted">Administrator · stemming uten Vipps er aktivert for denne brukeren.</p><?php elseif (!$rr_eligible && !$rr_control): ?><p class="muted">Innloggingen er ikke bekreftet med Vipps. Logg inn med Vipps nedenfor for å stemme.</p><?php endif; ?>
+<div class="poll-account" id="poll-account" hidden>
+<p id="poll-account-status">Kontrollerer innloggingen …</p>
 <form method="post" action="<?php echo esc_url($rr_url); ?>">
 <?php wp_nonce_field('rr_poll_logout','rr_logout_nonce'); ?>
-<input type="hidden" name="rr_poll_logout" value="1"><button type="submit">Logg ut</button>
+<input type="hidden" name="rr_poll_logout" value="1"><button type="submit" disabled>Logg ut</button>
 </form>
 </div>
-<?php endif; ?>
 <p id="poll-status" role="status">Henter avstemningen …</p>
 <p class="muted poll-vote-deadline">Stenger ved <strong>85:00</strong> · pausen teller ikke med.</p>
 <?php if (!$rr_control): ?>
-<?php if (!$rr_eligible): ?>
-<div id="poll-login">
-<?php if (is_user_logged_in() && current_user_can('manage_options')): ?>
-<p class="poll-login-title">Koble Vipps til administratorbrukeren</p>
-<p class="poll-login-note">Du kan beholde administratorinnloggingen. Koble Vipps én gang til denne WordPress-brukeren, så kan samme konto brukes både til Speakerboard og stemming.</p>
-<p><a class="button" style="display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;border-radius:12px;background:#ff5b24;color:#111!important;font-weight:800;text-decoration:none" href="<?php echo esc_url(admin_url('profile.php')); ?>">Koble Vipps til denne brukeren</a></p>
-<?php else: ?>
-<p class="poll-login-title">Logg inn for å stemme</p><p class="poll-login-note">Bruk Vipps, og velg din favoritt.</p>
+<div id="poll-login" hidden>
+<p class="poll-login-title">Logg inn for å stemme</p>
+<p class="poll-login-note">Bruk en Vipps-tilknyttet konto, og velg din favoritt.</p>
 <?php if (is_callable(['VippsLogin','instance'])): ?>
 <form method="post" action="<?php echo esc_url($rr_url); ?>">
 <?php wp_nonce_field('rr_poll_vipps_'.$rr_match_id,'rr_vipps_nonce'); ?>
 <input type="hidden" name="rr_vipps_begin" value="1">
-<button type="submit" style="background:#ff5b24;color:#111;font-weight:700">Logg inn med Vipps</button>
+<button type="submit" disabled style="background:#ff5b24;color:#111;font-weight:700">Logg inn med Vipps</button>
 </form>
 <?php else: ?>
 <p>Vipps-innlogging er ikke tilgjengelig akkurat nå. Prøv igjen senere.</p>
 <?php endif; ?>
-<?php endif; ?>
 </div>
-<?php endif; ?>
 <form id="poll-form">
 <p class="muted poll-player-hint" id="poll-player-hint">Startspillere og innbyttere som har kommet på banen.</p>
 <label for="poll-player">Velg en spiller</label>
@@ -883,7 +914,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 </section>
 <?php endif; ?>
 <?php if ($rr_match_sponsor === ''): ?><section class="poll-partner" aria-label="Dagens kampsponsor"><h2>Dagens kampsponsor</h2><p>Ikke registrert for denne kampen ennå.</p></section><?php endif; ?>
-<div class="poll-coverage"><span>Utviklet for lokalfotballen – i samarbeid med Radio Rubben</span><img src="<?php echo esc_url(rr_one_logo_url()); ?>" alt="Radio Rubben" width="120"><small>Digitalt engasjement rundt kampen</small></div>
+<div class="poll-coverage"><span>Utviklet for lokalfotballen – i samarbeid med Radio Rubben</span><img src="<?php echo esc_url(rr_one_logo_url('compact')); ?>" alt="Radio Rubben" width="120"><small>Digitalt engasjement rundt kampen</small></div>
 </div>
 <?php endif; ?>
 <?php endif; // Live controls and voting are excluded from the immutable public report. ?>
@@ -922,7 +953,7 @@ const pad=n=>String(n).padStart(2,'0');
 let candidateSignature='';
 let eventSignature='';
 let state=null, busy=false, healthy=false;
-let clockAnchor=null, countdownAnchor=null, refreshSerial=0, refreshPending=false;
+let clockAnchor=null, countdownAnchor=null, refreshSerial=0, refreshPending=false, refreshController=null;
 function syncClock(next,at,force=false){
  const key=[next.session,next.clock_revision,next.period,next.started,next.running,next.finished].join('|');
  const serverMs=Number(next.server_now_ms);
@@ -943,11 +974,33 @@ function clockElapsed(){
  if(!clockAnchor)return Number(state?.elapsed)||0;
  return clockAnchor.elapsed+(state?.running?Math.max(0,(performance.now()-clockAnchor.at)/1000):0);
 }
-async function request(body){
- const response=await fetch(endpoint,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',...(body?{headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(body)}:{})});
- const data=await response.json();
- if(!response.ok||!data.ok)throw new Error(data.message||'Kunne ikke kontakte avstemningen.');
- return data;
+async function request(body,controller=new AbortController()){
+ const timer=setTimeout(()=>controller.abort(),body?30000:12000);
+ try{
+  // Use this document's origin, including www/HTTPS, for the WordPress cookie.
+  const url=new URL(endpoint);url.protocol=location.protocol;url.host=location.host;
+  if(!body)url.searchParams.set('_rr_check',Date.now()+'-'+refreshSerial);
+  const response=await fetch(url,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',signal:controller.signal,...(body?{headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(body)}:{})});
+  const data=await response.json();
+  if(!response.ok||!data.ok)throw new Error(data.message||'Kunne ikke kontakte avstemningen.');
+  return data;
+ }catch(error){
+  if(error.name==='AbortError')throw new Error('Kontrollen tok for lang tid. Prøver igjen.');
+  throw error;
+ }finally{clearTimeout(timer);}
+}
+function renderAccount(){
+ const account=el('poll-account'),login=el('poll-login');
+ if(account)account.hidden=!state?.authenticated;
+ if(el('poll-account-status'))el('poll-account-status').textContent=!healthy?'Kontrollerer innloggingen …':
+  state?.authenticated?'Logget inn'+(state.account_name?' som '+state.account_name:'')+'.':'';
+ if(login)login.hidden=!healthy||!!state?.eligible;
+ for(const [name,key,container] of [['rr_logout_nonce','logout_nonce',account],['rr_vipps_nonce','login_nonce',login]]){
+  const input=container?.querySelector('[name="'+name+'"]');
+  if(input)input.value=healthy?(state?.[key]||''):'';
+  const button=container?.querySelector('button[type="submit"]');
+  if(button)button.disabled=!healthy||!state?.[key];
+ }
 }
 function updatePlayers(id,players){
  const select=el(id);if(!select)return;
@@ -1084,6 +1137,7 @@ function setStatusPill(node,text,kind=''){
  node.classList.remove('ok','warn','danger');
  if(kind)node.classList.add(kind);
 }
+function votePercent(votes,total){return (total>0?100*Number(votes||0)/total:0).toLocaleString('nb-NO',{minimumFractionDigits:0,maximumFractionDigits:0})+' %';}
 function updateLiveStatus(elapsed,closed){
  const nff=el('speaker-nff-status');
  if(nff){
@@ -1105,15 +1159,16 @@ function updateLiveStatus(elapsed,closed){
   else if(closed)setStatusPill(poll,'🔒 STENGT · '+total+' stemmer','warn');
   else if(state.opened)setStatusPill(poll,'● ÅPEN · '+total+' stemmer','ok');
   else setStatusPill(poll,'AVSTEMNING · KLAR','');
-  if(el('speaker-poll-total'))el('speaker-poll-total').textContent=total+' stemmer';
+  if(el('speaker-poll-total'))el('speaker-poll-total').textContent='Andel av stemmene (%)';
   if(el('speaker-poll-live-results')){
    const list=el('speaker-poll-live-results');list.replaceChildren();
    if(!rows.length){const li=document.createElement('li');li.textContent='Ingen stemmer ennå.';list.appendChild(li);}
-   else rows.forEach(row=>{const li=document.createElement('li');li.textContent=(row.number?'Nr. '+row.number+' ':'')+row.player+' · '+row.total;list.appendChild(li);});
+   else rows.forEach(row=>{const li=document.createElement('li');li.textContent=(row.number?'Nr. '+row.number+' ':'')+row.player+' · '+votePercent(row.total,total);list.appendChild(li);});
   }
  }
 }
 function render(){
+ renderAccount();
  if(!state)return;
  el('poll-score').hidden=!state.opened;
  el('poll-score').parentElement.classList.toggle('is-pregame',!state.opened);
@@ -1145,7 +1200,7 @@ function render(){
  el('poll-clock-note').textContent=state.finished?'Kampklokken er stoppet.':closed?'Avstemningen er stengt. Kampføringen fortsetter.':state.period===1&&!state.running?'Pausen teller ikke med i spilletiden.':state.period===2?'2. omgang · avstemningen stenger ved 85:00.':'1. omgang · avstemningen stenger ved 85:00.';
  }
  if(el('poll-status')){
-  el('poll-status').textContent=!healthy?'Forbindelsen er brutt. Prøver igjen …':closed?'Avstemningen er stengt':!state.opened?'Avstemningen er ikke åpnet':state.voted?'Takk! Du har stemt.':state.period===1&&!state.running?'Pause · avstemningen er åpen':'Avstemningen er åpen';
+  el('poll-status').textContent=!healthy?'Forbindelsen er brutt. Prøver igjen …':closed?'Avstemningen er stengt':!state.opened?'Avstemningen er ikke åpnet':state.voted?'Takk! Du har stemt.':!state.authenticated?'Logg inn med Vipps for å stemme.':!state.eligible?'Kontoen er innlogget, men mangler Vipps-tilknytning.':!state.roster_ready?'Venter på startoppstillingen.':state.period===1&&!state.running?'Pause · avstemningen er åpen':'Avstemningen er åpen';
   el('poll-status').dataset.status=!healthy?'offline':closed?'closed':!state.opened?'waiting':state.voted?'voted':'open';
  }
  for(const id of ['poll-player','poll-submit'])if(el(id))el(id).disabled=busy||!healthy||!state.eligible||!state.roster_ready||closed||!state.opened||state.voted;
@@ -1190,10 +1245,12 @@ function render(){
 }
 async function refresh(forceClock=false){
  if(refreshPending&&!forceClock)return;
- refreshPending=true;
  const serial=++refreshSerial;
+ refreshController?.abort();
+ const controller=new AbortController();refreshController=controller;
+ refreshPending=true;
  try{
- const next=await request();
+ const next=await request(undefined,controller);
  if(serial!==refreshSerial)return;
  state=next;syncClock(next,performance.now(),forceClock);healthy=true;
  updateSpeaker();
@@ -1225,13 +1282,13 @@ async function refresh(forceClock=false){
  if(el('poll-results')){
  el('poll-results').replaceChildren();
  const rows=state.results||[];
- for(const row of rows){const li=document.createElement('li');li.textContent=row.player+' — '+row.total+' stemmer';el('poll-results').appendChild(li);}
- el('poll-total').textContent=rows.reduce((sum,r)=>sum+r.total,0)+' stemmer';
+ for(const row of rows){const li=document.createElement('li');li.textContent=row.player+' — '+votePercent(row.total,rows.reduce((sum,r)=>sum+Number(r.total||0),0));el('poll-results').appendChild(li);}
+ el('poll-total').textContent='Andel av stemmene (%)';
  const leaders=rows.length?rows.filter(r=>r.total===rows[0].total):[];
  el('poll-winner').textContent=state.closed?(leaders.length>1?'Delt førsteplass: '+leaders.map(r=>r.player).join(', '):leaders.length?'Flest stemmer: '+leaders[0].player:'Ingen stemmer registrert.'):'Resultatet oppdateres mens avstemningen er åpen.';
  }
  }catch(e){if(serial!==refreshSerial)return;healthy=false;if(el('poll-feedback'))el('poll-feedback').textContent=e.message;}
- finally{if(serial===refreshSerial)refreshPending=false;}
+ finally{if(serial===refreshSerial){refreshPending=false;refreshController=null;}}
  render();
 }
 async function command(body){
@@ -1247,7 +1304,7 @@ async function command(body){
   await refresh(true);busy=false;render();
  }
 }
-if(el('poll-form'))el('poll-form').onsubmit=e=>{e.preventDefault();if(state&&!busy)command({action:'vote',player:el('poll-player').value,token:state.token});};
+if(el('poll-form'))el('poll-form').onsubmit=e=>{e.preventDefault();if(state&&!busy&&healthy&&!el('poll-submit').disabled)command({action:'vote',player:el('poll-player').value,token:state.token});};
 for(const id of ['speaker-player','speaker-in'])if(el(id))el(id).onchange=render;
 if(el('speaker-team'))el('speaker-team').onchange=()=>{for(const id of ['speaker-player','speaker-in']){el(id).value='';delete el(id).dataset.players;}updateSpeaker();render();};
 
@@ -1319,8 +1376,18 @@ async function refreshNffEvents(){
  }catch(e){note.textContent=e.message;}
  finally{nffAutoBusy=false;}
 }
-refresh();setInterval(()=>{if(!busy)refresh();},5000);setInterval(render,500);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)refresh();});
+// Revalidate on entry, BFCache restore, focus, visibility and network recovery.
+// A resumed tab replaces a suspended GET; old replies cannot overwrite newer state.
+function revalidate(){
+ if(document.hidden||busy)return; // Commands always refresh before releasing busy.
+ healthy=false;render();
+ refresh(true);
+}
+revalidate();setInterval(()=>{if(!busy&&!document.hidden)refresh();},5000);setInterval(render,500);
+window.addEventListener('pageshow',revalidate);
+window.addEventListener('focus',revalidate);
+window.addEventListener('online',revalidate);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)revalidate();});
 if(el('nff-auto-status')){
  setInterval(refreshNffEvents,5000);
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshNffEvents();});
@@ -1328,4 +1395,4 @@ if(el('nff-auto-status')){
 })();
 </script>
 <?php endif; ?>
-<?php get_footer(); ?>
+<?php if (empty($rr_embedded)) get_footer(); ?>

@@ -1,7 +1,7 @@
 <?php
 /** Presentation bootstrap. No storage, routes, cron jobs or application engines. */
 defined( 'ABSPATH' ) || exit;
-define( 'RR_THEME_VERSION', '2.0.0-rc.2' );
+define( 'RR_THEME_VERSION', '2.0.0-rc.5' );
 foreach ( array( 'setup', 'presentation', 'brand', 'journalists', 'compatibility', 'home-universes', 'page-layouts' ) as $rr_file ) {
     require_once get_parent_theme_file_path( '/inc/' . $rr_file . '.php' );
 }
