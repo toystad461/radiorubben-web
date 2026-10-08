@@ -4,7 +4,7 @@ set -Eeuo pipefail
 umask 077
 release=${1:?Release id required}
 [[ "$release" =~ ^[0-9]+-[0-9]+$ ]] || exit 2
-root=$(realpath /run/webroots/r1417157)
+root=$(php -r 'echo realpath($argv[1]);' /run/webroots/r1417157)
 [[ -d "$root" && "$root" == /* ]] || { echo 'Invalid resolved WordPress root'; exit 3; }
 theme="$root/wp-content/themes/radio-rubben-next"
 state="$HOME/.radiorubben-deploy"
@@ -17,7 +17,7 @@ hash() { sha256sum "$1" | cut -d' ' -f1; }
 for dir in "$root" "$theme" "$theme/assets" "$theme/assets/css" "$state" "$state/staging" "$stage"; do
   [[ -d "$dir" && ! -L "$dir" ]] || { echo "Invalid release directory: $dir"; exit 3; }
 done
-[[ $(realpath "$theme") == "$root/wp-content/themes/radio-rubben-next" ]]
+[[ $(php -r 'echo realpath($argv[1]);' "$theme") == "$root/wp-content/themes/radio-rubben-next" ]]
 [[ $("${wp[@]}" option get stylesheet) == radio-rubben-next ]]
 [[ $("${wp[@]}" option get home) == https://www.radiorubben.no ]]
 [[ ! -e "$root/.maintenance" ]]
