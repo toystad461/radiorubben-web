@@ -25,3 +25,13 @@
 #rr-weekly .rrq-board th:nth-child(3),#rr-weekly .rrq-board td:nth-child(3){width:57px}
 #rr-weekly .rrq-board th:last-child,#rr-weekly .rrq-board td:last-child{width:49px}
 }.rrq table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}.rrq th,.rrq td{text-align:left;padding:13px 9px;border-bottom:1px solid #2b303a}.rrq td:nth-child(2){overflow-wrap:anywhere}.rrq th{font-size:14px;color:#afb5c0}.rrq details{margin-top:28px}.rrq summary{cursor:pointer;padding:15px 0;font-weight:700}.rrq-review{border-top:1px solid #2b303a;padding:18px 0}.rrq-review h4{font-size:18px}.rrq-review a{color:#ff9ba2}.page-id-496 #rr-live-quiz{scroll-margin-top:120px}@media(max-width:700px){.rrq-modes{grid-template-columns:1fr}.rrq th,.rrq td{padding:12px 5px}.rrq legend{font-size:20px}}
+
+#rr-weekly .rrq-history{margin-top:32px;padding-top:24px;border-top:1px solid #34343d}
+#rr-weekly .rrq-history p{font-size:14px;line-height:1.6;color:#afb5c0}
+#rr-weekly .rrq-history button{margin-bottom:16px}
+#rr-weekly .rrq-archive summary{min-height:44px}
+#rr-weekly .rrq-archive select{display:block;max-width:100%;min-height:44px;padding:10px 14px;margin:8px 0 20px;background:#101217;color:#fff;border:1px solid #697182;border-radius:7px;font:inherit}
+#rr-weekly .rrq-archive select:focus-visible,#rr-weekly .rrq-table-scroll:focus-visible{outline:3px solid #fff;outline-offset:3px}
+#rr-weekly .rrq-table-scroll{max-width:100%;overflow-x:auto;margin-block:16px}
+#rr-weekly .rrq-overall-table{min-width:440px}
+#rr-weekly .rrq-overall-table th:nth-child(4),#rr-weekly .rrq-overall-table td:nth-child(4){width:48px;text-align:right}

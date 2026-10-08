@@ -157,8 +157,8 @@ add_filter('wp_privacy_personal_data_exporters',function($exporters){$exporters[
 function rrwq_shortcode() {
     if (!rr_quiz_enabled('weekly')) return '';
     $base = rtrim(RR_SITE_URL, '/');
-    wp_enqueue_style('rrwq',$base.'/assets/css/weekly-quiz.css',[],RR_SITE_VERSION);
-    wp_enqueue_script('rrwq',$base.'/assets/js/weekly-quiz.js',[],RR_SITE_VERSION,true);
+    wp_enqueue_style('rrwq',$base.'/assets/css/weekly-quiz.css',[],'2026.10.08.1');
+    wp_enqueue_script('rrwq',$base.'/assets/js/weekly-quiz.js',[],'2026.10.08.1',true);
     $ajax = admin_url('admin-ajax.php');
     if (isset($_GET['wpvibe_preview'])) $ajax=add_query_arg('wpvibe_preview',sanitize_text_field(wp_unslash($_GET['wpvibe_preview'])),$ajax);
     wp_localize_script('rrwq','rrwqConfig',['ajax'=>$ajax,'login'=>wp_login_url(home_url('/quiz/')),'week'=>rrwq_week()['id']]);
@@ -172,3 +172,5 @@ add_filter('the_content',function($content){
     if (!is_page(496) || !in_the_loop() || !is_main_query()) return $content;
     return preg_replace_callback('/<!-- wp:html -->.*?<!-- \/wp:html -->/s',function($m){return strpos($m[0],'id="rr-weekly"')!==false ? rrwq_shortcode() : $m[0];},$content);
 },8);
+
+require_once __DIR__ . '/weekly-quiz-history.php';

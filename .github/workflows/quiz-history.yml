@@ -1,0 +1,15 @@
+name: Quiz history - public archive and consent checks
+on:
+  pull_request:
+    paths: ['theme-next/rr-site-functions/**', 'theme-next/tests/quiz-history.php', '.github/workflows/quiz-history.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: php -l theme-next/rr-site-functions/inc/weekly-quiz-history.php && php theme-next/tests/quiz-history.php && node --check theme-next/rr-site-functions/assets/js/weekly-quiz.js
