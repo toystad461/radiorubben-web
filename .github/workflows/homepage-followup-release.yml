@@ -1,0 +1,75 @@
+name: Homepage followup - authorized six-file release
+on:
+  push:
+    branches: [codex/homepage-match-logos-20261008]
+    paths: ['.github/workflows/homepage-followup-release.yml', 'scripts/homepage-followup-release.sh', 'scripts/test_homepage_followup_release.py']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: wordpress-production
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Verify tested source and exercise rollback offline
+        env:
+          DEPLOY_ENABLED: ${{ vars.WP_DEPLOY_ENABLED }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -Eeuo pipefail
+          test "$GITHUB_REF" = refs/heads/codex/homepage-match-logos-20261008
+          test "$DEPLOY_ENABLED" = true
+          git diff --exit-code 90f88666533684165813513fe4b7a01bc021fb7c -- theme-next
+          gh api 'repos/toystad461/radiorubben-web/actions/runs?head_sha=90f88666533684165813513fe4b7a01bc021fb7c&per_page=100' > /tmp/source-runs.json
+          python3 - <<'PY'
+          import json
+          runs=json.load(open('/tmp/source-runs.json'))['workflow_runs']
+          expected={37773073860,37773073959,37773074010,37773073903}
+          green={r['id'] for r in runs if r['status']=='completed' and r['conclusion']=='success'}
+          assert expected <= green, 'Required source checks are not green'
+          print('Four exact source checks verified')
+          PY
+          bash -n scripts/homepage-followup-release.sh
+          python3 scripts/test_homepage_followup_release.py
+          python3 theme-next/scripts/check.py
+          php theme-next/tests/news-priority.php
+      - name: Configure existing verified deployment connection
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          test -n "$DEPLOY_KEY" && test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Publish six exact files with fresh baseline and verified backup
+        run: |
+          set -Eeuo pipefail
+          release="$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          bundle=$(mktemp -d)
+          paths=(assets/css/news-refinement.css template-parts/home/sidebar-match.php assets/css/homepage-refinement.css template-parts/home/sidebar.php front-page.php page-nyheter.php)
+          existing=(assets/css/homepage-refinement.css template-parts/home/sidebar.php front-page.php page-nyheter.php)
+          for path in "${paths[@]}"; do install -D -m 644 "theme-next/radio-rubben-next/$path" "$bundle/new/$path"; done
+          for path in "${existing[@]}"; do
+            mkdir -p "$bundle/baseline/$(dirname "$path")"
+            git show "2b4779dd778faf8b02913f75fdfacf2523e81a15:theme-next/radio-rubben-next/$path" > "$bundle/baseline/$path"
+          done
+          (cd "$bundle/new"; sha256sum "${paths[@]}") > "$bundle/SHA256SUMS"
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          ssh "$host" "set -e; umask 077; test ! -L .radiorubben-deploy; test ! -L .radiorubben-deploy/staging; mkdir -p .radiorubben-deploy/staging; mkdir .radiorubben-deploy/staging/homepage-followup-$release"
+          rsync -rlt --chmod=D700,F600 "$bundle/" "$host:.radiorubben-deploy/staging/homepage-followup-$release/"
+          ssh "$host" bash -s -- "$release" < scripts/homepage-followup-release.sh
+      - name: Remove runner SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

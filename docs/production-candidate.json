@@ -6,8 +6,8 @@
   "fresh_full_server_inventory_performed": false,
   "review_source_trees": {
     "status": "homepage-review-only-not-production-hashes",
-    "theme_next_tree": "28a0d1e6d7d7eabd106be2b1b46f3e25a8f14b5d",
-    "next_theme_tree": "bbbce511454af3ea65bd5518f643beb0408dfe4c",
+    "theme_next_tree": "11b9ed7876950680e6edc0b6d482f804a71e3260",
+    "next_theme_tree": "78530c85a97df10abd072e4927fc5cd97d3fbc15",
     "site_functions_tree": "b9791f63c8dee62651dac27f615e9fb52ad5fe48",
     "wordpress_tree_preserved_from_base": "a14d212ce4307ed39c6a2e36f8e8ae53435c2d04"
   },
@@ -60,7 +60,23 @@
       "full_package_equals_production": false
     }
   },
-  "excluded_unpublished_work": ["web PR65 mobile header", "unverified widget 1.3.1 release", "Studio PR47 private app", "Studio PR48 CRM", "Studio PR51 feedback learning", "Render migration"],
-  "open_verifications": ["fresh complete code hashes on Uniweb", "actual Fotballrobot version and 0.10.5 provenance", "active player widget source", "Studio source/live deviations", "database snippets and active plugin state", "cron ownership and duplicate jobs", "functional and mobile tests on combined candidate", "restore procedure and deployment target review"],
+  "excluded_unpublished_work": [
+    "web PR65 mobile header",
+    "unverified widget 1.3.1 release",
+    "Studio PR47 private app",
+    "Studio PR48 CRM",
+    "Studio PR51 feedback learning",
+    "Render migration"
+  ],
+  "open_verifications": [
+    "fresh complete code hashes on Uniweb",
+    "actual Fotballrobot version and 0.10.5 provenance",
+    "active player widget source",
+    "Studio source/live deviations",
+    "database snippets and active plugin state",
+    "cron ownership and duplicate jobs",
+    "functional and mobile tests on combined candidate",
+    "restore procedure and deployment target review"
+  ],
   "private_or_runtime_data_imported": false
 }
