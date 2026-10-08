@@ -1,0 +1,15 @@
+name: Member login return - routing regressions
+on:
+  pull_request:
+    paths: ['theme-next/rr-site-functions/inc/quiz-controls.php', 'theme-next/tests/member-login-return.php', '.github/workflows/member-login-return.yml']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: php -l theme-next/rr-site-functions/inc/quiz-controls.php && php theme-next/tests/member-login-return.php

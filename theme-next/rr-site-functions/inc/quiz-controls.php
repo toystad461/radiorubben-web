@@ -62,16 +62,18 @@ function rr_quiz_vipps_return($session) {
     if (!is_array($session) && !($session instanceof ArrayAccess)) return '';
     $referer = $session['referer'] ?? '';
     if (!is_string($referer)) return '';
-    $origin = wp_parse_url($referer); $target = wp_parse_url(home_url('/quiz/'));
+    $origin = wp_parse_url($referer); $target = wp_parse_url(home_url('/'));
     if (!is_array($origin) || !isset($origin['host'], $origin['path'])
-        || strtolower($origin['host']) !== strtolower($target['host'])
-        || rtrim($origin['path'], '/') !== rtrim($target['path'], '/')) return '';
+        || strtolower($origin['host']) !== strtolower($target['host'])) return '';
+    // Only these public entry points may replace Vipps' default profile target.
+    $path = rtrim($origin['path'], '/');
+    if (!in_array($path, ['/quiz', '/min-side'], true)) return '';
     parse_str($origin['query'] ?? '', $args);
-    $return = home_url('/quiz/');
+    $return = home_url($path . '/');
     if (isset($args['wpvibe_preview']) && is_string($args['wpvibe_preview'])) {
         $return = add_query_arg('wpvibe_preview',sanitize_text_field($args['wpvibe_preview']),$return);
     }
-    return $return.'#rr-weekly';
+    return $path === '/quiz' ? $return.'#rr-weekly' : $return;
 }
 function rr_quiz_vipps_origin($session) {
     return rr_quiz_vipps_return($session) !== '';

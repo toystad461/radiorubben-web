@@ -6,9 +6,9 @@
   "fresh_full_server_inventory_performed": false,
   "review_source_trees": {
     "status": "homepage-review-only-not-production-hashes",
-    "theme_next_tree": "11b9ed7876950680e6edc0b6d482f804a71e3260",
+    "theme_next_tree": "92cfc364ec106c027273b1180b07dc3fdd73ef06",
     "next_theme_tree": "78530c85a97df10abd072e4927fc5cd97d3fbc15",
-    "site_functions_tree": "b9791f63c8dee62651dac27f615e9fb52ad5fe48",
+    "site_functions_tree": "11d3f11ec2a5af2a7e207cfd7f422d506ddf6c99",
     "wordpress_tree_preserved_from_base": "a14d212ce4307ed39c6a2e36f8e8ae53435c2d04"
   },
   "web_main_observed": "9006e82e1ebc91e2a128cf2d3e263470e16db8e0",
