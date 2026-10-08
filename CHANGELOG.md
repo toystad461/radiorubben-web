@@ -24,3 +24,8 @@ Alle vesentlige endringer i Radio Rubben-løsningen dokumenteres her.
 - Node.js-kommandoer for lokal testing, kontroll og bygging.
 - Grunnleggende validering av statiske nettsidefiler.
 - Dokumentert arbeidsflyt for videre utvikling.
+# Forsidekladd 2026-10-08
+
+- Avstem syv publiserte forside-/menyfiler mot fersk WordPress-temaklon på egen gren.
+- Tilpass nyhetskort til sidefelt, jevn ut avstander og legg til tydelig tastaturfokus på klassisk forside.
+- Ingen produksjonspublisering; se `docs/HOMEPAGE-TIDY-2026-10-08.md`.

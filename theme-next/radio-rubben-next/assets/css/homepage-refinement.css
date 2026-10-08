@@ -1,0 +1,26 @@
+/* Classic homepage only. Loaded after news-priority and sidebar-layout. */
+.rr-news-first .rr-home-intro{padding-block:28px;gap:32px;border-bottom:1px solid var(--line,#343740)}
+.rr-news-first .rr-home-copy h1{max-width:18ch;text-wrap:balance}
+.rr-news-first .rr-member-inline{margin:8px 0 0;font-size:13px;line-height:1.55}
+.rr-news-first .rr-home-columns{gap:24px}
+.rr-news-first .rr-home-sidebar{gap:16px}
+.rr-news-first .rr-home-main .rr-priority-grid{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
+.rr-news-first .rr-home-main .rr-priority-copy{padding:18px}
+.rr-news-first .rr-home-main .rr-priority-copy h3{font-size:clamp(20px,1.8vw,24px);line-height:1.3}
+.rr-news-first .rr-home-main .rr-priority-lead h3{font-size:clamp(24px,2.2vw,30px)}
+.rr-news-first .rr-priority-copy h3{text-wrap:balance;word-break:normal}
+.rr-news-first .rr-home-main .rr-priority-copy p{font-size:15px;line-height:1.6}
+.rr-news-first .rr-home-sidebar .rr-match-card h2{line-height:1.3;overflow-wrap:anywhere;text-wrap:balance;margin-block:10px}
+.rr-news-first .rr-sidebar-weather,.rr-news-first .rr-home-sidebar .rr-panel{border-radius:14px}
+.rr-news-first .rr-news-priority-sport{margin-top:8px}
+.rr-news-first :is(a,button,select,input,summary):focus-visible{outline:3px solid var(--white,#fff);outline-offset:4px}
+@media(max-width:900px){
+ .rr-news-first .rr-home-sidebar{padding-bottom:24px}
+}
+@media(max-width:760px){
+ .rr-news-first .rr-home-intro{padding-block:18px;gap:14px}
+ .rr-news-first .rr-home-main .rr-priority-grid{grid-template-columns:minmax(0,1fr);gap:12px}
+ .rr-news-first .rr-priority-head h2{font-size:28px}
+ .rr-news-first .rr-home-columns{gap:0}
+ .rr-news-first .rr-member-inline a{min-height:44px;display:flex;align-items:center}
+}
