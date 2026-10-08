@@ -1,4 +1,9 @@
-# Radio Rubben Next 2.0.0-rc.1
+# Radio Rubben Next 3.0.0-alpha.1
+
+Blokktema-kandidat uten betalte blokk- eller sidebyggerplugins. Se [blokktema og utrulling](docs/BLOCK-THEME.md). Produksjon er ikke endret.
+
+## Tidligere hybridarkitektur (historikk)
+
 
 Installérbart **hybridtema / stagingkandidat**, bygget på Radio Rubben One 1.3.6 og dagens offentlige CSS. PHP-maler er bevisst valgt for eksisterende kortkoder, `the_content`-filtre, RRLive og WordPress-URL-er. `theme.json` v3 styrer palett, typografi, mål og mellomrom; blokkeditoren får syv mønstre og panelstil. Dette er ikke et fullstendig blokkthema / Site Editor-tema.
 

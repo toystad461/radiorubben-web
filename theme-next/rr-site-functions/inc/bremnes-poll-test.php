@@ -942,7 +942,10 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <p class="muted">Kamptropp: <a href="<?php echo esc_url(rr_poll_source_url($rr_match_id)); ?>" target="_blank" rel="noopener">Fotball.no · FIKS-ID <?php echo (int)$rr_match_id; ?></a>. Startspillere er valgbare fra kampstart. Innbyttere blir valgbare når de markeres som byttet inn. <?php if (!$rr_roster): ?>Venter på kamptropp.<?php else: ?><?php echo count($rr_roster); ?> spillere.<?php endif; ?></p>
 </section>
 <?php if (!$rr_archive_public): ?>
-<script>
+<?php
+// Block templates format rendered content. Keep application JavaScript in the footer queue.
+if ( ! empty( $rr_embedded ) ) { ob_start(); } else { echo '<script>'; }
+?>
 (()=>{
 'use strict';
 const endpoint=<?php echo wp_json_encode(add_query_arg($rr_control?['rr_poll_api'=>1,'rr_admin_view'=>1]:['rr_poll_api'=>1],$rr_url)); ?>;
@@ -1393,6 +1396,13 @@ if(el('nff-auto-status')){
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshNffEvents();});
 }
 })();
-</script>
+<?php
+if ( ! empty( $rr_embedded ) ) {
+    $rr_match_script = ob_get_clean();
+    wp_register_script( 'rr-match-day-view', false, array(), RR_SITE_VERSION, true );
+    wp_enqueue_script( 'rr-match-day-view' );
+    wp_add_inline_script( 'rr-match-day-view', $rr_match_script );
+} else { echo '</script>'; }
+?>
 <?php endif; ?>
 <?php if (empty($rr_embedded)) get_footer(); ?>

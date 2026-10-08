@@ -1,0 +1,20 @@
+/* Native block shell. Existing application views keep their own tested CSS. */
+.rr-block-header,.rr-block-footer { background:var(--wp--preset--color--background); color:var(--wp--preset--color--text); }
+.rr-block-header { padding-block:1rem; border-bottom:1px solid var(--wp--preset--color--border); }
+.rr-block-header figure { margin:0; }
+.rr-block-header img { max-width:100%; height:auto; }
+.rr-block-header .wp-block-navigation { font-size:1rem; }
+.rr-block-header .wp-block-navigation__responsive-container.is-menu-open { background:var(--wp--preset--color--background); color:var(--wp--preset--color--text); padding:2rem; }
+.rr-block-main { padding-block:clamp(1.5rem,4vw,3rem); min-height:50vh; }
+.rr-block-main--application { --wp--style--global--content-size:1440px; --wp--style--global--wide-size:1440px; }
+.rr-block-main--football { --wp--style--global--content-size:1180px; --wp--style--global--wide-size:1180px; }
+.rr-block-main--editorial { --wp--style--global--content-size:720px; }
+.rr-block-main--home { --wp--style--global--content-size:1180px; padding-block:0; }
+.rr-block-main .wp-block-post-content { overflow-wrap:anywhere; }
+.rr-block-footer { margin-top:3rem; padding-block:2rem 6rem; border-top:1px solid var(--wp--preset--color--border); }
+.rr-block-footer a { text-decoration:underline; text-underline-offset:.2em; }
+.rr-editor-module { padding:1.5rem; border:1px solid #777; border-radius:10px; }
+.rr-block-main .wp-block-post-template { list-style:none; padding-inline:0; }
+.rr-block-main .is-style-rr-panel { padding:1.5rem; margin-block:1.5rem; }
+.rr-block-header :is(a,button):focus-visible,.rr-block-footer a:focus-visible { outline:3px solid var(--wp--preset--color--signal); outline-offset:4px; }
+@media(max-width:600px) { .rr-block-header .wp-block-image img { width:160px!important; } .rr-block-main--home .rr-wrap { max-width:100%; } }
