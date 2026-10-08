@@ -4,12 +4,12 @@
 $match = rr_theme_match_data( 'header' );
 if ( ! empty( $match['home'] ) && ! empty( $match['away'] ) ) {
     if ( empty( $match['cta'] ) ) { $match['cta'] = 'Se kampinfo →'; }
-    rr_theme_component( 'match-card', $match );
+    get_template_part( 'template-parts/home/sidebar-match', null, $match );
 }
 if ( function_exists( 'rr_weather_card' ) ) {
     echo '<div class="rr-sidebar-weather">';
     rr_weather_card();
-    echo '<a class="rr-text-link rr-weather-full-link" href="https://www.yr.no/nb/søk?q=Rubbestadneset">Se værvarselet på Yr →</a></div>';
+    echo '<a class="rr-text-link rr-weather-full-link" href="https://www.yr.no/">Se været på Yr →</a></div>';
 }
 rr_theme_sponsors( 'home-sidebar' );
 $ad_name = rr_theme_text( rr_theme_mod( 'rr_sidebar_ad_name', '' ) );
@@ -23,4 +23,3 @@ if ( '' !== trim( $ad_name ) ) {
 }
 ?>
 </aside>
-

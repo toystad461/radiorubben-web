@@ -1,4 +1,16 @@
 /* Classic homepage only. Loaded after news-priority and sidebar-layout. */
+.rr-news-first .rr-sidebar-match{padding:16px;margin:0;border-top:3px solid var(--signal,#ff002b);border-radius:14px;background:var(--panel,#15181f)}
+.rr-news-first .rr-sidebar-match>.rr-eyebrow{margin:0 0 12px;font-size:10px;letter-spacing:.12em}
+.rr-news-first .rr-sidebar-fixture{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0 0 12px;font-size:14px;line-height:1.25}
+.rr-news-first .rr-sidebar-fixture>span{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;text-align:center}
+.rr-news-first .rr-sidebar-team-logo{display:block;width:44px;height:44px;object-fit:contain;padding:4px;border-radius:8px;background:#fff}
+.rr-news-first .rr-sidebar-fixture small{font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--slate,#afb5c0)}
+.rr-news-first .rr-sidebar-fixture strong{font-size:14px;line-height:1.3;overflow-wrap:anywhere;word-break:normal;text-wrap:balance}
+.rr-news-first .rr-sidebar-match time{display:block;font-size:14px;font-weight:650}
+.rr-news-first .rr-sidebar-venue{margin:4px 0 0;font-size:12px;color:var(--slate,#afb5c0)}
+.rr-news-first .rr-sidebar-match-link{display:flex;align-items:center;min-height:44px;margin-top:10px;padding:9px 12px;border:1px solid var(--line,#343740);border-radius:8px;font-size:13px;font-weight:800}
+.rr-news-first .rr-sidebar-match-link:hover{background:var(--navy,#111722)}
+.rr-news-first .rr-sidebar-score{margin:0 0 12px;font-size:32px;line-height:1.1;font-weight:800;color:var(--white,#fff)}
 .rr-news-first .rr-home-intro{padding-block:28px;gap:32px;border-bottom:1px solid var(--line,#343740)}
 .rr-news-first .rr-home-copy h1{max-width:18ch;text-wrap:balance}
 .rr-news-first .rr-member-inline{margin:8px 0 0;font-size:13px;line-height:1.55}
@@ -24,3 +36,19 @@
  .rr-news-first .rr-home-columns{gap:0}
  .rr-news-first .rr-member-inline a{min-height:44px;display:flex;align-items:center}
 }
+
+/* Compact weather: keep location controls and source credit accessible. */
+.rr-news-first .rr-home-sidebar .rr-weather{padding:16px;background:var(--panel,#15181f)}
+.rr-news-first .rr-weather-head h2,.rr-news-first .rr-weather-head .rr-eyebrow{display:none}
+.rr-news-first .rr-weather-head{margin-bottom:8px}
+.rr-news-first .rr-weather-head label{font-size:11px}
+.rr-news-first .rr-weather-place{min-height:44px}
+.rr-news-first .rr-weather-location{margin-block:8px;font-size:12px}
+.rr-news-first .rr-weather-status{font-size:11px;margin-block:8px}
+.rr-news-first .rr-home-sidebar .rr-weather-now{gap:12px;padding-block:8px}
+.rr-news-first .rr-home-sidebar .rr-weather-icon{width:48px;height:48px}
+.rr-news-first .rr-home-sidebar .rr-weather-temp{font-size:38px;line-height:1.1}
+.rr-news-first .rr-weather-now p{margin:4px 0;font-size:13px}
+.rr-news-first .rr-weather-now small,.rr-news-first .rr-weather-hourly,.rr-news-first .rr-weather-extended{display:none}
+.rr-news-first .rr-weather-credit{margin-top:10px;padding-top:10px;font-size:10px;line-height:1.5}
+.rr-news-first .rr-weather-full-link{display:flex;align-items:center;min-height:44px;padding:10px 16px;font-size:13px}
