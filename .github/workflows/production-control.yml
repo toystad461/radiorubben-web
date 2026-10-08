@@ -1,0 +1,42 @@
+name: Production candidate - offline controls
+on:
+  pull_request:
+    paths:
+      - 'scripts/compare_code_inventory.py'
+      - 'scripts/test_code_inventory.py'
+      - 'docs/production-candidate.json'
+      - 'docs/CODE-INVENTORY-CONTROL.md'
+      - '.github/workflows/production-control.yml'
+      - 'theme-next/**'
+      - 'wordpress/**'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Test local manifest comparisons using synthetic fixtures
+        run: python3 scripts/test_code_inventory.py -v
+      - name: Verify the assembled source boundaries
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          c = json.loads(Path('docs/production-candidate.json').read_text())
+          paths = {
+              'theme-next': 'theme_next_tree',
+              'theme-next/radio-rubben-next': 'next_theme_tree',
+              'theme-next/rr-site-functions': 'site_functions_tree',
+              'wordpress': 'wordpress_tree_preserved_from_base',
+          }
+          for path, key in paths.items():
+              actual = subprocess.check_output(['git', 'rev-parse', f'HEAD:{path}'], text=True).strip()
+              if actual != c['assembly'][key]:
+                  raise SystemExit(f'Pinned source mismatch: {path}')
+              print(f'Pinned source OK: {path}')
+          print('Source checks only; no live inventory or deployment approval.')
+          PY
