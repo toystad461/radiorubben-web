@@ -59,25 +59,40 @@ versjoner/aktiv status, ikke byteidentitet av alle filer. Derfor brukes Web #30
 som fotballbase, ikke #67s eldre 0.10.4-kandidat. TypeScript-Robot er ikke påvist
 som aktiv produksjonsjournalist; Studio har sin egen RSS-flyt.
 
-GitHub rulesets-lesing ga **403 med krav om GitHub Pro eller offentlig repo** i
-alle tre repoene. CI-tester er implementert, men nye obligatoriske merge-sperrer
-er ikke konfigurert eller påstått. Ingen eksisterende innstillinger er endret.
+Ved første kartlegging ga GitHub rulesets-lesing **403 med krav om GitHub Pro
+eller offentlig repo**. Etter brukerens uttrykkelige bestilling ble alle tre
+repoene gjort offentlige. Blokkeringen er løst, og følgende regler er lest tilbake
+som aktive på `refs/heads/main`:
+
+| Repo | Påkrevde kontroller | Ruleset |
+| --- | --- | --- |
+| Robot | `test` | 24734546 |
+| Studio | `verify (8.2)`, `verify (8.4)`, `mobile` | 24734566 |
+| Web | `kontroller` | 24734571 |
+
+Alle tre krever PR og avklarte review-tråder. Ingen bypass-aktører er lagt inn.
+Det kreves ikke en ekstra godkjenner; eieren kan selv behandle egne PR-er.
+Reglene gjelder hovedgrenen, ikke eksisterende utviklingsgrener. Web-kontrollen
+`kontroller` er den generelle test-/byggejobben; Fotballrobotens målrettede
+PHP-kontroll kjører separat og er ikke påkrevd globalt fordi den har stiavgrensning.
+Denne leveransens målrettede kontroller må derfor også være grønne før integrasjon.
+Grønne GitHub-kontroller gir fortsatt ingen tillatelse til produksjonsdeploy.
 
 ## Dokumentert krav, ikke ferdig implementert
 
 - Komplett mediekontrakt for syntetisk tale og AI-bilder, med filhash, korrekt
   merking i hver kanal, godkjenning av ferdig medium og negative publiseringstester.
-  Policyfeltet alene dekker ikke dette. Studio har parallelt, ukommittert lydarbeid;
-  det er ikke tatt inn eller redigert i denne leveransen.
+  Policyfeltet alene dekker ikke dette. Studio #56 omfatter også policyfelt og
+  sperrer for syntetisk lyd på RR Audio-basen. Hørbar lytterinformasjon og full
+  AI-bildemerking gjenstår fortsatt.
 - Full produksjonsavstemming, ende-til-ende-test mot autentisering/WordPress,
   reelle modellsvar og redaksjonelt review av kvalitet. Mockede modellsvar måler
   sperrer, ikke modellens sannhetsgehalt.
 - Publikumsversjonen på «Om oss». Denne PR-en publiserer ingen nettsidetekst.
-- Påkrevde GitHub-kontroller må avklares med tilgjengelig abonnement og regler.
 
 ## Utrullingsgrense
 
-Ingen merge, deploy, workflow-dispatch, artikkelpublisering, læringsaktivering
+Ingen merge til hovedgren, deploy, workflow-dispatch, artikkelpublisering, læringsaktivering
 eller endring av produksjonsdata. En separat godkjent utrulling må avstemme ferske
 serverhasher, eksakt filsett, avhengigheter, backup og tilbakeføring. Ikke last opp
 en hel gren. Historiske release-manifester skal ikke omskrives til den nye koden.
