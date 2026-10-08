@@ -4,6 +4,13 @@
   "status": "documented-source-candidate-not-live-verified",
   "deployment_authorized": false,
   "fresh_full_server_inventory_performed": false,
+  "review_source_trees": {
+    "status": "homepage-review-only-not-production-hashes",
+    "theme_next_tree": "28a0d1e6d7d7eabd106be2b1b46f3e25a8f14b5d",
+    "next_theme_tree": "bbbce511454af3ea65bd5518f643beb0408dfe4c",
+    "site_functions_tree": "b9791f63c8dee62651dac27f615e9fb52ad5fe48",
+    "wordpress_tree_preserved_from_base": "a14d212ce4307ed39c6a2e36f8e8ae53435c2d04"
+  },
   "web_main_observed": "9006e82e1ebc91e2a128cf2d3e263470e16db8e0",
   "assembly": {
     "base_commit": "75326d1c26cd3b30f7c52ead8246b4e99df950a4",

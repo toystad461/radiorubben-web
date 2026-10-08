@@ -12,7 +12,7 @@ Leseverktøyets linjenumre er fjernet, og Git normaliserer linjeskift. Dette er 
 
 Et separat stilark for klassisk forside gir jevnere avstander, tilpasser overskrifter og nyhetskort til hovedkolonnen med sidefelt, samler kortradier og viser tydelig tastaturfokus. Mobil beholder nyhetene før sidefeltet. Ingen ny skjuling av nyheter, kampdata eller værinformasjon.
 
-Kun `front-page.php` og `assets/css/homepage-refinement.css` er nye utrullingskandidater mot dagens leste WordPress-grunnlag. De øvrige runtimefilene i første commit dokumenterer det eksisterende oppsettet. Historiske manifesttre i `production-candidate.json` gjelder foreldregrunnlaget, ikke dette nye tematreets identitet.
+Kun `front-page.php` og `assets/css/homepage-refinement.css` er nye utrullingskandidater mot dagens leste WordPress-grunnlag. De øvrige runtimefilene i første commit dokumenterer det eksisterende oppsettet. Historiske manifesttre i `production-candidate.json` beholdes i `assembly`; `review_source_trees` fastlåser denne kladdens nye Git-tre. CI sjekker kladdens tre og fortsatt uendret Site Functions/wordpress. Ingen historiske serverhasher er endret.
 
 ## Kontroll og publisering
 
