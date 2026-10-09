@@ -8,5 +8,5 @@ add_action('template_redirect',static function() {
     $rr_poll_definitions_only=true;
     require __DIR__.'/bremnes-poll-match.php';
     nocache_headers();
-    rr_poll_rollover_selection();
+    rr_poll_schedule_rollover();
 },-20);

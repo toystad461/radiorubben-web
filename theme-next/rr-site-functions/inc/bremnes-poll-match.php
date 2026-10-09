@@ -138,7 +138,7 @@ if ($rr_control && !$rr_admin) {
 }
 if (($_SERVER['REQUEST_METHOD']??'GET')==='GET' && !isset($_GET['rr_poll_api'])) {
     nocache_headers();
-    rr_poll_rollover_selection();
+    rr_poll_schedule_rollover();
 }
 $rr_match_id=isset($_GET['rr_match']) && is_string($_GET['rr_match']) ? rr_poll_parse_match_id(wp_unslash($_GET['rr_match'])) : (int)get_option('rr_poll_selected_match',8985476);
 if (!$rr_match_id) wp_die('Ugyldig FIKS-ID.', '', ['response'=>400]);

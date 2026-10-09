@@ -2,6 +2,7 @@
 if (!defined('ABSPATH')) exit;
 
 require_once __DIR__.'/bremnes-poll-rules.php';
+require_once __DIR__.'/bremnes-poll-performance.php';
 
 function rr_poll_selected_match_data() {
     $match_id=(int)get_option('rr_poll_selected_match',0);

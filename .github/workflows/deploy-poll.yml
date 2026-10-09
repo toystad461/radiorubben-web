@@ -1,0 +1,64 @@
+name: Dagens kamp — avgrenset deploy
+on:
+  pull_request:
+    paths: ['scripts/*poll*', '.github/workflows/deploy-poll.yml']
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Prøvekjøring eller denne avgrensede produksjonsoppdateringen
+        type: choice
+        options: [dry-run, apply]
+        default: dry-run
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: |
+          php -l scripts/deploy-poll-files.php
+          bash -n scripts/deploy-poll-remote.sh
+          php theme-next/tests/poll-performance.php
+          python3 scripts/build-poll-deploy.py > /tmp/poll-payload.json
+          python3 scripts/test-poll-deploy.py
+  deploy:
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && vars.WP_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Konfigurer eksisterende deploynøkkel
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Eksakt patch, privat backup og etterkontroll
+        env:
+          REQUESTED_MODE: ${{ inputs.mode }}
+        run: |
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          release="poll-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          stage=".radiorubben-deploy/staging/$release"
+          python3 scripts/build-poll-deploy.py > "$RUNNER_TEMP/payload.json"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          scp "$RUNNER_TEMP/payload.json" scripts/deploy-poll-files.php "$host:$stage/"
+          ssh "$host" bash -s -- "$release" "$GITHUB_SHA" "$REQUESTED_MODE" < scripts/deploy-poll-remote.sh
+      - name: Fjern SSH-nøkkel fra runner
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

@@ -1319,7 +1319,7 @@ async function refreshNffEvents(){
  }catch(e){note.textContent=e.message;}
  finally{nffAutoBusy=false;}
 }
-refresh();setInterval(()=>{if(!busy)refresh();},5000);setInterval(render,500);
+refresh();setInterval(()=>{if(!busy&&!document.hidden)refresh();},<?php echo $rr_control ? 5000 : 10000; ?>);setInterval(render,500);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!busy)refresh();});
 if(el('nff-auto-status')){
  setInterval(refreshNffEvents,5000);
