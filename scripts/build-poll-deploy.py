@@ -17,7 +17,7 @@ replacements = {
     'inc/bremnes-speaker-welcome.php': [(old_intro, new_intro)],
     'inc/bremnes-poll-match.php': [('    rr_poll_rollover_selection();', '    rr_poll_schedule_rollover();')],
     'inc/match-rollover.php': [('    rr_poll_rollover_selection();', '    rr_poll_schedule_rollover();')],
-    'inc/bremnes-poll-test.php': [('refresh();setInterval(()=>{if(!busy)refresh();},5000);setInterval(render,500);', "refresh();setInterval(()=>{if(!busy&&!document.hidden)refresh();},<?php echo $rr_control ? 5000 : 10000; ?>);setInterval(render,500);")],
+    'inc/bremnes-poll-test.php': [('refresh();},5000);setInterval(render,500);', "refresh();},<?php echo $rr_control ? 5000 : 10000; ?>);setInterval(render,500);")],
 }
 plugin = base / 'theme-next/rr-site-functions'
 for name, edits in replacements.items():
