@@ -111,10 +111,11 @@ function rr_poll_public_welcome($match) {
     $cache_key='rr_poll_public_intro_'.$id;
     $snapshot=get_transient($cache_key);
     if (!is_array($snapshot)) {
-        $snapshot=['table'=>[],'scorer'=>[],'fetched'=>time()];
-        $info=rr_welcome_match($match);
-        if (empty($info['error'])) { $snapshot['table']=rr_welcome_table($info); $snapshot['scorer']=rr_welcome_top_scorer($info); $snapshot['team_id']=(int)($info['ids'][0]??0); }
-        set_transient($cache_key,$snapshot,!empty($snapshot['table'])?15*MINUTE_IN_SECONDS:5*MINUTE_IN_SECONDS);
+        $snapshot=get_option('rr_poll_public_intro_last_'.$id,[]);
+        if (!is_array($snapshot)) $snapshot=[];
+        if (!wp_next_scheduled('rr_poll_refresh_public_intro',[$id])) {
+            wp_schedule_single_event(time()+1,'rr_poll_refresh_public_intro',[$id]);
+        }
     }
     $table=isset($snapshot['table']) && is_array($snapshot['table']) ? $snapshot['table'] : [];
     $standing='';

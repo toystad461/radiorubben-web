@@ -2,14 +2,14 @@
 /**
  * Plugin Name: Radio Rubben Site Functions
  * Description: Theme-independent migration bridge for existing match, speaker, member, quiz, weather and RRLive functions. Keep existing service plugins active.
- * Version: 1.0.0-rc.3
+ * Version: 1.0.0-rc.4
  * Requires at least: 6.6
  * Requires PHP: 8.2
  * License: GPL-2.0-or-later
  * Text Domain: rr-site-functions
  */
 defined( 'ABSPATH' ) || exit;
-define( 'RR_SITE_VERSION', '1.0.0-rc.3' );
+define( 'RR_SITE_VERSION', '1.0.0-rc.4' );
 define( 'RR_SITE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'RR_SITE_URL', plugin_dir_url( __FILE__ ) );
 
