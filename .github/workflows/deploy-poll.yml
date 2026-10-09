@@ -7,7 +7,7 @@ on:
       mode:
         description: Prøvekjøring eller denne avgrensede produksjonsoppdateringen
         type: choice
-        options: [dry-run, apply]
+        options: [dry-run, apply, api-check]
         default: dry-run
 permissions:
   contents: read
@@ -22,6 +22,7 @@ jobs:
         with:
           persist-credentials: false
       - run: |
+          php -l scripts/probe-poll-fotballdata.php
           php -l scripts/deploy-poll-files.php
           bash -n scripts/deploy-poll-remote.sh
           php theme-next/tests/poll-performance.php
@@ -59,7 +60,7 @@ jobs:
           echo "TRANSPORT: creating private staging directory"
           ssh "$host" "umask 077; mkdir -p $stage" || { echo "ERROR: SSH staging command failed"; exit 1; }
           echo "TRANSPORT: uploading validated payload"
-          scp -O "$RUNNER_TEMP/payload.json" scripts/deploy-poll-files.php "$host:$stage/" || { echo "ERROR: SCP upload failed"; exit 1; }
+          scp -O "$RUNNER_TEMP/payload.json" scripts/deploy-poll-files.php scripts/probe-poll-fotballdata.php "$host:$stage/" || { echo "ERROR: SCP upload failed"; exit 1; }
           echo "TRANSPORT: running WordPress preflight"
           ssh "$host" bash -s -- "$release" "$GITHUB_SHA" "$REQUESTED_MODE" < scripts/deploy-poll-remote.sh
       - name: Fjern SSH-nøkkel fra runner
