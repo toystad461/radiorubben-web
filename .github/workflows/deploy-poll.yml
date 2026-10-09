@@ -59,7 +59,7 @@ jobs:
           echo "TRANSPORT: creating private staging directory"
           ssh "$host" "umask 077; mkdir -p $stage" || { echo "ERROR: SSH staging command failed"; exit 1; }
           echo "TRANSPORT: uploading validated payload"
-          scp "$RUNNER_TEMP/payload.json" scripts/deploy-poll-files.php "$host:$stage/" || { echo "ERROR: SCP upload failed"; exit 1; }
+          scp -O "$RUNNER_TEMP/payload.json" scripts/deploy-poll-files.php "$host:$stage/" || { echo "ERROR: SCP upload failed"; exit 1; }
           echo "TRANSPORT: running WordPress preflight"
           ssh "$host" bash -s -- "$release" "$GITHUB_SHA" "$REQUESTED_MODE" < scripts/deploy-poll-remote.sh
       - name: Fjern SSH-nøkkel fra runner
