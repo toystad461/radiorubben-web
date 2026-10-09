@@ -6,7 +6,7 @@ base = Path(__file__).resolve().parents[1]
 payload = json.loads(subprocess.check_output(['python3', str(base / 'scripts/build-poll-deploy.py')]))
 with tempfile.TemporaryDirectory() as tmp:
     work = Path(tmp)
-    root = work / 'plugin'
+    root = work / 'real-webroot' / 'plugin'
     (root / 'inc').mkdir(parents=True)
     originals = {}
     for name, edits in payload['replacements'].items():
@@ -17,7 +17,9 @@ with tempfile.TemporaryDirectory() as tmp:
         (root / name).write_text(contents, encoding='utf-8')
         originals[name] = contents.encode()
     script = (base / 'scripts/deploy-poll-files.php').read_text(encoding='utf-8')
-    script = script.replace('/run/webroots/r1417157/wp-content/plugins/rr-site-functions', str(root))
+    alias = work / 'webroot-alias'
+    alias.symlink_to(root.parent, target_is_directory=True)
+    script = script.replace('/run/webroots/r1417157/wp-content/plugins/rr-site-functions', str(alias / 'plugin'))
     executable = work / 'deploy.php'
     executable.write_text(script, encoding='utf-8')
     stage = work / 'stage'
@@ -48,4 +50,4 @@ with tempfile.TemporaryDirectory() as tmp:
     result = subprocess.run(['php', str(executable), 'plan', str(bad)], capture_output=True)
     assert result.returncode != 0
     assert not (root / payload['new_file']).exists()
-print('PASS: plan is read-only; exact install preserves drift; concurrent edits stop; rollback restores bytes; unknown source fails closed.')
+print('PASS: aliased webroot resolves; plan is read-only; exact install preserves drift; concurrent edits stop; rollback restores bytes; unknown source fails closed.')
