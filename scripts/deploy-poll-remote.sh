@@ -5,7 +5,7 @@ trap 'echo "ERROR: remote preflight failed at line $LINENO" >&2' ERR
 release=${1:?}; commit=${2:?}
 mode=${3:?}
 [[ "$release" =~ ^poll-[0-9]+-[0-9]+$ && "$commit" =~ ^[0-9a-f]{40}$ ]]
-[[ "$mode" == dry-run || "$mode" == apply ]]
+[[ "$mode" == dry-run || "$mode" == apply || "$mode" == api-check ]]
 root=/run/webroots/r1417157
 state="$HOME/.radiorubben-deploy"
 stage="$state/staging/$release"
@@ -16,6 +16,10 @@ printf 'PREFLIGHT home=%q stylesheet=%q\n' "$site_home" "$site_theme"
 [[ "$site_home" == https://www.radiorubben.no ]]
 [[ "$site_theme" == radio-rubben-next ]]
 [[ ! -f "$root/.maintenance" ]]
+if [[ "$mode" == api-check ]]; then
+  php "$stage/probe-poll-fotballdata.php"
+  exit 0
+fi
 mkdir "$state/lock"
 installed=false; maintenance=false
 cleanup() {
