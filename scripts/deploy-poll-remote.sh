@@ -22,20 +22,20 @@ cleanup() {
   code=$?
   trap - EXIT
   if [[ $code -ne 0 && "$installed" == true ]]; then
-    php "$stage/deploy-poll-files.php" rollback "$stage" || echo 'ERROR: inspect private backup before further writes' >&2
+    php -d display_errors=stderr -d log_errors=0 -d error_reporting=-1 "$stage/deploy-poll-files.php" rollback "$stage" || echo 'ERROR: inspect private backup before further writes' >&2
   fi
   if [[ "$maintenance" == true ]]; then "${wp[@]}" maintenance-mode deactivate || true; fi
   rmdir "$state/lock"
   exit "$code"
 }
 trap cleanup EXIT
-php "$stage/deploy-poll-files.php" plan "$stage"
+php -d display_errors=stderr -d log_errors=0 -d error_reporting=-1 "$stage/deploy-poll-files.php" plan "$stage"
 printf '%s\n' "$commit" > "$stage/commit.txt"
 if [[ "$mode" == dry-run ]]; then echo 'DRY RUN: candidates linted; production unchanged'; exit 0; fi
 "${wp[@]}" maintenance-mode activate
 maintenance=true
 installed=true
-php "$stage/deploy-poll-files.php" apply "$stage"
+php -d display_errors=stderr -d log_errors=0 -d error_reporting=-1 "$stage/deploy-poll-files.php" apply "$stage"
 "${wp[@]}" maintenance-mode deactivate
 maintenance=false
 # Verify public page code and anonymous vote eligibility; never submit a vote.
