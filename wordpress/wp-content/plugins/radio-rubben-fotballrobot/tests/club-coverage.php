@@ -87,7 +87,7 @@ define('RRFR_FOTBALLDATA_CID','1');
 define('RRFR_FOTBALLDATA_CWD','00000000-0000-0000-0000-000000000001');
 $apiMode='ok';$httpCalls=0;
 $apiTeams=['ClubId'=>827,'Teams'=>[team(2,'G13-1'),team(3,'J13-1'),team(7,'Menn Senior A')]];
-$raw['MatchId']=500;$raw['MatchStartDate']='/Date('.(($clock-3600)*1000).'-0000)/';
+$raw['MatchId']=500;$raw['MatchStartDate']='/Date('.(($clock-3600)*1000).'+0000)/';
 $apiMatches=['ClubId'=>827,'Matches'=>[$raw,['MatchId'=>501,'HomeTeamId'=>7]+$raw]];
 function wp_safe_remote_get($url,$args){global $apiMode,$httpCalls,$apiTeams,$apiMatches;$httpCalls++;if($apiMode==='failure')throw new \RuntimeException('transport secret must not escape');return ['body'=>json_encode(str_contains($url,'/teams?')?$apiTeams:$apiMatches),'code'=>200];}
 function wp_remote_retrieve_response_code($r){return $r['code'];}

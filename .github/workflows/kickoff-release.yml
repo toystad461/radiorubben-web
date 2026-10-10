@@ -1,0 +1,25 @@
+name: Fotballrobot kickoff regression checks
+on:
+  push:
+    branches: ['codex/football-kickoff-time']
+    paths: ['scripts/*kickoff*', '.github/workflows/kickoff-release.yml', 'wordpress/wp-content/plugins/radio-rubben-fotballrobot/**']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Test source dates, editorial gates and bounded installer
+        run: |
+          python3 scripts/test-fotballrobot.py
+          python3 scripts/package-kickoff.py "$RUNNER_TEMP/kickoff"
+          php scripts/test-kickoff-install.php
+          bash -n scripts/deploy-kickoff.sh

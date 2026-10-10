@@ -75,12 +75,16 @@ namespace {
     $options['rr_fd_cid']='310';$options['rr_fd_cwd']='00000000-0000-0000-0000-000000000000';
     $options[J::CONFIG]=['enabled'=>true,'owner'=>7,'since'=>1790441712];
     $team_feed=['ClubId'=>827,'Teams'=>[['ClubId'=>827,'TeamId'=>30365,'TeamName'=>'Bremnes Menn Senior A']]];
-    $raw=['MatchId'=>8985501,'HomeTeamId'=>30365,'HomeTeamName'=>'Bremnes','HomeTeamClubId'=>827,'AwayTeamId'=>99,'AwayTeamName'=>'Motstander','AwayTeamClubId'=>814,'HomeTeamGoals'=>7,'AwayTeamGoals'=>1,'TournamentId'=>77,'TournamentName'=>'5. divisjon','StadiumName'=>'Teststadion','MatchStartDate'=>'/Date(1791567000000-0000)/','Cancelled'=>false,'Postponed'=>false,'Interrupted'=>false,'WalkOverHome'=>false,'WalkOverAway'=>false,'WalkOverBoth'=>false,'FinalResultApprovedByDistrict'=>true,'FinalResultApprovedByReferee'=>false];
+    $raw=['MatchId'=>8985501,'HomeTeamId'=>30365,'HomeTeamName'=>'Bremnes','HomeTeamClubId'=>827,'AwayTeamId'=>99,'AwayTeamName'=>'Motstander','AwayTeamClubId'=>814,'HomeTeamGoals'=>7,'AwayTeamGoals'=>1,'TournamentId'=>77,'TournamentName'=>'5. divisjon','StadiumName'=>'Teststadion','MatchStartDate'=>'/Date(1791574200000-0000)/','Cancelled'=>false,'Postponed'=>false,'Interrupted'=>false,'WalkOverHome'=>false,'WalkOverAway'=>false,'WalkOverBoth'=>false,'FinalResultApprovedByDistrict'=>true,'FinalResultApprovedByReferee'=>false];
     $match_feed=['ClubId'=>827,'Matches'=>[$raw]];
     $options['rr_poll_test_8985501_vipps_v3_75']=['finished'=>false,'running'=>true,'closed'=>false,'opened'=>true];$speaker=$options['rr_poll_test_8985501_vipps_v3_75'];
     F::register();$registered=$events;F::register();check($events===$registered,'One periodic registration');
     F::tick();check(J::state(8985501)['due_at']===$now+3600,'Source alone queues 7-1 one hour from first confirmation');
     check($user===0&&$speaker===$options['rr_poll_test_8985501_vipps_v3_75']&&!get_option('rr_match_archive_8985501'),'No user, archive, poll or speaker side effects');
+    $confirmed=RadioRubben\Fotballrobot\ClubCoverage::collect()['matches'][8985501];
+    check($confirmed['kickoff']==='2026-10-09T19:30:00+02:00','Feed wall time agrees with NFF');
+    check(!F::same($confirmed,['kickoff'=>'2026-10-09T21:30:00+02:00']+$confirmed),'Different kickoff still blocks source agreement');
+    check(!F::same($confirmed,['score'=>[7,2]]+$confirmed),'Different result still blocks source agreement');
     $due=J::state(8985501)['due_at'];$now+=300;F::tick();check(J::state(8985501)['due_at']===$due,'Repeated checks preserve first confirmed time');
     $user=7;wp_unschedule_event($due,J::HOOK,[8985501,'prepare']);J::run(8985501,'prepare');check($calls===0&&wp_next_scheduled(J::HOOK,[8985501,'prepare'])===$due,'No early preparation');$user=0;
     $events=[];F::tick();check(wp_next_scheduled(J::HOOK,[8985501,'prepare'])===$due,'Lost cron event repaired');
