@@ -27,7 +27,21 @@ final class Report {
             $url=$match[$side.'_logo']??'';
             if(is_string($url)&&preg_match('~^https://images\.fotball\.no/clublogos/[a-zA-Z0-9._/-]+$~',$url))$logos[$side]=$url;
         }
-        return ['manual_substitutions'=>self::substitutions($state['events']??[],$lineups),'logos'=>$logos];
+        $extras=['manual_substitutions'=>self::substitutions($state['events']??[],$lineups),'logos'=>$logos];
+        // Read only the explicitly selected sporting award, never voters/prize winners.
+        $award=$state['poll_award']??null;$players=[];
+        $bremnesHome=in_array((int)($a['match']['home_id']??$match['home_id']??0),[30365,48835],true);
+        if($bremnesHome&&is_array($award)&&empty($award['dismissed'])&&($award['type']??'')==='award'&&($award['side']??'')==='home') {
+            $rows=$a['results']??[];$top=$rows?(int)$rows[0]['total']:0;
+            foreach($rows as $row)if($top>0&&(int)$row['total']===$top&&is_string($row['player']??null)&&($lineups['roster'][(int)$row['number']]??'')===$row['player'])$players[]=$row['player'];
+            // Live award: extract only the sporting name and validate it against this lineup.
+            if(!$rows&&preg_match('/^Nr\. ([1-9][0-9]*) (.+?) · /u',(string)($award['description']??''),$found)&&($lineups['roster'][(int)$found[1]]??'')===$found[2])$players[]=$found[2];
+        }
+        if($players)$extras['award']=['players'=>array_values(array_unique($players)),'source'=>'Radio Rubben · Dagens Bremnesing'];
+        $sponsor=$a['sponsor']??get_option('rr_bremnes_sponsor_'.$id,[]);
+        if(is_array($sponsor)&&is_string($sponsor['name']??null)&&trim($sponsor['name'])!=='')
+            $extras['sponsor']=['name'=>trim($sponsor['name']),'source'=>'Radio Rubben · kampsponsor'];
+        return $extras;
     }
     public static function content(string $content): string {
         if(!self::active()||!in_the_loop()||!is_main_query()||get_the_ID()!==get_queried_object_id())return $content;

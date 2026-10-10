@@ -36,7 +36,7 @@ function wp_update_post($changes,...$a){
     foreach($hooks as $callbacks)foreach($callbacks as $fn)$data=$fn($data,wp_slash($changes));
     $GLOBALS['posts'][$id]=(object)wp_unslash($data);return $id;
 }
-$facts=['match'=>['id'=>123,'home'=>['name'=>'Bremnes'],'away'=>['name'=>'Viggo'],'score'=>[2,1],'kickoff'=>'2026-09-25T19:00:00+02:00','events'=>[]],
+$facts=['match'=>['id'=>123,'home'=>['id'=>30365,'name'=>'Bremnes'],'away'=>['id'=>19046,'name'=>'Viggo'],'competition'=>['id'=>77,'name'=>'Testserie'],'score'=>[2,1],'kickoff'=>'2026-09-25T19:00:00+02:00','events'=>[]],
     'finished_confirmed'=>true,'fact_hash'=>'snapshot','report_extras'=>['manual_substitutions'=>[],'logos'=>[]]];
 $options['rrfr_fact_123']=100;$meta[100]['_rrfr_payload']=$facts;
 $posts[1]=(object)['ID'=>1,'post_type'=>'post','post_status'=>'draft','post_title'=>'Bremnes slo Viggo 2–1','post_content'=>'Bremnes vant 2–1 over Viggo den 25.09.2026.','post_excerpt'=>'Bremnes slo Viggo.'];
@@ -161,4 +161,14 @@ wp_update_post(['ID'=>3,'post_status'=>'publish']);
 check($posts[3]->post_status==='publish','Authorized manual publication still succeeds with policy metadata');
 check(str_contains($posts[3]->post_content,N::BLOCK),'Human publication preserves AI disclosure');
 
+$options['rrfr_match_source_123']=['match'=>$facts['match'],'provider'=>'Fotballdata','revoked'=>false];
+check(G::current(3,$posts[3]),'Matching source confirmation preserves current quality');
+$originalText=$posts[3]->post_content;
+$options['rrfr_match_source_123']['match']['score']=[7,1];wp_update_post(['ID'=>3,'post_status'=>'publish']);
+check($posts[3]->post_status==='draft'&&$posts[3]->post_content===$originalText,'Changed source blocks approval without overwriting editor text');
+$options['rrfr_match_source_123']['match']=$facts['match'];$options['rrfr_match_source_123']['revoked']=true;
+check(!G::current(3,$posts[3]),'Revoked final status invalidates quality');
+$options['rrfr_match_source_123']['revoked']=false;
+define('DOING_CRON',true);wp_update_post(['ID'=>3,'post_status'=>'publish']);
+check($posts[3]->post_status==='draft','Scheduler impersonating writer owner cannot replace manual approval');
 echo "$count publication controls passed; mocked WordPress and AI, no publication\n";
