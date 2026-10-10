@@ -16,7 +16,7 @@ filer må være fraværende. Historiske manifester endres ikke.
 - Installer har avgrenset filsett, driftssperre, privat backup/kvittering,
   atomisk filbytte og kontroll etterpå. Rollback sjekker alle backupfiler og
   eierskap før første tilbakeføring; senere kodeendringer overskrives ikke.
-- 53 isolerte installasjonskontroller prøver pakkeavvik, produksjonsavvik,
+- 47 isolerte installasjonskontroller prøver pakkeavvik, produksjonsavvik,
   hele etterbildet, nye filer, backup, gjentatt rollback og samtidig kodeendring.
 
 ## Selve utrullingen krever separat godkjenning

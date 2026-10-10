@@ -5,7 +5,7 @@ BASE = '661228524d6ff6e05801027951cc0c82738795ef'
 PREFIX = 'wordpress/wp-content/plugins/radio-rubben-fotballrobot/'
 git = ['git', '-C', str(ROOT)]
 names = subprocess.check_output(git + ['ls-tree', '-r', '--name-only', BASE, '--', PREFIX], text=True).splitlines()
-names = [n for n in names if '/tests/' not in n]
+names = [n for n in names if '/tests/' not in n and pathlib.Path(n).suffix in {'.php', '.css', '.js'}]
 changed = subprocess.check_output(git + ['diff', '--name-only', BASE, 'HEAD', '--', PREFIX], text=True).splitlines()
 changed = [n for n in changed if '/tests/' not in n]
 before, after, updates = {}, {}, {}

@@ -2,12 +2,6 @@
   "baseline_commit": "661228524d6ff6e05801027951cc0c82738795ef",
   "version": "0.10.6",
   "before": {
-    "wp-content/plugins/radio-rubben-fotballrobot/DISCOVERY-MEDIA.md": "d3ce4e4639eeae64f46831d0b22757ab54a9271b86d00f41fc44942195d6a136",
-    "wp-content/plugins/radio-rubben-fotballrobot/EDITORIAL-RULES.md": "a7ebec1b4ce207b57c4a7a9b240b6c26420516af4cd37249e791dd80a4f6bcde",
-    "wp-content/plugins/radio-rubben-fotballrobot/MICROSOFT-MAIL.md": "a53042b874980cefe6bfe96a76303d790eebf5f119d62b0ebfde887605aed6d6",
-    "wp-content/plugins/radio-rubben-fotballrobot/PLAYER-REVIEW.md": "26fcc3bcd8991a54e708cdd556eeb5e4c1e68e27c0135519e3a66b42255df64e",
-    "wp-content/plugins/radio-rubben-fotballrobot/PLAYERS.md": "92f9c3e62c7118e04fe1ba460f08c0ebd07d49cae9e98d020ff1c0a0a116c7d6",
-    "wp-content/plugins/radio-rubben-fotballrobot/README.md": "9c7af4e2bd8c671d5407286c137b53a3149384e9799a0558f0917f2c64f0ec15",
     "wp-content/plugins/radio-rubben-fotballrobot/admin.css": "1bef09eb598ad9b8cbccbcd8006cf8ae035d102f1ecfc7baaf0b7d32fb4fc01e",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/club-automation.php": "e4ae8814cf11f6bdc233696988d2fdd08627171b147b1b8902ab6f3c04ec9dc7",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/club-coverage.php": "eeb0dc30e259ee2efb323e94ddbd35474686292cbc63b5153f4aa3f54fb53b0d",
@@ -47,12 +41,6 @@
     "wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php": "89760f678966493d1a45ee359555e54d54773e90fc69619fdb442401f05af346"
   },
   "after": {
-    "wp-content/plugins/radio-rubben-fotballrobot/DISCOVERY-MEDIA.md": "d3ce4e4639eeae64f46831d0b22757ab54a9271b86d00f41fc44942195d6a136",
-    "wp-content/plugins/radio-rubben-fotballrobot/EDITORIAL-RULES.md": "a7ebec1b4ce207b57c4a7a9b240b6c26420516af4cd37249e791dd80a4f6bcde",
-    "wp-content/plugins/radio-rubben-fotballrobot/MICROSOFT-MAIL.md": "a53042b874980cefe6bfe96a76303d790eebf5f119d62b0ebfde887605aed6d6",
-    "wp-content/plugins/radio-rubben-fotballrobot/PLAYER-REVIEW.md": "26fcc3bcd8991a54e708cdd556eeb5e4c1e68e27c0135519e3a66b42255df64e",
-    "wp-content/plugins/radio-rubben-fotballrobot/PLAYERS.md": "92f9c3e62c7118e04fe1ba460f08c0ebd07d49cae9e98d020ff1c0a0a116c7d6",
-    "wp-content/plugins/radio-rubben-fotballrobot/README.md": "9c7af4e2bd8c671d5407286c137b53a3149384e9799a0558f0917f2c64f0ec15",
     "wp-content/plugins/radio-rubben-fotballrobot/admin.css": "1bef09eb598ad9b8cbccbcd8006cf8ae035d102f1ecfc7baaf0b7d32fb4fc01e",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/club-automation.php": "e4ae8814cf11f6bdc233696988d2fdd08627171b147b1b8902ab6f3c04ec9dc7",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/club-coverage.php": "eeb0dc30e259ee2efb323e94ddbd35474686292cbc63b5153f4aa3f54fb53b0d",
