@@ -1,15 +1,15 @@
-name: Fotballrobot kickoff correction checks
+name: Approved Fotballrobot kickoff correction
 on:
   push:
     branches: ['codex/football-kickoff-time']
-    paths: ['scripts/*kickoff*', '.github/workflows/kickoff-release.yml', 'wordpress/wp-content/plugins/radio-rubben-fotballrobot/**']
+    paths: ['.github/workflows/kickoff-release.yml']
 permissions:
   contents: read
 concurrency:
   group: radiorubben-wordpress
   cancel-in-progress: false
 jobs:
-  check:
+  install:
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
@@ -17,13 +17,14 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
+          ref: 552cfd7a246e990d1993a981392fbc703c119175
       - name: Test source dates, editorial gates and bounded installer
         run: |
           python3 scripts/test-fotballrobot.py
           python3 scripts/package-kickoff.py "$RUNNER_TEMP/kickoff"
           php scripts/test-kickoff-install.php
           bash -n scripts/deploy-kickoff.sh
-      - name: Check production hashes for the two-file correction
+      - name: Install tested two-file correction with verified backup
         env:
           DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
@@ -40,7 +41,7 @@ jobs:
           stage=".radiorubben-deploy/kickoff/$GITHUB_SHA"
           ssh "$host" "umask 077; mkdir -p $stage"
           rsync -rltz "$RUNNER_TEMP/kickoff/" "$host:$stage/"
-          ssh "$host" "bash $stage/scripts/deploy-kickoff.sh \$HOME/$stage \$HOME/.radiorubben-deploy/backups/kickoff-$GITHUB_SHA check"
+          ssh "$host" "bash $stage/scripts/deploy-kickoff.sh \$HOME/$stage \$HOME/.radiorubben-deploy/backups/kickoff-$GITHUB_SHA install"
       - name: Remove runner key
         if: always()
         run: rm -f ~/.ssh/id_ed25519
