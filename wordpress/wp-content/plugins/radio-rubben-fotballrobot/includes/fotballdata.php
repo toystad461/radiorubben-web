@@ -45,9 +45,19 @@ final class Fotballdata {
         return trim($v);
     }
     public static function date($v): string {
-        if(!is_string($v) || !preg_match('~^/Date\(([0-9]{12,13})(?:[+-][0-9]{4})?\)/$~D',$v,$m))
+        if(!is_string($v) || !preg_match('~^/Date\(([0-9]{12,13})([+-][0-9]{4})?\)/$~D',$v,$m))
             throw new \RuntimeException('Fotballdata: ukjent datoformat.');
-        return (new \DateTimeImmutable('@'.intdiv((int)$m[1],1000)))->setTimezone(new \DateTimeZone('Europe/Oslo'))->format(DATE_ATOM);
+        $date=new \DateTimeImmutable('@'.intdiv((int)$m[1],1000));
+        $zone=new \DateTimeZone('Europe/Oslo');
+        // ServiceStack -0000 denotes an unspecified wall clock, not UTC.
+        // Fotballdata supplies Norwegian match time in this form (see kickoff audit).
+        if(($m[2]??'')==='-0000') {
+            $wall=$date->format('Y-m-d H:i:s');
+            $date=new \DateTimeImmutable($wall,$zone);
+            if($date->format('Y-m-d H:i:s')!==$wall)
+                throw new \RuntimeException('Fotballdata: ugyldig lokal kamptid.');
+        }
+        return $date->setTimezone($zone)->format(DATE_ATOM);
     }
     public static function matchRow(array $r): array {
         $id=self::integer($r['MatchId']??null,1);
