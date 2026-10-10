@@ -17,6 +17,8 @@ function rr_poll_sim_action($sim,$action,$number=0,$now=null) {
         $state['elapsed']=rr_poll_elapsed($state,$now); $state['running']=false;
     } elseif ($action==='second' && $state['period']===1 && !$state['running']) {
         $state['period']=2; $state['elapsed']=2700; $state['started']=$now; $state['running']=true;
+    } elseif ($action==='minute85' && $state['period']===2) {
+        $state['elapsed']=5100; $state['started']=$now; $state['closed']=true;
     } elseif ($action==='substitute' && $state['opened'] && !rr_poll_is_closed($state,$now)
         && in_array($number,$match['bench'],true) && isset($match['roster'][$number])) {
         $state['entered'][$number]=(int)floor(rr_poll_elapsed($state,$now)/60);
@@ -94,7 +96,7 @@ add_action('template_redirect',static function() {
     Omgang <?php echo (int)$state['period']; ?> · <?php echo (int)floor(rr_poll_elapsed($state)/60); ?> minutter.</p>
     <?php if (!rr_poll_lineup_ready($match)): ?><p>Startoppstilling mangler. Hent kampen på nytt når kilden har publisert den.</p><?php endif; ?>
     <form method="post"><?php wp_nonce_field('rr_poll_simulation','rr_sim_nonce'); ?><input type="hidden" name="revision" value="<?php echo esc_attr($sim['revision']); ?>">
-    <?php foreach (['start'=>'Start kampen','half'=>'Pause','second'=>'Start andre omgang','close'=>'Steng testavstemning','finish'=>'Avslutt testkamp','reset'=>'Ny test med samme kamp'] as $action=>$label): ?><button name="action" value="<?php echo esc_attr($action); ?>"><?php echo esc_html($label); ?></button><?php endforeach; ?>
+    <?php foreach (['start'=>'Start kampen','half'=>'Pause','second'=>'Start andre omgang','minute85'=>'Gå til 85. minutt','close'=>'Steng testavstemning','finish'=>'Avslutt testkamp','reset'=>'Ny test med samme kamp'] as $action=>$label): ?><button name="action" value="<?php echo esc_attr($action); ?>"><?php echo esc_html($label); ?></button><?php endforeach; ?>
     </form></section><section><h2>Lagoppstilling og teststemmer</h2><table><tr><th>Nr.</th><th>Spiller</th><th>Rolle</th><th>Teststemmer</th></tr>
     <?php foreach ($match['roster'] as $number=>$name): ?><tr><td><?php echo (int)$number; ?></td><td><?php echo esc_html($name); ?></td><td><?php echo in_array((int)$number,$match['starters'],true)?'Starter':'Reserve'; ?></td><td><?php echo (int)($sim['votes'][$number]??0); ?></td></tr><?php endforeach; ?></table>
     <form method="post"><?php wp_nonce_field('rr_poll_simulation','rr_sim_nonce'); ?><input type="hidden" name="revision" value="<?php echo esc_attr($sim['revision']); ?>">

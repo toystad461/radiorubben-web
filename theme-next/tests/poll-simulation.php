@@ -20,6 +20,8 @@ verify($sim['votes'][12]===1,'Substitute becomes eligible');
 verify(is_wp_error(rr_poll_sim_action($sim,'vote',999,1002)),'Unknown player rejected');
 $sim=rr_poll_sim_action($sim,'half',0,3700);
 $sim=rr_poll_sim_action($sim,'second',0,3800);
+$fast=rr_poll_sim_action($sim,'minute85',0,3801);
+verify(rr_poll_is_closed($fast['state'],3801)&&is_wp_error(rr_poll_sim_action($fast,'vote',1,3802)),'Fast-forward test closes voting at 85 minutes');
 verify(is_wp_error(rr_poll_sim_action($sim,'vote',1,6200)),'85-minute rule applies');
 $sim=rr_poll_sim_action($sim,'finish',0,6500);
 verify($sim['state']['finished']&&$sim['state']['closed'],'Finishing closes only the test');

@@ -1,0 +1,66 @@
+name: Historisk avstemning — klargjør og rull ut
+on:
+  pull_request:
+    paths: ['scripts/*simulation*', 'theme-next/**/poll-simulation*', '.github/workflows/deploy-simulation.yml']
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Avgrenset simulering, med backup og beskyttelse av ekte avstemning
+        type: choice
+        options: [dry-run, apply]
+        default: dry-run
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - run: |
+          php theme-next/tests/poll-simulation.php
+          php theme-next/tests/poll-fotballdata.php
+          php -l theme-next/rr-site-functions/inc/poll-simulation.php
+          php -l scripts/deploy-simulation-files.php
+          php -l scripts/probe-simulation.php
+          bash -n scripts/deploy-simulation-remote.sh
+          python3 scripts/test-simulation-deploy.py
+  deploy:
+    needs: validate
+    if: vars.WP_DEPLOY_ENABLED == 'true' && ((github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) || (github.event_name == 'workflow_dispatch' && (inputs.mode == 'dry-run' || github.ref == 'refs/heads/main')))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Konfigurer deploynøkkel
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Prøvekjør eller installer med privat backup
+        env:
+          REQUESTED_MODE: ${{ inputs.mode || 'dry-run' }}
+        run: |
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          release="simulation-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          stage=".radiorubben-deploy/staging/$release"
+          python3 scripts/build-simulation-deploy.py > "$RUNNER_TEMP/payload.json"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -e ssh "$RUNNER_TEMP/payload.json" scripts/deploy-simulation-files.php scripts/probe-simulation.php "$host:$stage/"
+          ssh "$host" bash -s -- "$release" "$GITHUB_SHA" "$REQUESTED_MODE" < scripts/deploy-simulation-remote.sh
+      - name: Fjern deploynøkkel
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
