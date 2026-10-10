@@ -46,4 +46,8 @@ function rr86Deploy(string $root,string $stage,string $backup,string $action): v
     $verify($m['before']);
     try{foreach($allowed as$p){$bytes=file_get_contents($safe($stage,'runtime/'.$p));if(hash('sha256',$bytes)!==$m['after'][$p])throw new RuntimeException('Staging changed');$write($safe($root,$p),$bytes,$modes[$p]??0644);}$verify($m['after']);}catch(Throwable $e){$restore();throw $e;}
 }
-if(realpath($_SERVER['SCRIPT_FILENAME']??'')===__FILE__){umask(0077);rr86Deploy('/run/webroots/r1417157',$argv[1]??'',$argv[2]??'',$argv[3]??'');echo 'PR86_'.strtoupper($argv[3])."_OK\n";}
+if(realpath($_SERVER['SCRIPT_FILENAME']??'')===__FILE__){
+    umask(0077);
+    try{rr86Deploy('/run/webroots/r1417157',$argv[1]??'',$argv[2]??'',$argv[3]??'');echo 'PR86_'.strtoupper($argv[3])."_OK\n";}
+    catch(Throwable $e){fwrite(STDERR,'PR86 blocked: '.$e->getMessage()."\n");exit(1);}
+}
