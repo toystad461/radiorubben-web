@@ -49,8 +49,8 @@ final class Fotballdata {
             throw new \RuntimeException('Fotballdata: ukjent datoformat.');
         $date=new \DateTimeImmutable('@'.intdiv((int)$m[1],1000));
         $zone=new \DateTimeZone('Europe/Oslo');
-        // ServiceStack -0000 denotes an unspecified wall clock, not UTC.
-        // Fotballdata supplies Norwegian match time in this form (see kickoff audit).
+        // Fotballdata serializes Norwegian wall time with the unspecified -0000 marker.
+        // Verified against the same XML MatchStartDate and NFF (see kickoff audit).
         if(($m[2]??'')==='-0000') {
             $wall=$date->format('Y-m-d H:i:s');
             $date=new \DateTimeImmutable($wall,$zone);

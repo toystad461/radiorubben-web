@@ -81,6 +81,10 @@ namespace {
     F::register();$registered=$events;F::register();check($events===$registered,'One periodic registration');
     F::tick();check(J::state(8985501)['due_at']===$now+3600,'Source alone queues 7-1 one hour from first confirmation');
     check($user===0&&$speaker===$options['rr_poll_test_8985501_vipps_v3_75']&&!get_option('rr_match_archive_8985501'),'No user, archive, poll or speaker side effects');
+    $confirmed=RadioRubben\Fotballrobot\ClubCoverage::collect()['matches'][8985501];
+    check($confirmed['kickoff']==='2026-10-09T19:30:00+02:00','Feed wall time agrees with NFF');
+    check(!F::same($confirmed,['kickoff'=>'2026-10-09T21:30:00+02:00']+$confirmed),'Different kickoff still blocks source agreement');
+    check(!F::same($confirmed,['score'=>[7,2]]+$confirmed),'Different result still blocks source agreement');
     $due=J::state(8985501)['due_at'];$now+=300;F::tick();check(J::state(8985501)['due_at']===$due,'Repeated checks preserve first confirmed time');
     $user=7;wp_unschedule_event($due,J::HOOK,[8985501,'prepare']);J::run(8985501,'prepare');check($calls===0&&wp_next_scheduled(J::HOOK,[8985501,'prepare'])===$due,'No early preparation');$user=0;
     $events=[];F::tick();check(wp_next_scheduled(J::HOOK,[8985501,'prepare'])===$due,'Lost cron event repaired');

@@ -48,7 +48,7 @@
     "wp-content/plugins/radio-rubben-fotballrobot/includes/editorial-quality.php": "a3b7dcf06e4dc88fad1f9e95a2265460bd8a0bd6fa5d5028934da6219fa68a9c",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/fact-store.php": "4d0cf137184563441f5558413f4c95faa9497864fb4b254737c60c08cd22be6f",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/facts.php": "083da2b928bb88b9fbaa30af02c1b9e64b8efa2364ffc7cee421b3d55aae4138",
-    "wp-content/plugins/radio-rubben-fotballrobot/includes/fotballdata.php": "6f1c9dc6a715c2326baf28bc87b102c7402d845aacc710d430494429fbb34149",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/fotballdata.php": "1e64f04174dd1d16b36c6b866d0dff3eb2da13b89510eba2fe823e3e3e4c8196",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/inline-sources.php": "30eea3ccd845dc719de9123e8319bd9801810e7ee4f5293dc7e65b062f4301c1",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/learning.php": "a4b90d4989df2b420a3b8369d8806becb86986e72cf6ef25db2800cd5292c753",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/lineups.php": "0e5bdba48ac99e14223bc2dfcdb2ab5ca6fe9d8aa49cd2792223fec23a2d6162",
@@ -80,7 +80,7 @@
     "wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php": "cd13cb124afe3d2444ea8e77ac70a477aec2d5b0cfdacbf2c339eafac67e4966"
   },
   "changed": {
-    "wp-content/plugins/radio-rubben-fotballrobot/includes/fotballdata.php": "6f1c9dc6a715c2326baf28bc87b102c7402d845aacc710d430494429fbb34149",
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/fotballdata.php": "1e64f04174dd1d16b36c6b866d0dff3eb2da13b89510eba2fe823e3e3e4c8196",
     "wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php": "cd13cb124afe3d2444ea8e77ac70a477aec2d5b0cfdacbf2c339eafac67e4966"
   }
 }
