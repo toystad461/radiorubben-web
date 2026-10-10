@@ -32,7 +32,7 @@ if [ "$action" = rollback ]; then
 fi
 php "$stage/scripts/pr86-install.php" "$stage" "$backup" check
 # Read-only: plugins are skipped, no queue handlers or model calls are loaded.
-/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes option get rrfr_match_job_8985501 --format=json
+/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes option get rrfr_match_job_8985501 --format=json | php -r '$s=json_decode(stream_get_contents(STDIN),true,512,JSON_THROW_ON_ERROR);echo json_encode(array_intersect_key($s,array_flip(["status","phase","confirmed_at","due_at","created_at","updated_at","post_id"])),JSON_PRETTY_PRINT).PHP_EOL;'
 if [ "$action" = check ]; then echo 'PR86_PREFLIGHT_OK; no runtime or editorial data changed'; exit; fi
 test "$(curl -sS -o /dev/null -w '%{http_code}' https://www.radiorubben.no/)" = 200
 php "$stage/scripts/pr86-install.php" "$stage" "$backup" install
