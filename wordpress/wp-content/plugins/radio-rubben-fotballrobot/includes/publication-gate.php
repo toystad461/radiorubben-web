@@ -30,6 +30,9 @@ final class PublicationGate {
         }
         if(!is_array($snapshot)||empty($snapshot['match']['id'])) throw new \RuntimeException('Faktagrunnlaget mangler.');
         $facts=Robot::latest((int)$snapshot['match']['id']);
+        $source=get_option('rrfr_match_source_'.(int)$snapshot['match']['id'],[]);
+        if($source&&class_exists(MatchFollowup::class)&&(!empty($source['revoked'])||!MatchFollowup::same($source['match'],$facts['match'])))
+            throw new \RuntimeException('Kildens sluttstatus eller resultat er endret. Ny kontroll kreves.');
         $facts['report_extras']=Report::extras((int)$facts['match']['id'],$facts['lineups']??[]);
         return $facts;
     }
@@ -52,6 +55,7 @@ final class PublicationGate {
         $decision=get_post_meta($id,'_rrfr_editor_decision',true);
         if(is_array($decision)&&($decision['status']??'')==='publishing')
             return hash_equals($decision['hash']??'',PlayerReview::hash((object)$post));
+        if((defined('DOING_CRON')&&DOING_CRON)||(defined('WP_CLI')&&WP_CLI))return false;
         // A background job with a passed model check has no human publishing authority.
         // Existing explicit review decisions above remain bound to the exact text.
         return current_user_can('publish_posts') && current_user_can('edit_post',$id);

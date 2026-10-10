@@ -108,6 +108,7 @@ final class ReviewDesk {
             $other=array_diff_key($items,$ready);
             if($other){echo '<details class="rrfr-card"><summary>Trenger oppfølging, avviste og tester ('.count($other).')</summary>';self::listing($other);echo '</details>';}
         }
+        if(class_exists(MatchFollowup::class))MatchFollowup::panel();
         self::settings();echo '</div>';
     }
     private static function listing(array $items): void {

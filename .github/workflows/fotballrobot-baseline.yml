@@ -52,6 +52,7 @@ jobs:
       - name: PHP syntax and isolated regression suites
         run: |
           python3 scripts/test-fotballrobot.py
+          php -l scripts/fotballrobot-cron.php
           php scripts/test-fotballrobot-policy-deploy.php
           bash -n scripts/deploy-ai-policy-remote.sh
       - name: Mobile reading and approval states
@@ -62,6 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/review-desk.php
+          php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/match-followup.php
           npm install --prefix "$RUNNER_TEMP/rrfr-ui" --no-audit --no-fund playwright@1.62.1
           node scripts/review-desk-visual.cjs > "$RUNNER_TEMP/rrfr-visual.log"
           tail -n 1 "$RUNNER_TEMP/rrfr-visual.log"
