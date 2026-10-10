@@ -1,0 +1,72 @@
+name: Approved PR86 selective production release
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Approved PR86 operation
+        type: choice
+        options: [check, install, rollback, verify-scheduler]
+        default: check
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: f31b4765f6ec8020d97eb6779e37b344002cb16d
+          path: candidate
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Validate approved immutable package and operational readback
+        run: |
+          set -euo pipefail
+          test "$(git -C candidate rev-parse HEAD)" = f31b4765f6ec8020d97eb6779e37b344002cb16d
+          php -l scripts/pr86-production-check.php
+          cd candidate
+          python3 scripts/package-pr86.py "$RUNNER_TEMP/pr86"
+          php scripts/test-pr86-install.php
+          bash -n scripts/deploy-pr86.sh
+          cp ../scripts/pr86-production-check.php "$RUNNER_TEMP/pr86/scripts/"
+      - name: Apply only the approved operation using verified SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+          OPERATION: ${{ inputs.action }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          case "$OPERATION" in check|install|rollback|verify-scheduler) ;; *) exit 2;; esac
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=.radiorubben-deploy/pr86/f31b4765f6ec8020d97eb6779e37b344002cb16d
+          backup=.radiorubben-deploy/backups/pr86-f31b4765f6ec8020d97eb6779e37b344002cb16d
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz "$RUNNER_TEMP/pr86/" "$host:$stage/"
+          if [ "$OPERATION" = verify-scheduler ]; then
+            ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 eval-file $stage/scripts/pr86-production-check.php scheduler \$HOME/$stage/protected-state.json"
+          elif [ "$OPERATION" = install ]; then
+            ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes eval-file $stage/scripts/pr86-production-check.php before \$HOME/$stage/protected-state.json"
+            ssh "$host" "bash $stage/scripts/deploy-pr86.sh \$HOME/$stage \$HOME/$backup install"
+            ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 eval-file $stage/scripts/pr86-production-check.php after \$HOME/$stage/protected-state.json"
+          else
+            ssh "$host" "bash $stage/scripts/deploy-pr86.sh \$HOME/$stage \$HOME/$backup $OPERATION"
+          fi
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

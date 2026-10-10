@@ -1,0 +1,48 @@
+name: Fotballrobot scheduler without site visits
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-fotballrobot-scheduler
+  cancel-in-progress: false
+jobs:
+  tick:
+    # Explicit operational activation after a separate, verified selective release.
+    if: github.ref == 'refs/heads/main' && vars.RRFR_SCHEDULER_ENABLED == 'true' && vars.RRFR_SCHEDULER_REF != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: ${{ vars.RRFR_SCHEDULER_REF }}
+      - name: Require an explicitly approved immutable runner version
+        env:
+          RUNNER_REF: ${{ vars.RRFR_SCHEDULER_REF }}
+        run: |
+          [[ "$RUNNER_REF" =~ ^[a-f0-9]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$RUNNER_REF"
+      - name: Run only the football jobs using the existing verified SSH connection
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/fotballrobot-scheduler/$(git rev-parse HEAD)"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          scp scripts/fotballrobot-cron.php "$host:$stage/run.php"
+          ssh "$host" "flock -n .radiorubben-deploy/fotballrobot-scheduler/runner.lock timeout 480 /usr/local/bin/wp --path=/run/webroots/r1417157 eval-file $stage/run.php"
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
