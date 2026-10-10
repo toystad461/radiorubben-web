@@ -34,6 +34,7 @@ cleanup() {
 }
 trap cleanup EXIT
 php -d display_errors=stderr -d log_errors=0 -d error_reporting=-1 "$stage/deploy-poll-files.php" plan "$stage"
+php "$stage/probe-poll-fotballdata.php" "$stage/candidate/bremnes-poll-fotballdata.php"
 printf '%s\n' "$commit" > "$stage/commit.txt"
 if [[ "$mode" == dry-run ]]; then echo 'DRY RUN: candidates linted; production unchanged'; exit 0; fi
 "${wp[@]}" maintenance-mode activate

@@ -34,11 +34,7 @@ function rr_poll_pick_home_fixture($html,$team_id,$today) {
     return (int)array_key_first($candidates);
 }
 function rr_poll_find_next_home($team_id) {
-    if (!in_array($team_id,[30365,48835],true)) return new WP_Error('team','Velg Herrer A eller Damer A.');
-    $url='https://www.fotball.no/fotballdata/lag/hjem/?fiksId='.$team_id;
-    $response=wp_safe_remote_get($url,['timeout'=>20,'redirection'=>0,'limit_response_size'=>3000000,'headers'=>['Accept'=>'text/html']]);
-    if (is_wp_error($response) || wp_remote_retrieve_response_code($response)!==200) return new WP_Error('fetch','Kunne ikke hente terminlisten fra Fotball.no. Eksisterende kamp er beholdt.');
-    return rr_poll_pick_home_fixture(wp_remote_retrieve_body($response),$team_id,wp_date('Y-m-d',null,new DateTimeZone('Europe/Oslo')));
+    return rr_poll_fd_find_next_home($team_id);
 }
 
 // Advance the shared selection on the first match-page visit after 06:00 Oslo.

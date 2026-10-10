@@ -6,7 +6,7 @@ $root='/run/webroots/r1417157/wp-content/plugins/rr-site-functions';
 if (!$stage || !in_array($mode,['plan','apply','rollback'],true) || is_link($root) || !is_dir($root)) exit(1);
 $root=realpath($root);
 if ($root===false) throw new RuntimeException('Plugin root cannot be resolved');
-$allowed=['inc/bremnes-poll-performance.php','inc/bremnes-direkte-test.php','inc/bremnes-speaker-welcome.php','inc/bremnes-poll-match.php','inc/match-rollover.php','inc/bremnes-poll-test.php'];
+$allowed=['inc/bremnes-poll-fotballdata.php','inc/bremnes-poll-match.php','inc/bremnes-poll-fixtures.php','inc/bremnes-nff-refresh.php'];
 function digest($path) { return is_file($path)?hash_file('sha256',$path):null; }
 function write_atomic($path,$bytes) {
     $temp=tempnam(dirname($path),'.rr-poll-');

@@ -1,5 +1,6 @@
 <?php
 if (!defined('ABSPATH')) exit;
+require_once __DIR__.'/bremnes-poll-fotballdata.php';
 if (!function_exists('rr_poll_parse_match_id')) {
 function rr_poll_parse_match_id($input) {
     $input=trim($input);
@@ -90,9 +91,7 @@ function rr_poll_parse_nff($html,$id) {
         'roster'=>$roster,'starters'=>$starters,'bench'=>$bench,'away_roster'=>$away_roster,'away_starters'=>$away_starters,'away_bench'=>$away_bench,'fetched'=>time()];
 }
 function rr_poll_fetch_nff($id) {
-    $response=wp_safe_remote_get(rr_poll_source_url($id),['timeout'=>20,'redirection'=>0,'limit_response_size'=>2000000,'headers'=>['Accept'=>'text/html']]);
-    if (is_wp_error($response) || wp_remote_retrieve_response_code($response)!==200) return new WP_Error('fetch','Kunne ikke hente kampen fra Fotball.no. Prøv igjen senere. Gjeldende kamp er beholdt.');
-    return rr_poll_parse_nff(wp_remote_retrieve_body($response),$id);
+    return rr_poll_fd_fetch_match($id);
 }
 require_once __DIR__.'/bremnes-poll-fixtures.php';
 function rr_poll_match_form($match,$error,$url,$section='oppsett') {
