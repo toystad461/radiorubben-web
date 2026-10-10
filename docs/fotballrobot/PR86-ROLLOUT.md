@@ -76,7 +76,10 @@ webflaten og eksisterende kø. Gamle 0.10.5 har oppdagelseshullet som PR86 rette
 
 ## Status
 
-Klargjøring er ikke utrulling. Lesende produksjonskontroll viste fortsatt
-`queued/prepare` for 8985501 og uendret frist. Resultatet av SSH-preflight og
+Klargjøring er ikke utrulling. Ny lesende kontroll 10.10 kl. 09.44 viste at
+8985501 nå er `done/review`, med eksisterende utkast 1303,
+`rubben-kamp-8985501`, sist endret kl. 09.43.55. Kampen skal ikke kjøres om.
+Dette beviser at den gamle køen fullførte etter morgenens manuelle arkivering;
+det tidligere påviste automatiske oppdagelseshullet består. Resultatet av SSH-preflight og
 regresjonstester dokumenteres i PR-en. Faktisk scheduleraktivering, trafikkuavhengig
 kjøring og kontroll av et ekte AI-utkast kan først bevises etter godkjent utrulling.

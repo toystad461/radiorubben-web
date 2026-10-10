@@ -2,6 +2,9 @@
 declare(strict_types=1);
 /** Selective code release: never loads WordPress or writes editorial data. */
 function rr86Deploy(string $root,string $stage,string $backup,string $action): void {
+    // The provider's documented /run/webroots entry itself is a symlink.
+    // Resolve that trusted entry once; reject all links below the real root.
+    $root=realpath($root)?:throw new RuntimeException('Webroot missing');
     if(!in_array($action,['check','install','after','rollback'],true))throw new RuntimeException('Invalid action');
     $manifest=$stage.'/scripts/pr86-release.json';
     $m=json_decode(file_get_contents($manifest),true,64,JSON_THROW_ON_ERROR);

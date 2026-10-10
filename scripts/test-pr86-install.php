@@ -25,6 +25,10 @@ try {
     rr86Deploy($root,$stage,$backup,'rollback');rr86Deploy($root,$stage,$backup,'check');check86(!file_exists($root.'/'.$p),'New runtime file removed');
     rr86Deploy($root,$stage,$backup,'rollback');check86(true,'Rollback is idempotent');
     rejects86(fn()=>rr86Deploy($root,$stage,$backup,'install'),'Existing backup cannot be replaced');
-    if(function_exists('symlink')&&@symlink($dir,$root.'/outside'))check86(true,'Fixture supports symlinks');
+    if(function_exists('symlink')){
+        put86($dir.'/outside-file','old '.$existing);unlink($root.'/'.$existing);
+        if(@symlink($dir.'/outside-file',$root.'/'.$existing))rejects86(fn()=>rr86Deploy($root,$stage,$backup,'check'),'Symlink below webroot blocked');
+        else put86($root.'/'.$existing,'old '.$existing);
+    }
     echo "OK: $count PR86 release controls; no WordPress, AI or production writes\n";
 } finally {clean86($dir);}
