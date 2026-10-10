@@ -1,0 +1,56 @@
+<?php
+require __DIR__.'/player-review.php';
+require __DIR__.'/../includes/player-corrections.php';
+require __DIR__.'/../includes/newsroom.php';
+function wp_strip_all_tags($s){return strip_tags($s);}
+function wp_get_attachment_image_url($id,$size){return 'https://www.radiorubben.no/wp-content/uploads/test.jpg';}
+function wp_get_attachment_caption($id){return 'Illustrasjon';}
+function get_permalink($id){return 'https://example.test/article/'.$id;}
+use RadioRubben\Fotballrobot\PlayerCorrections as C;
+use RadioRubben\Fotballrobot\PlayerReview as P;
+use RadioRubben\Fotballrobot\PublicationGate as G;
+$id=P::create('correction-test',$f,false,false);$s=P::state($id);P::decide($id,$s['version'],P::hash(get_post($id)),'approve','');
+$original=get_post($id);$originalState=P::state($id);$originalQuality=get_post_meta($id,G::META,true);$mailBefore=count($mail);
+$article=['title'=>'En tydeligere historie','lead'=>'Et kontrollert sammendrag.','paragraphs'=>['Registrerte opplysninger.'],'checks'=>[['claim'=>'Test','support'=>'facts']]];
+$hash=P::hash($original);
+$allowed=false;rejects(fn()=>C::prepare($id,$hash,$article),'Unauthorized correction rejected');$allowed=true;
+rejects(fn()=>C::prepare($id,'stale',$article),'Stale published text rejected');
+$correctionFail=true;rejects(fn()=>C::prepare($id,$hash,$article),'Failed facts cannot become correction');$correctionFail=false;
+check(get_post($id)==$original&&P::state($id)===$originalState,'Preparation failures keep original text and approval');
+$result=C::prepare($id,$hash,$article);$record=get_post_meta($id,C::META,true);
+$card=RadioRubben\Fotballrobot\Newsroom::card($id);
+check($card['status']==='ready'&&$card['canApprove']&&$card['canRevise']&&!$card['canAddFacts']&&$card['isCorrection']&&$card['token']===$record['token']&&$card['title']===$article['title'],'Unified desk shows reviewed correction with exact proposal token');
+check($result['status']==='pending'&&get_post($id)==$original&&P::state($id)===$originalState,'Prepared correction does not modify public article');
+check(get_post_meta($id,G::META,true)===$originalQuality&&count($mail)===$mailBefore,'Preparation preserves original quality and sends no mail');
+rejects(fn()=>C::prepare($id,$hash,$article),'Pending revision cannot be overwritten');
+check($card['image']['id']===813&&$card['image']['caption']==='Illustrasjon','Desk receives the selected image');
+check(!str_contains($card['body'],$article['lead'])&&!str_contains($card['body'],'Kilder:')&&!str_contains($card['body'],'AI-generert'),'Desk removes only redundant display content');
+rejects(fn()=>C::revise($id,'stale','Kortere ingress'),'Rewrite requires exact proposal');
+$publish=false;rejects(fn()=>C::revise($id,$record['token'],'Kortere ingress'),'Rewrite requires editor capability');$publish=true;
+$write_fail=true;rejects(fn()=>C::revise($id,$record['token'],'Kortere ingress'),'Provider failure is reported');$write_fail=false;
+check(get_post_meta($id,C::META,true)===$record,'Failed rewrite preserves previous proposal');
+C::revise($id,$record['token'],'Kortere ingress');$revised=get_post_meta($id,C::META,true);
+check($revised['token']!==$record['token']&&count($revised['history'])===1,'Rewrite creates new token and retains history');
+check(get_post($id)==$original&&P::state($id)===$originalState&&get_post_meta($id,G::META,true)===$originalQuality&&count($mail)===$mailBefore,'Rewrite leaves public article, approval and mail unchanged');
+rejects(fn()=>C::approve($id,$record['token']),'Previous proposal cannot approve revised text');
+update_post_meta($id,C::META,$record);
+
+$publish=false;rejects(fn()=>C::approve($id,$record['token']),'Publish capability required');$publish=true;
+rejects(fn()=>C::approve($id,'stale'),'Exact proposal token required');
+update_post_meta($id,'_thumbnail_id',999);rejects(fn()=>C::approve($id,$record['token']),'Concurrent image change invalidates approval');update_post_meta($id,'_thumbnail_id',813);
+$newState=$originalState;$newState['facts']['editorial_facts']=[['text'=>'Changed evidence']];update_post_meta($id,P::META,$newState);
+check(RadioRubben\Fotballrobot\Newsroom::card($id)['status']==='attention','Changed facts block correction in unified desk');update_post_meta($id,P::META,$originalState);
+$bad=$record;$bad['post']['post_title']='Unreviewed';update_post_meta($id,C::META,$bad);rejects(fn()=>C::approve($id,$record['token']),'Changed proposal cannot reuse quality');update_post_meta($id,C::META,$record);
+$options['rrfr_review_lock_'.$id]=time();rejects(fn()=>C::approve($id,$record['token']),'Approval shares normal per-story lock');unset($options['rrfr_review_lock_'.$id]);
+$failNextUpdate=true;rejects(fn()=>C::approve($id,$record['token']),'Write failure reported');
+check(get_post($id)==$original&&P::state($id)===$originalState&&get_post_meta($id,G::META,true)===$originalQuality,'Failed write restores original approval and public version');
+C::approve($id,$record['token']);$updated=get_post($id);
+check($updated->ID===$original->ID&&$updated->post_status==='publish'&&$updated->post_title===$article['title'],'Explicit approval updates same published post');
+check(G::canPublish($id,$updated)&&P::state($id)['status']==='published','Normal gate validates the corrected version');
+check(end(P::state($id)['history'])['action']==='correct'&&P::state($id)['version']===$originalState['version']+1,'Correction retains history and exact revision');
+check(get_post_meta($id,'_thumbnail_id',true)===813&&count($mail)===$mailBefore,'Correction preserves image and sends no email');
+rejects(fn()=>C::approve($id,$record['token']),'Correction approval cannot replay');
+check(RadioRubben\Fotballrobot\Newsroom::card($id)['status']==='published','Applied correction returns to published list');
+C::prepare($id,P::hash(get_post($id)),$article);$nextRecord=get_post_meta($id,C::META,true);$saved=get_post($id);C::discard($id,$nextRecord['token']);
+check(get_post($id)==$saved&&get_post_meta($id,C::META,true)['status']==='discarded','Rejecting a correction preserves the published story');
+echo "Published correction checks passed\n";
