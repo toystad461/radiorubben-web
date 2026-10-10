@@ -5,16 +5,18 @@ require_once __DIR__.'/editorial-quality.php';
 /** Publication boundary for robot posts. Quality approval never replaces human approval. */
 final class PublicationGate {
     const META='_rrfr_quality_review';
+    const AI_POLICY_VERSION='1.0.0';
     public static function hash($post): string {
         $p=(array)$post;
         return EditorialQuality::hash(array_map(static fn($k)=>(string)($p[$k]??''),['post_title','post_content','post_excerpt']));
     }
     public static function bind(array $review,array $post): array {
+        $review['aiPolicyVersion']=self::AI_POLICY_VERSION;
         $review['postHash']=self::hash($post);
         return $review;
     }
     public static function managed(int $id,array $incoming=[]): bool {
-        foreach(['_rrfr_ai_match','_rrfr_trial_match','_rrfr_player_review'] as $key)
+        foreach(['_rrfr_ai_match','_rrfr_trial_match','_rrfr_player_review','_rrfr_club_key'] as $key)
             if(!empty($incoming[$key])||($id&&get_post_meta($id,$key,true))) return true;
         return false;
     }
@@ -22,14 +24,22 @@ final class PublicationGate {
         $player=get_post_meta($id,'_rrfr_player_review',true);
         if(is_array($player)&&isset($player['facts'])) return $player['facts'];
         $snapshot=get_post_meta($id,'_rrfr_fact_snapshot',true);
+        if(get_post_meta($id,'_rrfr_club_key',true)) {
+            if(!is_array($snapshot)||(!isset($snapshot['match']['id'])&&!isset($snapshot['week']['key']))) throw new \RuntimeException('Klubbens faktagrunnlag mangler.');
+            return $snapshot;
+        }
         if(!is_array($snapshot)||empty($snapshot['match']['id'])) throw new \RuntimeException('Faktagrunnlaget mangler.');
         $facts=Robot::latest((int)$snapshot['match']['id']);
+        $source=get_option('rrfr_match_source_'.(int)$snapshot['match']['id'],[]);
+        if($source&&class_exists(MatchFollowup::class)&&(!empty($source['revoked'])||!MatchFollowup::same($source['match'],$facts['match'])))
+            throw new \RuntimeException('Kildens sluttstatus eller resultat er endret. Ny kontroll kreves.');
         $facts['report_extras']=Report::extras((int)$facts['match']['id'],$facts['lineups']??[]);
         return $facts;
     }
     public static function current(int $id,$post): bool {
         $review=get_post_meta($id,self::META,true);
-        if(!is_array($review)||($review['rulesVersion']??'')!==EditorialQuality::RULES_VERSION
+        if(!is_array($review)||($review['aiPolicyVersion']??'')!==self::AI_POLICY_VERSION
+            ||($review['rulesVersion']??'')!==EditorialQuality::RULES_VERSION
             ||($review['publishable']??null)!==true||($review['languageStatus']??'')!=='completed'
             ||($review['findings']??null)!==[]||empty($review['postHash'])
             ||!hash_equals($review['postHash'],self::hash($post))) return false;
@@ -45,7 +55,10 @@ final class PublicationGate {
         $decision=get_post_meta($id,'_rrfr_editor_decision',true);
         if(is_array($decision)&&($decision['status']??'')==='publishing')
             return hash_equals($decision['hash']??'',PlayerReview::hash((object)$post));
-        return true; // Match articles still need an explicit manual Publish action/capability.
+        if((defined('DOING_CRON')&&DOING_CRON)||(defined('WP_CLI')&&WP_CLI))return false;
+        // A background job with a passed model check has no human publishing authority.
+        // Existing explicit review decisions above remain bound to the exact text.
+        return current_user_can('publish_posts') && current_user_can('edit_post',$id);
     }
     public static function guard(array $data,array $postarr): array {
         $id=(int)($postarr['ID']??0);

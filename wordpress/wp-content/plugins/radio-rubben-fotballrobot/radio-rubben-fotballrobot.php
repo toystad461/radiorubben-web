@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Radio Rubbens Fotballrobot
  * Description: Kontrollert kampgrunnlag, laghistorikk og separate prøveutkast for Radio Rubben.
- * Version: 0.10.4
+ * Version: 0.10.7
  * Requires PHP: 8.0
  * Author: Radio Rubben
  */
@@ -42,6 +42,12 @@ add_action('admin_enqueue_scripts', static function($hook) {
 });
 
 require_once __DIR__.'/includes/match-jobs.php';
+require_once __DIR__.'/includes/match-work.php';
+require_once __DIR__.'/includes/match-followup.php';
+add_filter('cron_schedules',[MatchFollowup::class,'schedules']);
+add_action('init',[MatchFollowup::class,'register']);
+add_action(MatchFollowup::HOOK,[MatchFollowup::class,'tick']);
+register_deactivation_hook(__FILE__,[MatchFollowup::class,'stop']);
 
 require_once __DIR__.'/includes/fact-store.php';
 
@@ -58,3 +64,15 @@ add_filter('wp_insert_post_data',[PublicationGate::class,'guard'],99,2);
 add_action('publish_future_post',[PublicationGate::class,'future'],9);
 add_action('add_meta_boxes_post',[PublicationGate::class,'box']);
 add_action('admin_notices',[PublicationGate::class,'notice']);
+
+require_once __DIR__.'/includes/fotballdata.php';
+require_once __DIR__.'/includes/club-coverage.php';
+require_once __DIR__.'/includes/club-automation.php';
+add_filter('cron_schedules',[ClubAutomation::class,'schedules']);
+add_action('init',[ClubAutomation::class,'register']);
+add_action('admin_menu',[ClubAutomation::class,'menu']);
+add_action('admin_post_rrfr_club',[ClubAutomation::class,'action']);
+add_action('rrfr_club_tick',[ClubAutomation::class,'tick']);
+add_action('rrfr_club_match',[ClubAutomation::class,'match']);
+add_action('rrfr_club_weekly',[ClubAutomation::class,'weekly']);
+register_deactivation_hook(__FILE__,[ClubAutomation::class,'stop']);

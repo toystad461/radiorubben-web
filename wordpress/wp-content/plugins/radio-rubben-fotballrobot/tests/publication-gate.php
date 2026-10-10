@@ -1,7 +1,7 @@
 <?php
 const ABSPATH=__DIR__.'/';
 const RRFR_OPENAI_API_KEY='sk-local-fake';
-$actions=[];$filters=[];$posts=[];$meta=[];$options=[];$queue=[];$requests=[];$trans=[];$count=0;$canEdit=true;
+$actions=[];$filters=[];$posts=[];$meta=[];$options=[];$queue=[];$requests=[];$trans=[];$count=0;$canEdit=true;$canPublish=true;
 function add_action($hook,$fn,$priority=10,...$a){$GLOBALS['actions'][$hook][$priority][]=$fn;}
 function add_filter($hook,$fn,$priority=10,...$a){$GLOBALS['filters'][$hook][$priority][]=$fn;}
 function register_deactivation_hook(...$a){}
@@ -11,7 +11,7 @@ function update_post_meta($id,$key,$v){$GLOBALS['meta'][$id][$key]=$v;}
 function get_option($key,$default=false){return $GLOBALS['options'][$key]??$default;}
 function add_option($key,$v,...$a){if(isset($GLOBALS['options'][$key]))return false;$GLOBALS['options'][$key]=$v;return true;}
 function delete_option($key){unset($GLOBALS['options'][$key]);}
-function current_user_can(...$a){return $GLOBALS['canEdit'];}
+function current_user_can(...$a){return $GLOBALS['canEdit']&&($a[0]!=='publish_posts'||$GLOBALS['canPublish']);}
 function get_current_user_id(){return 7;}
 function set_transient($k,$v,...$a){$GLOBALS['trans'][$k]=$v;}
 function get_transient($k){return $GLOBALS['trans'][$k]??false;}
@@ -36,7 +36,7 @@ function wp_update_post($changes,...$a){
     foreach($hooks as $callbacks)foreach($callbacks as $fn)$data=$fn($data,wp_slash($changes));
     $GLOBALS['posts'][$id]=(object)wp_unslash($data);return $id;
 }
-$facts=['match'=>['id'=>123,'home'=>['name'=>'Bremnes'],'away'=>['name'=>'Viggo'],'score'=>[2,1],'kickoff'=>'2026-09-25T19:00:00+02:00','events'=>[]],
+$facts=['match'=>['id'=>123,'home'=>['id'=>30365,'name'=>'Bremnes'],'away'=>['id'=>19046,'name'=>'Viggo'],'competition'=>['id'=>77,'name'=>'Testserie'],'score'=>[2,1],'kickoff'=>'2026-09-25T19:00:00+02:00','events'=>[]],
     'finished_confirmed'=>true,'fact_hash'=>'snapshot','report_extras'=>['manual_substitutions'=>[],'logos'=>[]]];
 $options['rrfr_fact_123']=100;$meta[100]['_rrfr_payload']=$facts;
 $posts[1]=(object)['ID'=>1,'post_type'=>'post','post_status'=>'draft','post_title'=>'Bremnes slo Viggo 2–1','post_content'=>'Bremnes vant 2–1 over Viggo den 25.09.2026.','post_excerpt'=>'Bremnes slo Viggo.'];
@@ -140,4 +140,35 @@ check(str_contains(json_decode($requests[0]['input'],true)['article']['paragraph
 $posts[3]=clone $before;$meta[3][G::META]=$approvedNoticeReview;$meta[3]['_rrfr_test_only']=true;
 wp_update_post(['ID'=>3,'post_status'=>'publish']);check($posts[3]->post_status==='draft','Exact disclosure never bypasses test-only publication block');
 
+// AI-policy v1: exercise the real publication filter, without transport or live posts.
+$posts[3]=clone $before;$meta[3]=['_rrfr_ai_match'=>123,'_rrfr_fact_snapshot'=>$facts,G::META=>$approvedNoticeReview];
+check($meta[3][G::META]['aiPolicyVersion']==='1.0.0','Bound review records AI policy version');
+foreach([null,'0.0.0',true] as $version) {
+    $meta[3][G::META]=$approvedNoticeReview;
+    if($version===null)unset($meta[3][G::META]['aiPolicyVersion']);else $meta[3][G::META]['aiPolicyVersion']=$version;
+    wp_update_post(['ID'=>3,'post_status'=>'publish']);
+    check($posts[3]->post_status==='draft','Missing, stale or malformed policy metadata blocks publication');
+}
+$meta[3][G::META]=$approvedNoticeReview;
+$canEdit=false;
+wp_update_post(['ID'=>3,'post_status'=>'publish']);
+check($posts[3]->post_status==='draft','Passed quality check does not authorize a background/anonymous publisher');
+$canEdit=true;$canPublish=false;
+wp_update_post(['ID'=>3,'post_status'=>'publish']);
+check($posts[3]->post_status==='draft','Edit rights alone cannot publish');
+$canPublish=true;
+wp_update_post(['ID'=>3,'post_status'=>'publish']);
+check($posts[3]->post_status==='publish','Authorized manual publication still succeeds with policy metadata');
+check(str_contains($posts[3]->post_content,N::BLOCK),'Human publication preserves AI disclosure');
+
+$options['rrfr_match_source_123']=['match'=>$facts['match'],'provider'=>'Fotballdata','revoked'=>false];
+check(G::current(3,$posts[3]),'Matching source confirmation preserves current quality');
+$originalText=$posts[3]->post_content;
+$options['rrfr_match_source_123']['match']['score']=[7,1];wp_update_post(['ID'=>3,'post_status'=>'publish']);
+check($posts[3]->post_status==='draft'&&$posts[3]->post_content===$originalText,'Changed source blocks approval without overwriting editor text');
+$options['rrfr_match_source_123']['match']=$facts['match'];$options['rrfr_match_source_123']['revoked']=true;
+check(!G::current(3,$posts[3]),'Revoked final status invalidates quality');
+$options['rrfr_match_source_123']['revoked']=false;
+define('DOING_CRON',true);wp_update_post(['ID'=>3,'post_status'=>'publish']);
+check($posts[3]->post_status==='draft','Scheduler impersonating writer owner cannot replace manual approval');
 echo "$count publication controls passed; mocked WordPress and AI, no publication\n";

@@ -42,18 +42,19 @@ final class Newsroom {
         $media=(int)get_post_meta($id,'_thumbnail_id',true);$imageUrl=$media?wp_get_attachment_image_url($media,'large'):false;
         $image=$imageUrl?['id'=>$media,'url'=>$imageUrl,'alt'=>(string)get_post_meta($media,'_wp_attachment_image_alt',true),'caption'=>(string)wp_get_attachment_caption($media)]:null;
         return ['id'=>$id,'type'=>'wordpress','token'=>$token,'title'=>$p->post_title,'intro'=>$p->post_excerpt,
-            'body'=>$body,'notice'=>$notice,'image'=>$image,'isCorrection'=>(bool)$correction,'canAddFacts'=>!$correction,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$correction?'Fotball · Oppdatering av publisert sak':($m['player']?'Fotball · Spillersak':'Fotball · Kampomtale'),
+            'body'=>$body,'notice'=>$notice,'image'=>$image,'isCorrection'=>(bool)$correction,'canAddFacts'=>!$correction,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$correction?'Fotball · Oppdatering av publisert sak':($m['player']?'Fotball · Spillersak':(str_starts_with((string)get_post_meta($p->ID,'_rrfr_club_key',true),'week:')?'Fotball · Neste ukes kamper':'Fotball · Kampomtale')),
             'sourceUrl'=>'','links'=>array_values($links),'canApprove'=>$m['can_approve'],'canRevise'=>$correction?$m['can_approve']:($m['player']&&$m['pending']),
             'publishedUrl'=>$status==='published'?get_permalink($id):null];
     }
     public static function response(): array {
         if(!Robot::allowed())throw new \RuntimeException('Ingen tilgang.');
         $items=[];$query=['post_type'=>'post','post_status'=>['draft','pending'],'numberposts'=>150,'orderby'=>'date','order'=>'DESC',
-            'meta_query'=>['relation'=>'OR',['key'=>PlayerReview::META,'compare'=>'EXISTS'],['key'=>'_rrfr_ai_match','compare'=>'EXISTS'],['key'=>'_rrfr_trial_match','compare'=>'EXISTS']]];
+            'meta_query'=>['relation'=>'OR',['key'=>PlayerReview::META,'compare'=>'EXISTS'],['key'=>'_rrfr_ai_match','compare'=>'EXISTS'],['key'=>'_rrfr_trial_match','compare'=>'EXISTS'],['key'=>'_rrfr_club_key','compare'=>'EXISTS']]];
         $posts=array_merge(get_posts($query),get_posts(array_replace($query,['post_status'=>['publish'],'numberposts'=>30])));
         foreach($posts as $p){if(!current_user_can('edit_post',$p->ID))continue;$card=self::card((int)$p->ID);if($card)$items[]=$card;}
         try{$studioReady=count(ReviewDigest::worker('queue')['items']);}catch(\Throwable $e){$studioReady=null;}
-        return ['version'=>self::VERSION,'items'=>$items,'notification'=>ReviewDigest::status(),'studioQueueReady'=>$studioReady];
+        return ['version'=>self::VERSION,'items'=>$items,'notification'=>ReviewDigest::status(),'studioQueueReady'=>$studioReady,
+            'matchFollowup'=>class_exists(MatchFollowup::class)?MatchFollowup::rows():[]];
     }
     public static function decide(array $input): array {
         if(!Robot::allowed()||!current_user_can('publish_posts'))throw new \RuntimeException('Ingen publiseringstilgang.');
