@@ -1,0 +1,25 @@
+name: Fotballrobot 0.9.1 integration checks
+on:
+  push:
+    branches: ['integrate/fotballrobot-090-quality']
+    paths: ['wordpress/wp-content/plugins/radio-rubben-fotballrobot/**', '.github/workflows/fotballrobot-integration.yml']
+  pull_request:
+    paths: ['wordpress/wp-content/plugins/radio-rubben-fotballrobot/**', '.github/workflows/fotballrobot-integration.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: PHP lint and isolated tests
+        run: |
+          set -euo pipefail
+          root=wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          find "$root" -name '*.php' -print0 | xargs -0 -n1 php -l
+          for test in run writer writer-flow editorial-quality staged-quality publication-gate player-review players learning report bootstrap match-jobs; do
+            php "$root/tests/$test.php"
+          done
+          git diff --check

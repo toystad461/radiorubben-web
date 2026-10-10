@@ -1,0 +1,49 @@
+name: Release tested Fotballrobot 0.9.1 only
+on:
+  push:
+    branches: ['integrate/fotballrobot-090-quality']
+    paths: ['.github/workflows/fotballrobot-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/integrate/fotballrobot-090-quality'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Require precisely the plugin that passed the WordPress and model test
+        run: |
+          set -euo pipefail
+          git diff --exit-code eea0de3c63b1e7c363225d2886377dd7a668d391 HEAD -- wordpress/wp-content/plugins/radio-rubben-fotballrobot
+          bash -n scripts/deploy-fotballrobot-only.sh
+      - name: Configure existing deployment access
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+      - name: Stage and release the single plugin with drift check and rollback
+        run: |
+          set -euo pipefail
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/candidates/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage/wordpress/wp-content/plugins/radio-rubben-fotballrobot $stage/scripts"
+          rsync -rltz --exclude=/tests/ wordpress/wp-content/plugins/radio-rubben-fotballrobot/ "$host:$stage/wordpress/wp-content/plugins/radio-rubben-fotballrobot/"
+          rsync -rltz scripts/deploy-fotballrobot-only.sh scripts/fotballrobot-baseline.sha256 "$host:$stage/scripts/"
+          ssh "$host" "bash $stage/scripts/deploy-fotballrobot-only.sh $GITHUB_SHA"
+      - name: Remove SSH key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
