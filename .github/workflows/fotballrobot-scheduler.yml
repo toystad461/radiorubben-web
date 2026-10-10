@@ -42,8 +42,23 @@ jobs:
           stage=".radiorubben-deploy/fotballrobot-scheduler/$(git rev-parse HEAD)"
           ssh "$host" "umask 077; mkdir -p $stage"
           scp scripts/fotballrobot-cron.php "$host:$stage/run.php"
-          output=$(ssh "$host" "flock --verbose -n \$HOME/.radiorubben-deploy/fotballrobot-scheduler/runner.lock timeout 480 /usr/local/bin/wp --path=/run/webroots/r1417157 eval-file \$HOME/$stage/run.php --use-include")
+          cat > "$RUNNER_TEMP/rrfr-cli-bootstrap.php" <<'PHP'
+          <?php
+          echo "RRFR_CLI_BOOTSTRAP_LOADED\n";
+          register_shutdown_function(static function(){
+              $e=error_get_last();
+              if($e)fwrite(STDERR,'RRFR_CLI_LAST_ERROR '.json_encode(['type'=>$e['type'],'file'=>basename($e['file']),'line'=>$e['line']])."\n");
+          });
+          PHP
+          php -l "$RUNNER_TEMP/rrfr-cli-bootstrap.php"
+          scp "$RUNNER_TEMP/rrfr-cli-bootstrap.php" "$host:$stage/bootstrap.php"
+          ssh "$host" "/usr/local/bin/wp --info"
+          set +e
+          output=$(ssh "$host" "flock --verbose -n \$HOME/.radiorubben-deploy/fotballrobot-scheduler/runner.lock timeout 480 /usr/local/bin/wp --require=\$HOME/$stage/bootstrap.php --path=/run/webroots/r1417157 eval-file \$HOME/$stage/run.php --use-include" 2>&1)
+          result=$?
+          set -e
           printf '%s\n' "$output"
+          test "$result" -eq 0
           grep -q '^OK: Fotballrobot scheduler; events=' <<< "$output"
       - name: Remove runner key
         if: always()
