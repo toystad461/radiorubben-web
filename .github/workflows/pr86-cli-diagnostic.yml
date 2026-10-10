@@ -22,7 +22,7 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
           host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
-          stage=".radiorubben-deploy/pr86-diagnostic/$GITHUB_SHA"
+          stage=".radiorubben-deploy/pr86/diagnostic-$GITHUB_SHA"
           cat > "$RUNNER_TEMP/bootstrap.php" <<'PHP'
           <?php
           echo "RRFR_CLI_BOOTSTRAP_LOADED\n";
@@ -32,12 +32,15 @@ jobs:
           });
           PHP
           php -l "$RUNNER_TEMP/bootstrap.php"
+          echo PRIVATE_STAGE
           ssh "$host" "umask 077; mkdir -p $stage"
-          scp "$RUNNER_TEMP/bootstrap.php" "$host:$stage/bootstrap.php"
+          echo PRIVATE_TRANSFER
+          rsync -rltz "$RUNNER_TEMP/bootstrap.php" "$host:$stage/bootstrap.php"
+          echo TRANSFER_COMPLETE
           echo CLI_INFO
           ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --info" || echo CLI_INFO_UNAVAILABLE
           echo LOCK_TEST
-          ssh "$host" "flock --verbose -n \$HOME/.radiorubben-deploy/pr86-diagnostic/diagnostic.lock true" || echo LOCK_UNAVAILABLE
+          ssh "$host" "flock --verbose -n \$HOME/.radiorubben-deploy/pr86/diagnostic.lock true" || echo LOCK_UNAVAILABLE
           echo MINIMAL_WP_READ
           ssh "$host" "/usr/local/bin/wp --require=\$HOME/$stage/bootstrap.php --path=/run/webroots/r1417157 --skip-plugins --skip-themes option get home" || echo MINIMAL_READ_FAILED
           echo FULL_PLUGIN_WP_READ
