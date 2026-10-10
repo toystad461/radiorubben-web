@@ -1,0 +1,43 @@
+name: PR86 read-only CLI bootstrap diagnostic
+on:
+  push:
+    branches: ['codex/pr86-scheduler-diagnostics']
+    paths: ['.github/workflows/pr86-cli-diagnostic.yml']
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Inspect CLI bootstrap without invoking queue callbacks
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/pr86-diagnostic/$GITHUB_SHA"
+          cat > "$RUNNER_TEMP/bootstrap.php" <<'PHP'
+          <?php
+          echo "RRFR_CLI_BOOTSTRAP_LOADED\n";
+          register_shutdown_function(static function(){
+              $e=error_get_last();
+              if($e)fwrite(STDERR,'RRFR_CLI_LAST_ERROR '.json_encode(['type'=>$e['type'],'file'=>basename($e['file']),'line'=>$e['line']])."\n");
+          });
+          PHP
+          php -l "$RUNNER_TEMP/bootstrap.php"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          scp "$RUNNER_TEMP/bootstrap.php" "$host:$stage/bootstrap.php"
+          ssh "$host" "/usr/local/bin/wp --info"
+          ssh "$host" "flock --verbose -n \$HOME/.radiorubben-deploy/pr86-diagnostic/diagnostic.lock true"
+          ssh "$host" "/usr/local/bin/wp --require=\$HOME/$stage/bootstrap.php --path=/run/webroots/r1417157 --skip-plugins --skip-themes option get home"
+          ssh "$host" "/usr/local/bin/wp --require=\$HOME/$stage/bootstrap.php --path=/run/webroots/r1417157 --skip-themes option get home"
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
