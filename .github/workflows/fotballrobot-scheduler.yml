@@ -42,7 +42,9 @@ jobs:
           stage=".radiorubben-deploy/fotballrobot-scheduler/$(git rev-parse HEAD)"
           ssh "$host" "umask 077; mkdir -p $stage"
           scp scripts/fotballrobot-cron.php "$host:$stage/run.php"
-          ssh "$host" "flock -n .radiorubben-deploy/fotballrobot-scheduler/runner.lock timeout 480 /usr/local/bin/wp --path=/run/webroots/r1417157 eval-file $stage/run.php"
+          output=$(ssh "$host" "flock --verbose -n \$HOME/.radiorubben-deploy/fotballrobot-scheduler/runner.lock timeout 480 /usr/local/bin/wp --path=/run/webroots/r1417157 eval-file \$HOME/$stage/run.php --use-include")
+          printf '%s\n' "$output"
+          grep -q '^OK: Fotballrobot scheduler; events=' <<< "$output"
       - name: Remove runner key
         if: always()
         run: rm -f ~/.ssh/id_ed25519

@@ -59,11 +59,15 @@ jobs:
           ssh "$host" "umask 077; mkdir -p $stage"
           rsync -rltz "$RUNNER_TEMP/pr86/" "$host:$stage/"
           if [ "$OPERATION" = verify-scheduler ]; then
-            ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 eval-file $stage/scripts/pr86-production-check.php scheduler \$HOME/$stage/protected-state.json"
+            output=$(ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 eval-file \$HOME/$stage/scripts/pr86-production-check.php scheduler \$HOME/$stage/protected-state.json --use-include")
+            printf '%s\n' "$output"
+            grep -q '^PR86_SCHEDULER_VERIFIED$' <<< "$output"
           elif [ "$OPERATION" = install ]; then
-            ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes eval-file $stage/scripts/pr86-production-check.php before \$HOME/$stage/protected-state.json"
+            ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes eval-file \$HOME/$stage/scripts/pr86-production-check.php before \$HOME/$stage/protected-state.json --use-include"
             ssh "$host" "bash $stage/scripts/deploy-pr86.sh \$HOME/$stage \$HOME/$backup install"
-            ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 eval-file $stage/scripts/pr86-production-check.php after \$HOME/$stage/protected-state.json"
+            output=$(ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 eval-file \$HOME/$stage/scripts/pr86-production-check.php after \$HOME/$stage/protected-state.json --use-include")
+            printf '%s\n' "$output"
+            grep -q '^PR86_AFTER_VERIFIED$' <<< "$output"
           else
             ssh "$host" "bash $stage/scripts/deploy-pr86.sh \$HOME/$stage \$HOME/$backup $OPERATION"
           fi
