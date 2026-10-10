@@ -98,6 +98,7 @@ function rr_poll_match_form($match,$error,$url,$section='oppsett') {
 ?>
 <section class="card" id="rr-match-settings">
 <h2>Velg lag og kamp</h2>
+<p><a href="<?php echo esc_url(home_url('/avstemningstest/')); ?>">Hent en tidligere kamp og start simulert avstemning</a></p>
 <form method="post" action="<?php echo esc_url(rr_poll_dashboard_url($url,$section)); ?>">
 <input type="hidden" name="rr_return_section" value="<?php echo esc_attr($section); ?>">
 <?php wp_nonce_field('rr_select_match','rr_match_nonce'); ?>

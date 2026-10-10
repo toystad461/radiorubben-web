@@ -29,7 +29,7 @@ function rr_site_boot() {
     }
     $GLOBALS['rr_site_state'] = 'active';
     require_once RR_SITE_DIR . 'inc/presentation-bridge.php';
-    foreach ( array( 'weather', 'quiz-controls', 'weekly-quiz', 'member-hub', 'bremnes-direkte-test', 'match-rollover', 'dashboard-prototype' ) as $module ) {
+    foreach ( array( 'weather', 'quiz-controls', 'weekly-quiz', 'member-hub', 'bremnes-direkte-test', 'match-rollover', 'dashboard-prototype', 'poll-simulation' ) as $module ) {
         require_once RR_SITE_DIR . 'inc/' . $module . '.php';
     }
     require_once RR_SITE_DIR . 'rrlive-data.php';
