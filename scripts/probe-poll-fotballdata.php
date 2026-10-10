@@ -21,6 +21,8 @@ try {
     if (!preg_match('/^[1-9][0-9]*$/D',(string)$cid) || !preg_match('/^[a-f0-9-]{36}$/Di',(string)$cwd)) throw new RuntimeException('configuration');
     $match=(int)get_option('rr_poll_selected_match',0);
     if ($match<1) throw new RuntimeException('match');
+    $candidate=$argv[1]??'';
+    if ($candidate!=='' && !function_exists('rr_poll_fd_parse_match')) require $candidate;
     foreach (['matches/'.$match.'/people','teams/30365/matches'] as $path) {
         $url='https://api.fotballdata.no/v1/'.$path.'?'.http_build_query(['cid'=>$cid,'cwd'=>$cwd,'clubid'=>827,'format'=>'json']);
         $r=wp_safe_remote_get($url,['timeout'=>20,'redirection'=>0,'limit_response_size'=>2500000,'headers'=>['Accept'=>'application/json']]);
@@ -29,6 +31,13 @@ try {
         if($status!==200) { echo 'HTTP status: '.$status."\n"; throw new RuntimeException('provider'); }
         $d=json_decode(wp_remote_retrieve_body($r),true,64,JSON_THROW_ON_ERROR);
         if(!is_array($d)) throw new RuntimeException('schema');
+        if ($candidate!=='' && str_starts_with($path,'matches/')) {
+            $normalized=rr_poll_fd_parse_match($d,$match);
+            if(is_wp_error($normalized)) { echo $normalized->get_error_message()."\n"; throw new RuntimeException('normalization'); }
+            $stored=get_option('rr_poll_match_'.$match,[]);
+            if(!empty($stored['kickoff']) && strtotime($stored['kickoff'])!==strtotime($normalized['kickoff'])) throw new RuntimeException('kickoff mismatch');
+            echo 'NORMALIZED: kickoff matches stored; starters='.count($normalized['starters']).'; bench='.count($normalized['bench']).'; away starters='.count($normalized['away_starters'])."\n";
+        }
         echo $path.' '.json_encode(rr_probe_shape($d),JSON_UNESCAPED_SLASHES)."\n";
         // Role labels alone identify the lineup semantics; no person names/IDs.
         $roles=[];

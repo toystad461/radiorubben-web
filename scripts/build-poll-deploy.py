@@ -1,30 +1,14 @@
-"""Build exact replacements, preserving unrelated production edits."""
+"""Build exact Fotballdata import replacements, preserving other production edits."""
 import json
 from pathlib import Path
-
 base = Path(__file__).resolve().parents[1]
-old_intro = """        $snapshot=['table'=>[],'scorer'=>[],'fetched'=>time()];
-        $info=rr_welcome_match($match);
-        if (empty($info['error'])) { $snapshot['table']=rr_welcome_table($info); $snapshot['scorer']=rr_welcome_top_scorer($info); $snapshot['team_id']=(int)($info['ids'][0]??0); }
-        set_transient($cache_key,$snapshot,!empty($snapshot['table'])?15*MINUTE_IN_SECONDS:5*MINUTE_IN_SECONDS);"""
-new_intro = """        $snapshot=get_option('rr_poll_public_intro_last_'.$id,[]);
-        if (!is_array($snapshot)) $snapshot=[];
-        if (!wp_next_scheduled('rr_poll_refresh_public_intro',[$id])) {
-            wp_schedule_single_event(time()+1,'rr_poll_refresh_public_intro',[$id]);
-        }"""
-replacements = {
-    'inc/bremnes-direkte-test.php': [("require_once __DIR__.'/bremnes-poll-rules.php';", "require_once __DIR__.'/bremnes-poll-rules.php';\nrequire_once __DIR__.'/bremnes-poll-performance.php';")],
-    'inc/bremnes-speaker-welcome.php': [(old_intro, new_intro)],
-    'inc/bremnes-poll-match.php': [('    rr_poll_rollover_selection();', '    rr_poll_schedule_rollover();')],
-    'inc/match-rollover.php': [('    rr_poll_rollover_selection();', '    rr_poll_schedule_rollover();')],
-    'inc/bremnes-poll-test.php': [('refresh();},5000);setInterval(render,500);', "refresh();},<?php echo $rr_control ? 5000 : 10000; ?>);setInterval(render,500);")],
-}
+replacements = json.loads(r'''{"inc/bremnes-poll-match.php":[["if (!defined('ABSPATH')) exit;","if (!defined('ABSPATH')) exit;\nrequire_once __DIR__.'/bremnes-poll-fotballdata.php';"],["function rr_poll_fetch_nff($id) {\n    $response=wp_safe_remote_get(rr_poll_source_url($id),['timeout'=>20,'redirection'=>0,'limit_response_size'=>2000000,'headers'=>['Accept'=>'text/html']]);\n    if (is_wp_error($response) || wp_remote_retrieve_response_code($response)!==200) return new WP_Error('fetch','Kunne ikke hente kampen fra Fotball.no. Prøv igjen senere. Gjeldende kamp er beholdt.');\n    return rr_poll_parse_nff(wp_remote_retrieve_body($response),$id);\n}","function rr_poll_fetch_nff($id) {\n    return rr_poll_fd_fetch_match($id);\n}"]],"inc/bremnes-poll-fixtures.php":[["function rr_poll_find_next_home($team_id) {\n    if (!in_array($team_id,[30365,48835],true)) return new WP_Error('team','Velg Herrer A eller Damer A.');\n    $url='https://www.fotball.no/fotballdata/lag/hjem/?fiksId='.$team_id;\n    $response=wp_safe_remote_get($url,['timeout'=>20,'redirection'=>0,'limit_response_size'=>3000000,'headers'=>['Accept'=>'text/html']]);\n    if (is_wp_error($response) || wp_remote_retrieve_response_code($response)!==200) return new WP_Error('fetch','Kunne ikke hente terminlisten fra Fotball.no. Eksisterende kamp er beholdt.');\n    return rr_poll_pick_home_fixture(wp_remote_retrieve_body($response),$team_id,wp_date('Y-m-d',null,new DateTimeZone('Europe/Oslo')));\n}","function rr_poll_find_next_home($team_id) {\n    return rr_poll_fd_find_next_home($team_id);\n}"]],"inc/bremnes-nff-refresh.php":[["        $response=wp_safe_remote_get(add_query_arg('underside',$kind==='events'?'kamphendelser':'kamptropper',rr_poll_source_url($rr_match_id)),['timeout'=>20,'redirection'=>0,'limit_response_size'=>2000000,'headers'=>['Accept'=>'text/html']]);\n        if (is_wp_error($response) || wp_remote_retrieve_response_code($response)!==200) $rr_nff_message='Kunne ikke hente fra Fotball.no. Tidligere data er beholdt.';\n        else {\n            $html=wp_remote_retrieve_body($response);\n            $fresh=$kind==='events'?rr_nff_event_snapshot($html,$rr_match):rr_poll_parse_nff($html,$rr_match_id);\n","        if ($kind==='players') $fresh=rr_poll_fetch_nff($rr_match_id);\n        else {\n            $response=wp_safe_remote_get(add_query_arg('underside','kamphendelser',rr_poll_source_url($rr_match_id)),['timeout'=>20,'redirection'=>0,'limit_response_size'=>2000000,'headers'=>['Accept'=>'text/html']]);\n            $fresh=is_wp_error($response) || wp_remote_retrieve_response_code($response)!==200\n                ? new WP_Error('fetch','Kunne ikke hente fra Fotball.no. Tidligere data er beholdt.')\n                : rr_nff_event_snapshot(wp_remote_retrieve_body($response),$rr_match);\n        }\n        {\n"],["Oppdater spillertropper fra Fotball.no","Oppdater spillertropper fra Fotballdata"],["Henter begge lag. Troppene blir tilgjengelige når Fotball.no publiserer dem, normalt fra 75 minutter før kampstart. Etter kampstart beholdes spillernes identitet og startoppstilling.","Henter begge lag fra Fotballdata-API-et når oppstillingene er publisert. Etter kampstart beholdes spillernes identitet og startoppstilling."]]}''')
 plugin = base / 'theme-next/rr-site-functions'
 for name, edits in replacements.items():
     source = (plugin / name).read_text(encoding='utf-8')
     for before, after in edits:
         assert source.count(after) == 1, name
         assert source.replace(after, before).count(before) == 1, name
-payload = {'replacements': replacements, 'new_file': 'inc/bremnes-poll-performance.php',
-           'new_content': (plugin / 'inc/bremnes-poll-performance.php').read_text(encoding='utf-8')}
+payload = {'replacements': replacements, 'new_file': 'inc/bremnes-poll-fotballdata.php',
+           'new_content': (plugin / 'inc/bremnes-poll-fotballdata.php').read_text(encoding='utf-8')}
 print(json.dumps(payload))

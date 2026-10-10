@@ -26,6 +26,7 @@ jobs:
           php -l scripts/deploy-poll-files.php
           bash -n scripts/deploy-poll-remote.sh
           php theme-next/tests/poll-performance.php
+          php theme-next/tests/poll-fotballdata.php
           python3 scripts/build-poll-deploy.py > /tmp/poll-payload.json
           python3 scripts/test-poll-deploy.py
   deploy:

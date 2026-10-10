@@ -76,8 +76,8 @@ function rr_nff_refresh_form($kind,$url,$source='nff',$section='') {
     <button type="submit">Oppdater hendelser / lagre kilde</button>
     <p class="muted">Med Fotball.no valgt hentes hendelser automatisk omtrent hvert minutt fra kampstart til kampslutt mens dashboardet er synlig. Knappen kan også brukes til manuell oppdatering. Manuelle bytter vises sammen med hendelsene fra Fotball.no, med draktnummer på spiller ut og inn. Registrer byttene her for å åpne innbyttere for stemmer. Kampklokken styres fortsatt her.</p>
     <?php else: ?>
-    <button type="submit">Oppdater spillertropper fra Fotball.no</button>
-    <p class="muted">Henter begge lag. Troppene blir tilgjengelige når Fotball.no publiserer dem, normalt fra 75 minutter før kampstart. Etter kampstart beholdes spillernes identitet og startoppstilling.</p>
+    <button type="submit">Oppdater spillertropper fra Fotballdata</button>
+    <p class="muted">Henter begge lag fra Fotballdata-API-et når oppstillingene er publisert. Etter kampstart beholdes spillernes identitet og startoppstilling.</p>
     <?php endif; ?></form><?php
 }
 $rr_nff_key='rr_poll_nff_'.$rr_match_id;
@@ -92,11 +92,14 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['rr_nff_refresh'])) {
         update_option($rr_nff_key.'_source','manual',false);
         $rr_nff_source='manual'; $rr_nff_message='Kamprammen viser speakerens hendelser og resultat.';
     } elseif (in_array($kind,['events','players'],true)) {
-        $response=wp_safe_remote_get(add_query_arg('underside',$kind==='events'?'kamphendelser':'kamptropper',rr_poll_source_url($rr_match_id)),['timeout'=>20,'redirection'=>0,'limit_response_size'=>2000000,'headers'=>['Accept'=>'text/html']]);
-        if (is_wp_error($response) || wp_remote_retrieve_response_code($response)!==200) $rr_nff_message='Kunne ikke hente fra Fotball.no. Tidligere data er beholdt.';
+        if ($kind==='players') $fresh=rr_poll_fetch_nff($rr_match_id);
         else {
-            $html=wp_remote_retrieve_body($response);
-            $fresh=$kind==='events'?rr_nff_event_snapshot($html,$rr_match):rr_poll_parse_nff($html,$rr_match_id);
+            $response=wp_safe_remote_get(add_query_arg('underside','kamphendelser',rr_poll_source_url($rr_match_id)),['timeout'=>20,'redirection'=>0,'limit_response_size'=>2000000,'headers'=>['Accept'=>'text/html']]);
+            $fresh=is_wp_error($response) || wp_remote_retrieve_response_code($response)!==200
+                ? new WP_Error('fetch','Kunne ikke hente fra Fotball.no. Tidligere data er beholdt.')
+                : rr_nff_event_snapshot(wp_remote_retrieve_body($response),$rr_match);
+        }
+        {
             if (is_wp_error($fresh)) $rr_nff_message=$fresh->get_error_message();
             elseif ($kind==='events') {
                 update_option($rr_nff_key,$fresh,false); update_option($rr_nff_key.'_source','nff',false);
