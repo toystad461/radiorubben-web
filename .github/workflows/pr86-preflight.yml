@@ -2,7 +2,7 @@ name: PR86 read-only production preflight
 on:
   push:
     branches: ['codex/football-postmatch-recovery']
-    paths: ['scripts/pr86-*', 'scripts/package-pr86.py', 'scripts/deploy-pr86.sh', '.github/workflows/pr86-preflight.yml']
+    paths: ['scripts/pr86-*', 'scripts/package-pr86.py', 'scripts/deploy-pr86.sh', '.github/workflows/pr86-preflight.yml', '.github/workflows/fotballrobot-scheduler.yml', 'docs/fotballrobot/PR86-ROLLOUT.md', 'wordpress/wp-content/plugins/radio-rubben-fotballrobot/**']
   workflow_dispatch:
 permissions:
   contents: read

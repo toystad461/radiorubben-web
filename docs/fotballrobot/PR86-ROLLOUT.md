@@ -45,8 +45,10 @@ filer må være fraværende. Historiske manifester endres ikke.
    Kontroller at ingen avstemning ble endret og at eksisterende utkast er beholdt.
 5. Aktiver separat kjøring uten nettsidebesøk. **En merge av denne PR-en aktiverer
    ikke scheduler.** GitHubs planlagte workflow krever defaultgrenen og variabelen
-   `RRFR_SCHEDULER_ENABLED=true`; denne PR-en er stablet på en annen gren.
-   Bruk derfor enten en separat, godkjent cherry-pick av scheduler/runner til
+   `RRFR_SCHEDULER_ENABLED=true` og `RRFR_SCHEDULER_REF` satt til godkjent full
+   commit-SHA; denne PR-en er stablet på en annen gren. Runneren hentes fra den
+   uforanderlige SHA-en, slik at gammel main-kode ikke kjøres.
+   Bruk derfor enten en separat, godkjent overføring av bare scheduler-workflowen til
    defaultgrenen eller vertens eksisterende cron-tjeneste. Ikke merge gammel
    main-runtime til produksjon. Verifiser tilgjengelig ekstern cron før du lover
    automatisk drift; tilgjengelig `flock`/`timeout` alene beviser ikke cron.
@@ -81,5 +83,9 @@ Klargjøring er ikke utrulling. Ny lesende kontroll 10.10 kl. 09.44 viste at
 `rubben-kamp-8985501`, sist endret kl. 09.43.55. Kampen skal ikke kjøres om.
 Dette beviser at den gamle køen fullførte etter morgenens manuelle arkivering;
 det tidligere påviste automatiske oppdagelseshullet består. Resultatet av SSH-preflight og
-regresjonstester dokumenteres i PR-en. Faktisk scheduleraktivering, trafikkuavhengig
+regresjonstester dokumenteres i PR-en. Den lesende SSH-kontrollen på c6003fd
+bestod 10.10: samtlige 37 runtimebaner (inkludert to fraværende nye filer)
+samsvarte med manifestet. Pakken, PHP på verten og nødvendige kjøreverktøy ble
+kontrollert uten installasjon. Senere endringer må også ha grønn kontroll.
+Faktisk scheduleraktivering, trafikkuavhengig
 kjøring og kontroll av et ekte AI-utkast kan først bevises etter godkjent utrulling.
