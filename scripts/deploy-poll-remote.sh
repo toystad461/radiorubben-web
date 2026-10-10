@@ -45,7 +45,7 @@ php -d display_errors=stderr -d log_errors=0 -d error_reporting=-1 "$stage/deplo
 maintenance=false
 # Verify public page code and anonymous vote eligibility; never submit a vote.
 curl --fail --silent --show-error --max-time 60 'https://www.radiorubben.no/dagenskamp/?rr_deploy_probe=1' > "$stage/page.html"
-grep -Fq '!busy&&!document.hidden' "$stage/page.html"
+php "$stage/check-poll-page.php" "$stage/page.html"
 curl --fail --silent --show-error --max-time 60 'https://www.radiorubben.no/dagenskamp/?rr_poll_api=1' > "$stage/api.json"
 php -r '$d=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); if (empty($d["ok"]) || !array_key_exists("eligible",$d) || $d["eligible"]!==false) exit(1);' "$stage/api.json"
 curl --fail --silent --show-error --max-time 60 -o /dev/null 'https://www.radiorubben.no/'
