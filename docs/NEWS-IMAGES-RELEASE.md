@@ -13,7 +13,7 @@ redaksjonell godkjenning av nye artikler.
   Jobb `38617872866` har publisert 21 endrede kodefiler, kontrollert etter-hasher
   og HTTPS/release-manifest. Privat backup:
   `/home/cptk37ymg_w1417156/.radiorubben-studio-deploy/backups/selective-38617872866-1`.
-  Uendrede produksjonsavvik er bevart. Automatvalg venter på bestått modellpilot.
+  Uendrede produksjonsavvik er bevart. Automatvalg er senere aktivert etter bestått modellpilot, se nedenfor.
 - WordPress er 7.1.3, PHP 8.2.34, Next-tema 2.0.0-rc.5 og Optimole 4.2.16.
   Ingen endring i fotballrobotens aktive 0.10.8 eller øvrige utvidelser.
 
@@ -85,6 +85,20 @@ Første pilot stoppet trygt på ugyldig JSON. Diagnostikk i 38622707537 bekrefte
 Markdown-innpakning og omskrevne belegg. Studio-rettelsen bruker samme strenge
 JSON-skjema som eksisterende kontrollfunksjoner og begrenser belegg til ordrette
 utdrag; hele saken vurderes fortsatt. Ingen validator eller godkjenningsgrense
-svekkes. Endelig åtte-sakers pilot og aktiveringskvittering følger separat.
+svekkes. Endelig pilot `38623968749` bestod 14.10.2026 kl. 19:29 UTC med faktisk
+`gpt-4.1-mini` og Studio-release `96ff332d9b26f07b3be68c1d9cf2c9e58b6a7c60`.
+Bremnes → bremnes-fotball, Brann → sport, politikk → politikk, tjeneste →
+kommunesaker, konsert → kultur-arrangement, idrett → sport, frisør →
+INGEN_PASSENDE_BILDE, maritimt verksted → naeringsliv. Alle åtte bestod og
+var stabile ved retry. Katalogen returnerte samme 21 medieidentiteter før/etter.
+
+Flagget er atomisk aktivert og lest tilbake. Privat konfigurasjon og sendeliste
+var uendret. Aktiveringsbackup:
+`/home/cptk37ymg_w1417156/.radiorubben-studio-deploy/backups/news-images-activation-38623968749-1`.
+Studio PR93s selektive deploy `38623594055` bestod med privat kodebackup.
+WordPress-koden er uendret etter den verifiserte importen. Original, faktisk
+medieregister, skjermkontroll og DRIFTSKVITTERING.txt er lagret i OneDrive.
+Dette dokumenterer aktiv drift for nye utkast; den vanlige menneskelige
+sluttgodkjenningen kreves fortsatt på hver virkelig sak.
 Ingen ekte sak er opprettet, godkjent eller publisert under kontrollen. Eksterne
 sosiale plattformers egen beskjæring må kontrolleres ved faktisk deling.

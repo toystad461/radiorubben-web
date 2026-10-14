@@ -1,7 +1,8 @@
 # Nyhetsbilder v1.2 – kontrollert import og publisering
 
 Status 14.10.2026: installert og aktiv i produksjon, 21 verifiserte mediefiler.
-Studio PR92 er publisert; automatisk bildevalg aktiveres etter egen modellpilot.
+Studio PR92/93 er publisert; automatisk bildevalg er aktivert for nye utkast
+etter bestått åtte-sakers produksjonspilot 38623968749.
 Se `docs/NEWS-IMAGES-RELEASE.md` for faktiske driftskvitteringer.
 
 ## Behov og avgrensning
