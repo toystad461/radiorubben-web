@@ -1,0 +1,70 @@
+<?php
+/** Run only through wp eval-file against the disposable CI WordPress installation. */
+if(get_option('home')!=='http://rr-media-policy.test')throw new RuntimeException('Disposable test site required');
+wp_set_current_user(1);add_theme_support('post-thumbnails');
+function rr_test(bool $ok,string $label):void{if(!$ok)throw new RuntimeException($label);echo "PASS: $label\n";}
+function rr_reject(callable $fn,string $label):void{try{$fn();}catch(Throwable $e){rr_test(true,$label);return;}throw new RuntimeException('Expected rejection: '.$label);}
+$png=base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jW1sAAAAASUVORK5CYII=');
+$upload=wp_upload_bits('policy-fixture.png',null,$png);rr_test(!$upload['error'],'fixture uploaded');
+$image=wp_insert_attachment(['post_title'=>'Policy fixture','post_mime_type'=>'image/png','post_status'=>'inherit'],$upload['file']);
+$variant=dirname($upload['file']).'/policy-fixture-variant.png';file_put_contents($variant,$png);
+wp_update_attachment_metadata($image,['file'=>_wp_relative_upload_path($upload['file']),'width'=>1,'height'=>1,'sizes'=>['fixture'=>['file'=>basename($variant),'width'=>1,'height'=>1,'mime-type'=>'image/png']]]);
+$url=wp_get_attachment_url($image);$post=wp_insert_post(['post_title'=>'Isolated policy test','post_content'=>'Fixture','post_status'=>'draft']);set_post_thumbnail($post,$image);
+function rr_publish(int $id,array $values=[]){$r=new WP_REST_Request('POST','/wp/v2/posts/'.$id);$r->set_body_params(['status'=>'publish']+$values);return rest_do_request($r);}
+$input=['origin'=>'ai_generated','generator'=>'Fixture generator','producedOn'=>gmdate('Y-m-d',time()-86400),'reference'=>'Synthetic test fixture; no real asset','description'=>'','correction'=>'','approve'=>'1','revision'=>0,'nonce'=>wp_create_nonce('rrmp-'.$image)];
+rr_test(rr_publish($post)->get_status()===409&&get_post_status($post)==='draft','REST unknown featured image rejected before publishing');
+rr_reject(fn()=>rrmp_save($image,array_replace($input,['nonce'=>'bad'])),'nonce required');
+rr_reject(fn()=>rrmp_save($image,array_replace($input,['producedOn'=>'2026-02-30'])),'invalid date rejected');
+rr_reject(fn()=>rrmp_save($image,array_replace($input,['generator'=>''])),'missing AI generator declaration rejected');
+$user=wp_insert_user(['user_login'=>'fixture-author','user_pass'=>wp_generate_password(),'role'=>'author']);wp_set_current_user($user);
+rr_reject(fn()=>rrmp_save($image,array_replace($input,['nonce'=>wp_create_nonce('rrmp-'.$image)])),'author cannot approve another owner attachment');wp_set_current_user(1);
+rrmp_save($image,$input);rr_test(rrmp_valid($image),'authorized image approved with actual file hashes');
+rr_test(count(rrmp_get($image)['files'])===2,'original and derived image variant bound');
+rr_reject(fn()=>rrmp_save($image,$input),'stale media form rejected');
+rr_test(rr_publish($post)->get_status()===200&&get_post_status($post)==='publish','approved featured image publishes through real WordPress REST');
+rr_test(str_contains(get_the_post_thumbnail($post),'AI-generert illustrasjon'),'featured thumbnail has visible AI label');
+rr_test(str_contains(wp_get_attachment_caption($image),'AI-generert illustrasjon'),'caption carries label');
+$inline='<figure><img class="wp-image-'.$image.'" src="'.esc_url($url).'" alt="Fixture"></figure>';
+$once=rrmp_render_content($inline);rr_test(str_contains($once,'AI-generert illustrasjon'),'inline image gets visible label');
+rr_test(substr_count(rrmp_render_content($once),'class="rr-ai-image-label"')===1,'rendering is idempotent');
+$forged='<span data-rr-media-label="approved"><img class="wp-image-'.$image.'" src="'.esc_url($url).'"></span>';
+rr_test(str_contains(rrmp_render_content($forged),'AI-generert illustrasjon'),'forged HTML marker cannot suppress label');
+rr_test(str_contains(apply_filters('the_content_feed',$inline),'AI-generert illustrasjon'),'feed output retains inline disclosure');
+rr_test(rr_publish($post,['content'=>'<img class="wp-image-'.$image.'" src="https://example.invalid/photo.png">'])->get_status()===409,'forged attachment class on external image rejected');
+rr_test(rr_publish($post,['content'=>'<img class="wp-image-'.$image.'" src="'.esc_url($url).'" srcset="https://example.invalid/other.png 2x">'])->get_status()===409,'unapproved srcset substitution rejected');
+rr_test(rr_publish($post,['content'=>'[gallery]'])->get_status()===409,'implicit gallery cannot bypass image inventory');
+rr_test(rr_publish($post,['content'=>'[gallery ids="'.$image.'"]'])->get_status()===200,'explicit approved gallery passes');
+$scheduled=wp_insert_post(['post_title'=>'Scheduled image test','post_content'=>$inline,'post_status'=>'future','post_date'=>gmdate('Y-m-d H:i:s',time()+3600),'post_date_gmt'=>gmdate('Y-m-d H:i:s',time()+3600),'meta_input'=>['_thumbnail_id'=>$image]]);
+rr_test(get_post_status($scheduled)==='future','approved image can be scheduled');
+file_put_contents($variant,$png.'changed');clearstatcache();
+do_action('publish_future_post',$scheduled);
+rr_test(get_post_status($scheduled)==='draft','scheduled publishing rechecks changed image before core publisher');
+rr_test(!rrmp_valid($image),'changed derived file invalidates approval');
+rr_test(!str_contains(get_the_post_thumbnail($post),'<img')&&str_contains(get_the_post_thumbnail($post),'venter på ny kontroll'),'changed live image is withheld until reviewed');
+rr_test(rr_publish($post)->get_status()===409,'stale image blocks update through real REST');
+$classic=wp_insert_post(['post_title'=>'Classic invalid image','post_content'=>$inline,'post_status'=>'publish']);
+rr_test(get_post_status($classic)==='draft','classic publish with stale image remains draft');
+$clean=wp_insert_post(['post_title'=>'No image yet','post_content'=>'Text','post_status'=>'publish']);
+rr_test(get_post_status($clean)==='publish','new text-only post does not inherit global post image');
+rr_test(set_post_thumbnail($clean,$image)===false&&!get_post_thumbnail_id($clean),'late thumbnail assignment cannot attach unapproved image to published post');
+file_put_contents($variant,$png);clearstatcache();
+$before=rrmp_get($image);$edit=array_replace($input,['revision'=>$before['revision'],'approve'=>'','generator'=>'Changed model']);rrmp_save($image,$edit);
+rr_test(!rrmp_valid($image),'metadata edit revokes approval');
+rr_test(str_contains(get_the_post_thumbnail($post),'AI-generert illustrasjon'),'pending metadata cannot remove public disclosure');
+$edit['revision']=rrmp_get($image)['revision'];$edit['origin']='photo';$edit['approve']='1';
+rr_reject(fn()=>rrmp_save($image,$edit),'AI origin correction requires explanation');
+$edit['correction']='Fixture proves this particular test asset is not AI generated';rrmp_save($image,$edit);
+rr_test(rrmp_valid($image)&&rrmp_public_label(rrmp_get($image))==='','reviewed correction can restore truthful provenance');
+rr_test(count(rrmp_get($image)['history'])===2,'previous provenance and correction retained');
+$rest=rest_do_request(new WP_REST_Request('GET','/wp/v2/media/'.$image));$data=$rest->get_data();
+rr_test($data['rr_media_policy']['approved']===true&&!isset($data['rr_media_policy']['history'])&&!isset($data['rr_media_policy']['approval']),'public REST exposes provenance without reviewer history');
+$fields=apply_filters('attachment_fields_to_edit',[],get_post($image));rr_test(str_contains($fields['rrmp']['html'],'Jeg har kontrollert bildet'),'media library exposes human approval form');
+$edit['revision']=rrmp_get($image)['revision'];$edit['origin']='ai_edited';$edit['description']='Background generated for fixture';rrmp_save($image,$edit);
+rr_test(str_contains(rrmp_render_content($inline),'AI-redigert bilde'),'partial AI edit gets accurate separate label');
+update_post_meta($image,'_wp_attachment_image_alt','A misleading documentary claim');
+rr_test(!rrmp_valid($image)&&rr_publish($post)->get_status()===409,'alt text changes invalidate image approval');
+$edit['revision']=rrmp_get($image)['revision'];rrmp_save($image,$edit);
+wp_update_post(['ID'=>$image,'post_excerpt'=>'A changed caption']);
+rr_test(!rrmp_valid($image),'caption change requires renewed image approval');
+// No changes are made to production; disposable database is discarded by CI.
+echo "WordPress media policy integration passed.\n";
