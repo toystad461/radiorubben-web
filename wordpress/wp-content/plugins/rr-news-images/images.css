@@ -2,3 +2,5 @@
 .rrni-image img.rrni-whole-image{display:block;width:100%;height:auto;max-width:100%;max-height:none;object-fit:contain!important;object-position:center!important}
 .rrni-image .rrni-caption{display:block;position:static;padding:6px 9px;color:#fff;background:#101c28;font:12px/1.4 system-ui,sans-serif;white-space:normal}
 .rr-post-thumb:has(.rrni-image),.wp-block-post-featured-image:has(.rrni-image){height:auto;max-height:none;overflow:visible}
+.rr-priority-image:has(.rrni-image){height:auto;max-height:none;overflow:visible}
+.rr-single-image figure:has(.rrni-caption)>figcaption{display:none}

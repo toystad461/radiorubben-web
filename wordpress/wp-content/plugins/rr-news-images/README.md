@@ -21,10 +21,11 @@ Register SHA-256: `0f090e476d8042339e1dab75b7653b34548ff24496294bb38908b3db0fabe
 
 Registeret følger koden byteidentisk under `data/01-BILDEREGISTER.json`.
 Originalmediene skal arkiveres separat, ikke genereres på nytt eller hardbeskjæres.
-OneDrive-forslaget `Radio Rubben / Sosiale Medier / Nyhetsbilder /
-RadioRubben-Nyhetsbilder-v1.2` er **ikke opprettet eller lastet opp** her. Det er også
-eldre navn enn den daterte åttedelte OneDrive-strukturen; endelig arkivplass avklares
-ved faktisk arkivering. Originalpakken er fortsatt tilgjengelig som brukerens vedlegg.
+Originalpakken er lastet opp 14.10.2026 under den eksisterende arkivstrukturen:
+`Radio Rubben / 02 Profil og maler / Nyhetsbilder / RadioRubben-Nyhetsbilder-v1.2`.
+OneDrive-item `012VNUSIGB4FUDOXKHQRAYD3WJSRTTNAJY`, 39 646 211 byte.
+Nedlastet igjen fra OneDrive og SHA-256 kontrollert identisk med vedlegget.
+Se `docs/NEWS-IMAGES-RELEASE.md` for avgrenset utrulling og driftskvitteringer.
 
 På målserveren kjøres, etter konkret godkjent utrulling:
 
@@ -76,8 +77,11 @@ Liggende brukes i artikkel/nyhetskort, også på mobil. De tre flatevariantene e
 separate komposisjoner. Kvadrat/story lastes ned fra godkjent Studio-sak.
 4:5 og 1,91:1 er ikke egne filer: bruk luft/bakgrunn eller manuell tilpasning.
 Yoast/Rank Math får originalen for lenkekort når de brukes, men tredjeparts
-beskjæring kan ikke garanteres. Optimole/CDN og faktisk aktivt produksjonstema
-må kontrolleres før aktivering. Ingen NRK-logo eller kommunevåpen legges til.
+beskjæring kan ikke garanteres. Optimole 4.2.16s kildekodefiltre bevarer
+originaladressen og hopper over optimalisering/lazy-crop for pakkevedlegg.
+Aktivt Next-temas prioriterte nyhetskort og doble artikkelbildetekst er håndtert
+med CSS avgrenset til pakkevedlegg. Faktisk visning kontrolleres før aktivering.
+Ingen NRK-logo eller kommunevåpen legges til.
 
 ## Kontroller og ferdigkriterier
 

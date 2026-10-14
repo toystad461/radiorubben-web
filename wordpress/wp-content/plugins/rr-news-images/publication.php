@@ -82,6 +82,7 @@ add_filter('image_downsize', static function($value, $id) {
 add_filter('wp_get_attachment_image_attributes', static function($attr, $attachment) {
     $a = rrni_asset_for_media((int)$attachment->ID); if (!$a) return $attr;
     $attr['class'] = ($attr['class'] ?? '').' rrni-whole-image'; $attr['data-rrni'] = $a['asset_id'];
+    $attr['class'] .= ' skip-optimization'; $attr['data-skip-lazy'] = '1';
     $attr['alt'] = $a['alt_text']; $attr['srcset'] = ''; $attr['sizes'] = '';
     $attr['style'] = 'object-fit:contain!important;object-position:center!important;max-width:100%;';
     return $attr;
@@ -95,3 +96,7 @@ add_filter('wp_get_attachment_caption', static function($caption, $id) { return 
 // Social link cards keep the full landscape original. Feed/story variants are explicit Studio exports.
 add_filter('wpseo_opengraph_image', static function($url) { $id = (int)get_post_thumbnail_id(); return rrni_asset_for_media($id) ? wp_get_attachment_url($id) : $url; });
 add_filter('rank_math/opengraph/facebook/image', static function($url) { $id = (int)get_post_thumbnail_id(); return rrni_asset_for_media($id) ? wp_get_attachment_url($id) : $url; });
+// Optimole 4.2.16: preserve the approved original, including when it builds a URL before tag replacement.
+add_filter('optml_dont_replace_url', static function($skip,$url) {
+    return $skip || (is_string($url) && rrni_url_valid($url) && str_contains((string)parse_url($url,PHP_URL_PATH),'/rr-news-images/'.RRNI_PACKAGE.'/'));
+}, 99, 2);

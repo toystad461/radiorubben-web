@@ -4,6 +4,8 @@ on:
     paths:
       - 'wordpress/wp-content/plugins/rr-news-images/**'
       - '.github/workflows/news-images.yml'
+      - '.github/workflows/news-images-release.yml'
+      - 'scripts/news-images/**'
   push:
     branches: [main]
     paths:
@@ -29,3 +31,6 @@ jobs:
             php -l "$file"
           done < <(find wordpress/wp-content/plugins/rr-news-images -name '*.php' -print0)
           php wordpress/wp-content/plugins/rr-news-images/tests/contract.php
+          php -l scripts/news-images/wordpress-release.php
+          php -l scripts/news-images/studio-activate.php
+          python3 scripts/news-images/test-package.py

@@ -53,8 +53,10 @@ function rrni_import(string $zipPath): array {
             update_post_meta($id, '_rrni_complete', RRNI_MANIFEST_SHA);
             rrni_media($a);
         }
-        update_option('rrni_package_receipt', ['package'=>RRNI_PACKAGE, 'zip_sha256'=>hash_file('sha256', $zipPath), 'manifest_sha256'=>RRNI_MANIFEST_SHA,
-            'archive_path'=>realpath($zipPath), 'media_directory'=>$dir, 'imported_at'=>gmdate('c'), 'onedrive_status'=>'not_uploaded'], false);
+        $receipt = get_option('rrni_package_receipt', []);
+        if (!is_array($receipt) || ($receipt['package'] ?? '') !== RRNI_PACKAGE || ($receipt['zip_sha256'] ?? '') !== hash_file('sha256', $zipPath)) $receipt = [];
+        update_option('rrni_package_receipt', array_replace($receipt, ['package'=>RRNI_PACKAGE, 'zip_sha256'=>hash_file('sha256', $zipPath), 'manifest_sha256'=>RRNI_MANIFEST_SHA,
+            'archive_path'=>realpath($zipPath), 'media_directory'=>$dir, 'imported_at'=>gmdate('c'), 'onedrive_status'=>$receipt['onedrive_status'] ?? 'not_uploaded']), false);
         return rrni_catalog();
     } finally { flock($lock, LOCK_UN); fclose($lock); }
 }

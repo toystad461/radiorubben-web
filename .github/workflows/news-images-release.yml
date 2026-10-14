@@ -1,0 +1,74 @@
+name: Nyhetsbilder – godkjent avgrenset utrulling
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Install/import, verify, or activate Studio after live pilot
+        type: choice
+        options: [install, verify, activate-studio]
+        required: true
+      source_sha:
+        description: Exact reviewed main commit
+        required: true
+        type: string
+      package_url:
+        description: Temporary download URL of the verified OneDrive ZIP (install only)
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Pin source and prepare only the approved plugin
+        run: python3 scripts/news-images/package.py
+      - name: Apply scoped operation with verified SSH
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+          OPERATION: ${{ inputs.action }}
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          case "$OPERATION" in install|verify|activate-studio) ;; *) exit 2;; esac
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/news-images/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          ssh "$host" "umask 077; mkdir -p '$stage'"
+          rsync -rltz "$RUNNER_TEMP/news-images/" "$host:$stage/"
+          ssh "$host" "cd '$stage' && sha256sum -c transport.sha256"
+          if [[ "$OPERATION" == activate-studio ]]; then
+            ssh "$host" "php '$stage/studio-activate.php'" | tee "$RUNNER_TEMP/news-images/result.log"
+          else
+            ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 eval-file \$HOME/$stage/wordpress-release.php '$OPERATION' --use-include" | tee "$RUNNER_TEMP/news-images/result.log"
+          fi
+          mkdir -p "$RUNNER_TEMP/image-proof"
+          scp "$host:$stage/result.json" "$RUNNER_TEMP/image-proof/result.json"
+          if [[ "$OPERATION" != activate-studio ]]; then
+            scp "$host:$stage/preview.html" "$RUNNER_TEMP/image-proof/preview.html"
+            scp "$host:$stage/images.css" "$RUNNER_TEMP/image-proof/images.css"
+          fi
+          cat "$RUNNER_TEMP/news-images/result.log" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: news-images-production-proof
+          path: ${{ runner.temp }}/image-proof/
+          if-no-files-found: error
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

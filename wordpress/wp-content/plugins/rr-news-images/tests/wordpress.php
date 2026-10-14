@@ -7,6 +7,8 @@ $zip=$args[0]??getenv('RRNI_TEST_ZIP');if(!$zip)throw new RuntimeException('ZIP 
 $first=rrni_import($zip);$repeat=rrni_import($zip);
 rrni_test($first===$repeat,'second import returns identical real attachment IDs and URLs');
 rrni_test(count($first['assets'])===21,'all 21 assets imported');
+$receipt=get_option('rrni_package_receipt');$receipt['onedrive_status']='uploaded';$receipt['onedrive_url']='https://example.test/verified-archive';update_option('rrni_package_receipt',$receipt,false);
+rrni_import($zip);rrni_test(get_option('rrni_package_receipt')['onedrive_url']===$receipt['onedrive_url']&&get_option('rrni_package_receipt')['onedrive_status']==='uploaded','reimport preserves verified archive receipt');
 $a=reset(rrni_assets());$id=rrni_media_id($a);$bytes=file_get_contents(get_attached_file($id,true));
 // Deliberate synthetic failure after creating an attachment, before writing metadata.
 wp_delete_attachment($id,true);
@@ -56,4 +58,7 @@ foreach(rrni_themes()as$theme=>$asset){$media=$catalog['assets'][$asset['asset_i
 $html.='</div><article class="rr-single-image">'.wp_get_attachment_image($choice['variants']['article_landscape']['media_id'],'large').'</article></body></html>';
 if($out=getenv('RRNI_TEST_HTML'))file_put_contents($out,$html);
 rrni_test(!str_contains($html,'-150x150')&&str_contains($html,'rrni-whole-image')&&str_contains($html,RRNI_CAPTION),'thumbnail and article pipeline use full original with visible KI caption');
+rrni_test(str_contains($html,'skip-optimization')&&str_contains($html,'data-skip-lazy="1"'),'Optimole does not crop or replace approved image tags');
+rrni_test(apply_filters('optml_dont_replace_url',false,$choice['variants']['article_landscape']['url'])===true,'Optimole original URL protected');
+rrni_test(apply_filters('optml_dont_replace_url',false,'https://www.radiorubben.no/wp-content/uploads/editorial.jpg')===false,'unrelated images retain existing optimizer behavior');
 echo "WordPress integration passed in disposable installation. No production changes.\n";
