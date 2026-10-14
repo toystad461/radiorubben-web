@@ -58,6 +58,9 @@ try {
             rrni_release_assert(hash_file('sha256',$pending.'/'.$file)===$hash,'Installed hash mismatch');
         }
         rrni_release_assert(rename($pending,$target),'Cannot install plugin directory');
+        // Other active plugins may have primed get_plugins() before this atomic install.
+        // Refresh discovery; activate_plugin still performs all normal validation.
+        wp_clean_plugins_cache(false);
     }
     require_once $target.'/rr-news-images.php';
     if($operation==='install'){
@@ -80,7 +83,7 @@ try {
         $receipt['onedrive_sha256_verified']='2026-10-14';
         update_option('rrni_package_receipt',$receipt,false);
         rrni_release_assert(rrni_release_posts()===$before,'Editorial content changed during import; investigate without restoring content');
-        if(!$wasActive){$error=activate_plugin('rr-news-images/rr-news-images.php');rrni_release_assert(!is_wp_error($error),'Plugin activation failed');$activated=true;}
+        if(!$wasActive){$error=activate_plugin('rr-news-images/rr-news-images.php');rrni_release_assert(!is_wp_error($error),'Plugin activation failed'.(is_wp_error($error)?': '.$error->get_error_code():''));$activated=true;}
     }else{$catalog=rrni_catalog();}
     rrni_release_assert(is_plugin_active('rr-news-images/rr-news-images.php'),'Image plugin is not active');
     rrni_catalog_validate($catalog);

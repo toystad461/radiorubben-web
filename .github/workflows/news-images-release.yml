@@ -56,14 +56,20 @@ jobs:
           if [[ "$OPERATION" == activate-studio ]]; then
             ssh "$host" "php '$stage/studio-activate.php'" | tee "$RUNNER_TEMP/news-images/result.log"
           else
-            ssh "$host" "/usr/local/bin/wp --require=\$HOME/$stage/cli-bootstrap.php --path=/run/webroots/r1417157 eval-file \$HOME/$stage/wordpress-release.php '$OPERATION' --use-include" | tee "$RUNNER_TEMP/news-images/result.log"
+            if ssh "$host" "/usr/local/bin/wp --require=\$HOME/$stage/cli-bootstrap.php --path=/run/webroots/r1417157 eval-file \$HOME/$stage/wordpress-release.php '$OPERATION' --use-include" | tee "$RUNNER_TEMP/news-images/result.log"; then
+              echo 'WordPress command exited successfully.'
+            else
+              echo '::error::WordPress command returned a nonzero exit code.'
+              exit 1
+            fi
             grep -q '^NEWS_IMAGES_WORDPRESS_VERIFIED$' "$RUNNER_TEMP/news-images/result.log"
           fi
           mkdir -p "$RUNNER_TEMP/image-proof"
-          scp "$host:$stage/result.json" "$RUNNER_TEMP/image-proof/result.json"
+          echo 'Read private JSON receipt using the verified SSH transport.'
+          ssh "$host" "cat '$stage/result.json'" > "$RUNNER_TEMP/image-proof/result.json"
           if [[ "$OPERATION" != activate-studio ]]; then
-            scp "$host:$stage/preview.html" "$RUNNER_TEMP/image-proof/preview.html"
-            scp "$host:$stage/images.css" "$RUNNER_TEMP/image-proof/images.css"
+            ssh "$host" "cat '$stage/preview.html'" > "$RUNNER_TEMP/image-proof/preview.html"
+            ssh "$host" "cat '$stage/images.css'" > "$RUNNER_TEMP/image-proof/images.css"
           fi
           cat "$RUNNER_TEMP/news-images/result.log" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
