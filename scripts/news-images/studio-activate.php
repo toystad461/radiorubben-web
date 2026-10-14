@@ -49,7 +49,15 @@ try{
     $results=[];
     foreach($fixtures as[$name,$expected,$title,$intro,$body,$category,$entities]){
         $item=['title'=>$title,'category'=>$category,'entities'=>$entities,'web'=>['title'=>$title,'intro'=>$intro,'body'=>$body]];
-        $choice=studio_images_prepare($item,$config,null,static fn()=>$catalog);
+        // Only these synthetic fixtures are logged; never log config or real editorial data.
+        $request=static function(array $settings,array $payload)use($name):string{
+            try{$raw=producer_request($settings,$payload);}
+            catch(Throwable $error){echo json_encode(['fixture'=>$name,'request_error'=>$error->getMessage()],JSON_UNESCAPED_UNICODE)."\n";throw $error;}
+            try{json_decode($raw,true,32,JSON_THROW_ON_ERROR);}
+            catch(JsonException $error){echo json_encode(['fixture'=>$name,'invalid_json'=>$raw],JSON_UNESCAPED_UNICODE)."\n";throw $error;}
+            return $raw;
+        };
+        $choice=studio_images_prepare($item,$config,$request,static fn()=>$catalog);
         $ok=$choice!==null&&($choice['theme_id']??null)===$expected&&$choice['status']===($expected===null?'INGEN_PASSENDE_BILDE':'selected');
         $results[]=['fixture'=>$name,'expected'=>$expected,'theme'=>$choice['theme_id']??null,'status'=>$choice['status']??null,'reason'=>$choice['reason']??'','passed'=>$ok];
         rrni_pilot_private_write(__DIR__.'/pilot.json',json_encode($results,JSON_THROW_ON_ERROR|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));
