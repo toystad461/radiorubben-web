@@ -32,7 +32,7 @@ def build():
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(source / relative, target)
         manifest['files'][relative] = hashlib.sha256(target.read_bytes()).hexdigest()
-    for name in ('wordpress-release.php', 'studio-activate.php'):
+    for name in ('wordpress-release.php', 'studio-activate.php', 'cli-bootstrap.php'):
         shutil.copyfile(Path('scripts/news-images') / name, output / name)
     (output / 'manifest.json').write_text(json.dumps(manifest, indent=2))
     if inputs['action'] == 'install':

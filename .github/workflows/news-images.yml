@@ -33,4 +33,5 @@ jobs:
           php wordpress/wp-content/plugins/rr-news-images/tests/contract.php
           php -l scripts/news-images/wordpress-release.php
           php -l scripts/news-images/studio-activate.php
+          php -l scripts/news-images/cli-bootstrap.php
           python3 scripts/news-images/test-package.py

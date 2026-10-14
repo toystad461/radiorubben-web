@@ -1,6 +1,7 @@
 <?php
 /** Approved image-only release. Never creates, edits or publishes news posts. */
 declare(strict_types=1);
+echo "RRNI_RELEASE_ENTERED\n";
 function rrni_release_assert(bool $ok, string $why): void { if (!$ok) throw new RuntimeException($why); }
 function rrni_release_posts(): array {
     global $wpdb;
