@@ -25,7 +25,11 @@ final class PublicationGate {
         if(is_array($player)&&isset($player['facts'])) return $player['facts'];
         $snapshot=get_post_meta($id,'_rrfr_fact_snapshot',true);
         if(get_post_meta($id,'_rrfr_club_key',true)) {
+            if(get_post_meta($id,'_rrfr_detail_error',true))throw new \RuntimeException('Ny kontroll av kampdetaljer kreves.');
             if(!is_array($snapshot)||(!isset($snapshot['match']['id'])&&!isset($snapshot['week']['key']))) throw new \RuntimeException('Klubbens faktagrunnlag mangler.');
+            if(isset($snapshot['match']['id']) && (($snapshot['detail_check']['version']??null)!==1
+                ||($snapshot['detail_check']['match_id']??null)!==$snapshot['match']['id']))
+                throw new \RuntimeException('Kampdetaljene må kontrolleres mot Fotballdata og NFF før godkjenning.');
             return $snapshot;
         }
         if(!is_array($snapshot)||empty($snapshot['match']['id'])) throw new \RuntimeException('Faktagrunnlaget mangler.');

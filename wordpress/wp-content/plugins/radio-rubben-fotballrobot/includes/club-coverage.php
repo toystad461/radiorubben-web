@@ -52,6 +52,40 @@ final class ClubCoverage {
         $teams=self::teams(Fotballdata::clubTeams());
         return ['teams'=>$teams,'matches'=>self::matches(Fotballdata::clubMatches(),$teams,time()),'fetched_at'=>gmdate(DATE_ATOM),'provider'=>'Fotballdata'];
     }
+    /** Result feed and exact NFF match detail must agree before writing. */
+    public static function detailFacts(array $match): array {
+        Fotballdata::verify($match,self::CLUB);
+        $r=wp_safe_remote_get($match['source'],['timeout'=>20,'redirection'=>0,'limit_response_size'=>2500000,'headers'=>['Accept'=>'text/html']]);
+        if(is_wp_error($r)||wp_remote_retrieve_response_code($r)!==200)
+            throw new \RuntimeException('Kampdetaljene kunne ikke hentes. Ingen ny artikkel er skrevet.');
+        $html=wp_remote_retrieve_body($r);
+        if(!is_string($html)||$html===''||strlen($html)>=2500000)throw new \RuntimeException('Kampdetaljene er tomme eller avkortet.');
+        return self::normalizeDetails($match,$html,gmdate(DATE_ATOM));
+    }
+    public static function normalizeDetails(array $feed,string $html,string $at): array {
+        $m=Facts::match($html,(int)$feed['id']);
+        if(empty($feed['finished_confirmed'])||self::blocked($feed)||$m['score']===null
+            ||$m['score']!==$feed['score']||$m['home']['id']!==$feed['home']['id']||$m['away']['id']!==$feed['away']['id']
+            ||$m['competition']['id']!==$feed['competition']['id']||strtotime($m['kickoff'])!==strtotime($feed['kickoff']))
+            throw new \RuntimeException('Fotballdata og kampdetaljene er ikke enige. Kontroller kampgrunnlaget.');
+        $lineups=Lineups::parse($html,$m);
+        foreach(['home','away'] as $side)if(isset($feed[$side]['registered_name']))$m[$side]['registered_name']=$feed[$side]['registered_name'];
+        $m=array_replace($feed,$m);$score=[0,0];
+        foreach($m['events'] as $event)if(in_array($event['type'],['Spillemål','Straffemål','Selvmål'],true)) {
+            $side=$event['side']==='home'?0:1;if($event['type']==='Selvmål')$side=1-$side;$score[$side]++;
+        }
+        $complete=$score===$m['score'];
+        $warnings=$lineups['warnings'];
+        if(!$complete)$warnings[]='Kamphendelsene dekker ikke hele sluttresultatet. Bare en begrenset resultatnotis kan skrives; ikke utled kampforløp.';
+        return ['match'=>$m,'finished_confirmed'=>true,'forms'=>['home'=>null,'away'=>null],'lineups'=>$lineups,
+            'angles'=>Facts::angles($m,[]),'warnings'=>$warnings,
+            'detail_check'=>['version'=>1,'match_id'=>$m['id'],'checked_at'=>$at,'events_complete'=>$complete],
+            'sources'=>[['url'=>$m['source'],'provider'=>'NFF','fetched_at'=>$at],['url'=>'https://www.fotballdata.no/','provider'=>'Fotballdata','fetched_at'=>$at]],'created_at'=>$at];
+    }
+    public static function sameFeed(array $snapshot,array $feed): bool {
+        foreach($feed as $key=>$value) { if($key==='events')continue;if(($snapshot[$key]??null)!==$value)return false; }
+        return true;
+    }
     public static function nextSunday(int $now): int {
         $local=(new \DateTimeImmutable('@'.$now))->setTimezone(new \DateTimeZone('Europe/Oslo'));
         $sunday=$local->modify('sunday this week')->setTime(18,0);

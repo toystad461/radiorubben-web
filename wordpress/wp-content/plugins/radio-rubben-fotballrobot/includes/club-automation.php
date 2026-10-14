@@ -57,9 +57,24 @@ final class ClubAutomation {
                 // Changed feed facts invalidate the existing approval without rewriting an editor's text.
                 if($postId=self::existing('match:'.$id)) {
                     $snapshot=get_post_meta($postId,'_rrfr_fact_snapshot',true);
-                    if(get_post($postId)->post_status==='draft' && get_post_meta($postId,'_rrfr_club_key',true) && is_array($snapshot) && ($snapshot['match']??null)!==$m) {
-                        $snapshot['match']=$m;$snapshot['finished_confirmed']=$m['finished_confirmed'];
-                        update_post_meta($postId,'_rrfr_fact_snapshot',$snapshot);
+                    $decision=get_post_meta($postId,'_rrfr_editor_decision',true);
+                    if(get_post($postId)->post_status==='draft' && ($decision['status']??'')==='pending'
+                        && get_post_meta($postId,'_rrfr_club_key',true) && is_array($snapshot)
+                        && (!ClubCoverage::sameFeed($snapshot['match']??[],$m)||empty($snapshot['detail_check'])
+                            ||(int)get_post_meta($postId,'_rrfr_detail_checked_at',true)<time()-1800)) {
+                        // Keep editorial text and decisions; changed facts invalidate the existing quality hash.
+                        try {
+                            $new=array_replace($snapshot,ClubCoverage::detailFacts($m));
+                            $oldCompare=$snapshot;$newCompare=$new;
+                            unset($oldCompare['detail_check']['checked_at'],$newCompare['detail_check']['checked_at']);
+                            if(FactStore::fingerprint($oldCompare)!==FactStore::fingerprint($newCompare))
+                                update_post_meta($postId,'_rrfr_fact_snapshot',$new);
+                            update_post_meta($postId,'_rrfr_detail_checked_at',time());
+                            delete_post_meta($postId,'_rrfr_detail_error');
+                        } catch(\Throwable $e) {
+                            update_post_meta($postId,'_rrfr_detail_error','Kampdetaljene kunne ikke bekreftes. Ny kontroll kreves.');
+                            self::error('match_'.$id,$e);
+                        }
                     }
                 }
                 if (!$m['finished_confirmed']) { unset($seen[$id]); continue; }
@@ -83,9 +98,7 @@ final class ClubAutomation {
             $seen=get_option('rrfr_club_seen',[])[$id]??null;
             if (!$m || !$m['finished_confirmed'] || !$seen || time()-$seen['first_seen']<self::RESULT_WAIT || strtotime($m['kickoff'])<(int)get_option('rrfr_club_enabled_at',0)) return;
             if (!hash_equals($seen['hash'],hash('sha256',wp_json_encode($m)))) return; // Changed result restarts the wait on next tick.
-            $facts=['match'=>$m,'finished_confirmed'=>true,'forms'=>['home'=>null,'away'=>null],'lineups'=>[],
-                'warnings'=>['Kampfeed gir resultat, men ikke dokumenterte målscorere, bytter eller kampforløp.'],
-                'sources'=>[['url'=>$m['source'],'provider'=>'Fotballdata','fetched_at'=>$feed['fetched_at']]],'created_at'=>$feed['fetched_at']];
+            $facts=ClubCoverage::detailFacts($m);
             self::create('match:'.$id,$facts,static function() use($facts,$m) {
                 $a=Writer::clubArticle($facts);
                 $body=Writer::body($a,$facts).'<p><small>Kilde: <a href="'.esc_url($m['source']).'">Kampens registrering hos NFF</a></small></p>';
