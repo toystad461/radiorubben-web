@@ -16,7 +16,7 @@ $lock=fopen($work.'/deploy.lock','c');
 rrni_pilot_assert($lock!==false&&flock($lock,LOCK_EX|LOCK_NB),'Another Studio deployment is running');
 try{
     $state=json_decode(file_get_contents($work.'/selective-state.json'),true,512,JSON_THROW_ON_ERROR);
-    rrni_pilot_assert($state['commit']==='2c9a22154cf4d7ad5e3b65824256daf5f63b814b','Expected reviewed Studio release is not deployed');
+    rrni_pilot_assert($state['commit']==='96ff332d9b26f07b3be68c1d9cf2c9e58b6a7c60','Expected reviewed Studio release is not deployed');
     foreach($state['files']as$path=>$hashes){
         $file=$root.'/'.$path;$actual=is_file($file)?hash_file('sha256',$file):null;
         rrni_pilot_assert(!is_link($file)&&$actual===$hashes['live'],'Studio code drift: '.$path);

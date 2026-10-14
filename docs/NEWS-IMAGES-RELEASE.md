@@ -3,7 +3,7 @@
 Thomas har godkjent OneDrive-opplasting, merge og utrulling. Det er ikke en
 redaksjonell godkjenning av nye artikler.
 
-## Bekreftet før WordPress-import
+## Bekreftet innføring
 
 - Originalpakken er lastet opp til OneDrive, lest tilbake og kontrollert med
   SHA-256 `a2d27533d3b9455a96d7c967ed4f87f6aba3827156914a468104bb8b21303adc`.
@@ -13,7 +13,7 @@ redaksjonell godkjenning av nye artikler.
   Jobb `38617872866` har publisert 21 endrede kodefiler, kontrollert etter-hasher
   og HTTPS/release-manifest. Privat backup:
   `/home/cptk37ymg_w1417156/.radiorubben-studio-deploy/backups/selective-38617872866-1`.
-  Uendrede produksjonsavvik er bevart. Bildevalget er ennå av.
+  Uendrede produksjonsavvik er bevart. Automatvalg venter på bestått modellpilot.
 - WordPress er 7.1.3, PHP 8.2.34, Next-tema 2.0.0-rc.5 og Optimole 4.2.16.
   Ingen endring i fotballrobotens aktive 0.10.8 eller øvrige utvidelser.
 
@@ -55,8 +55,36 @@ avgrensede flaggfilen; allerede lagrede valg og godkjenninger skal bevares.
 Studio-kode har eksakt selektiv backup. Ikke gjenopprett redaksjonelle data
 over senere arbeid. Ved ukjent drift stopper jobben uten overskriving.
 
-## Verifikasjonsgrense
+## Verifisert WordPress-drift
 
-Kode og lokale isolerte tester er ferdige. Denne loggen er skrevet før
-WordPress-jobben: import, faktisk visning og modellpilot må bekreftes i en
-etterfølgende driftskvittering før løsningen beskrives som aktiv.
+Kontrolljobb `38621341817` (14.10.2026 kl. 19:10 UTC) bestod på main
+`292612b76f041cb33d8a3216c4162c1213ee8a02`. Utvidelsen er aktiv. Katalog-API,
+21 mediefiler med ID 1352–1372, originaldimensjoner og SHA-256 er kontrollert.
+Alle 21 offentlige PNG-er er også lastet ned over HTTPS og sjekket byteidentiske.
+Import ble gjennomført to ganger i jobb 38620442567 med samme faktiske mapping;
+jobben stoppet senere på pluginlistens cache. Aktivering og etterkontroll er
+fullført separat. De første CLI-forsøkene stoppet før import på canonical-path
+kontroll; dette ble rettet uten å svekke stibegrensningen.
+
+76 eksisterende artikler har uendret status, tekst, hovedbilde og bildevalg.
+Samlet før/etter-hash: `50d63370982cea4c66253bd7896dfa5878b44a2d01aaa2af0171e5cd630b99f8`.
+Privat kodebackup: `/home/cptk37ymg_w1417156/.radiorubben-deploy/backups/news-images-38621341817-1`.
+Serverarkiv: `/customers/9/3/1/cptk37ymg/users/cptk37ymg_w1417156/.radiorubben-deploy/news-images/archive/RadioRubben-Nyhetsbilder-v1.2.zip`.
+Medier: `/run/webroots/r1417157/wp-content/uploads/rr-news-images/RadioRubben-Nyhetsbilder-v1.2`.
+
+Syntetisk forhåndsvisning fra produksjonens PHP-bildepipeline, aktive CSS
+(inkludert faktisk WP-Optimize-frontsidebundle) og hashkontrollerte medier er
+rendret og visuelt inspisert ved 390 og 1280 px: sju nyhetskort, artikkel og
+prioritert kort. Alle ni bilder vises hele med KI-bildetekst, uten clipping eller
+horisontal overflyt. Dette opprettet ingen artikkel. Skjermbilder og faktisk
+medieregister er arkivert i samme OneDrive-mappe som originalpakken.
+
+## Modellpilot før aktivering
+
+Første pilot stoppet trygt på ugyldig JSON. Diagnostikk i 38622707537 bekreftet
+Markdown-innpakning og omskrevne belegg. Studio-rettelsen bruker samme strenge
+JSON-skjema som eksisterende kontrollfunksjoner og begrenser belegg til ordrette
+utdrag; hele saken vurderes fortsatt. Ingen validator eller godkjenningsgrense
+svekkes. Endelig åtte-sakers pilot og aktiveringskvittering følger separat.
+Ingen ekte sak er opprettet, godkjent eller publisert under kontrollen. Eksterne
+sosiale plattformers egen beskjæring må kontrolleres ved faktisk deling.
