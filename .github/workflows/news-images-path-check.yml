@@ -1,0 +1,30 @@
+name: Nyhetsbilder – les faktisk serversti
+on:
+  push:
+    branches: [fix/news-image-release-paths]
+    paths: ['.github/workflows/news-images-path-check.yml']
+permissions:
+  contents: read
+jobs:
+  paths:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Read canonical paths without changing server files
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          umask 077
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -T -o BatchMode=yes -o StrictHostKeyChecking=yes -o IdentitiesOnly=yes cptk37ymg_w1417156@ssh.cptk37ymg.service.one php <<'PHP'
+          <?php
+          $home=getenv('HOME');$stage=$home.'/.radiorubben-deploy/news-images/38619651256-1';
+          echo json_encode(['home'=>$home,'home_real'=>realpath($home),'stage_real'=>realpath($stage),'root'=>realpath('/run/webroots/r1417157'),
+              'plugins_real'=>realpath('/run/webroots/r1417157/wp-content/plugins'),'lock_exists'=>file_exists($home.'/.radiorubben-deploy/lock'),
+              'before_snapshot_exists'=>is_file($stage.'/posts-before.json'),'manifest'=>json_decode(file_get_contents($stage.'/manifest.json'),true)],JSON_UNESCAPED_SLASHES)."\n";
+          PHP
+      - if: always()
+        run: rm -f ~/.ssh/id_ed25519
