@@ -24,6 +24,14 @@ final class Newsroom {
             if(!$m['quality'])$reasons[]='Fakta- og språkkontrollen må fullføres før publisering.';
             if($m['status']==='publishing')$reasons[]='Publiseringsstatus må avklares.';
         }
+        $facts=get_post_meta($id,'_rrfr_fact_snapshot',true);
+        if(str_starts_with((string)get_post_meta($id,'_rrfr_club_key',true),'match:') && is_array($facts)) {
+            if(get_post_meta($id,'_rrfr_detail_error',true))$reasons[]='Siste oppdatering av kampdetaljene feilet. Tidligere tekst er bevart; ny kontroll kreves.';
+            if(empty($facts['detail_check']))$reasons[]='Kampdetaljer mangler: grunnlaget har ikke gjennomgått detaljkontrollen mot Fotballdata og NFF.';
+            elseif(empty($facts['detail_check']['events_complete']))$reasons[]='Begrenset resultatnotis: registrerte mål dekker ikke hele resultatet.';
+            if(!empty($facts['detail_check']['checked_at']))$reasons[]='Kampgrunnlag kontrollert: '.$facts['detail_check']['checked_at'];
+            foreach($facts['warnings']??[] as $warning)if(is_string($warning))$reasons[]=$warning;
+        }
         $links=[];
         if(preg_match_all('~<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>~is',$p->post_content,$matches,PREG_SET_ORDER))foreach($matches as $a){
             $url=html_entity_decode($a[1],ENT_QUOTES,'UTF-8');$parts=parse_url($url);
@@ -42,18 +50,19 @@ final class Newsroom {
         $media=(int)get_post_meta($id,'_thumbnail_id',true);$imageUrl=$media?wp_get_attachment_image_url($media,'large'):false;
         $image=$imageUrl?['id'=>$media,'url'=>$imageUrl,'alt'=>(string)get_post_meta($media,'_wp_attachment_image_alt',true),'caption'=>(string)wp_get_attachment_caption($media)]:null;
         return ['id'=>$id,'type'=>'wordpress','token'=>$token,'title'=>$p->post_title,'intro'=>$p->post_excerpt,
-            'body'=>$body,'notice'=>$notice,'image'=>$image,'isCorrection'=>(bool)$correction,'canAddFacts'=>!$correction,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$correction?'Fotball · Oppdatering av publisert sak':($m['player']?'Fotball · Spillersak':'Fotball · Kampomtale'),
+            'body'=>$body,'notice'=>$notice,'image'=>$image,'isCorrection'=>(bool)$correction,'canAddFacts'=>!$correction,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$correction?'Fotball · Oppdatering av publisert sak':($m['player']?'Fotball · Spillersak':(str_starts_with((string)get_post_meta($p->ID,'_rrfr_club_key',true),'week:')?'Fotball · Neste ukes kamper':'Fotball · Kampomtale')),
             'sourceUrl'=>'','links'=>array_values($links),'canApprove'=>$m['can_approve'],'canRevise'=>$correction?$m['can_approve']:($m['player']&&$m['pending']),
             'publishedUrl'=>$status==='published'?get_permalink($id):null];
     }
     public static function response(): array {
         if(!Robot::allowed())throw new \RuntimeException('Ingen tilgang.');
         $items=[];$query=['post_type'=>'post','post_status'=>['draft','pending'],'numberposts'=>150,'orderby'=>'date','order'=>'DESC',
-            'meta_query'=>['relation'=>'OR',['key'=>PlayerReview::META,'compare'=>'EXISTS'],['key'=>'_rrfr_ai_match','compare'=>'EXISTS'],['key'=>'_rrfr_trial_match','compare'=>'EXISTS']]];
+            'meta_query'=>['relation'=>'OR',['key'=>PlayerReview::META,'compare'=>'EXISTS'],['key'=>'_rrfr_ai_match','compare'=>'EXISTS'],['key'=>'_rrfr_trial_match','compare'=>'EXISTS'],['key'=>'_rrfr_club_key','compare'=>'EXISTS']]];
         $posts=array_merge(get_posts($query),get_posts(array_replace($query,['post_status'=>['publish'],'numberposts'=>30])));
         foreach($posts as $p){if(!current_user_can('edit_post',$p->ID))continue;$card=self::card((int)$p->ID);if($card)$items[]=$card;}
         try{$studioReady=count(ReviewDigest::worker('queue')['items']);}catch(\Throwable $e){$studioReady=null;}
-        return ['version'=>self::VERSION,'items'=>$items,'notification'=>ReviewDigest::status(),'studioQueueReady'=>$studioReady];
+        return ['version'=>self::VERSION,'items'=>$items,'notification'=>ReviewDigest::status(),'studioQueueReady'=>$studioReady,
+            'matchFollowup'=>class_exists(MatchFollowup::class)?MatchFollowup::rows():[]];
     }
     public static function decide(array $input): array {
         if(!Robot::allowed()||!current_user_can('publish_posts'))throw new \RuntimeException('Ingen publiseringstilgang.');

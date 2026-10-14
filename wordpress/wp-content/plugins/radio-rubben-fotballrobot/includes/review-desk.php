@@ -74,7 +74,7 @@ final class ReviewDesk {
     }
     public static function items(): array {
         return get_posts(['post_type'=>'post','post_status'=>['draft','pending'],'numberposts'=>100,'orderby'=>'date','order'=>'ASC',
-            'meta_query'=>['relation'=>'OR',['key'=>PlayerReview::META,'compare'=>'EXISTS'],['key'=>'_rrfr_ai_match','compare'=>'EXISTS'],['key'=>'_rrfr_trial_match','compare'=>'EXISTS']]]);
+            'meta_query'=>['relation'=>'OR',['key'=>PlayerReview::META,'compare'=>'EXISTS'],['key'=>'_rrfr_ai_match','compare'=>'EXISTS'],['key'=>'_rrfr_trial_match','compare'=>'EXISTS'],['key'=>'_rrfr_club_key','compare'=>'EXISTS']]]);
     }
     private static function fields(int $id,array $m): void {
         wp_nonce_field('rrfr_review_desk');
@@ -108,6 +108,7 @@ final class ReviewDesk {
             $other=array_diff_key($items,$ready);
             if($other){echo '<details class="rrfr-card"><summary>Trenger oppfølging, avviste og tester ('.count($other).')</summary>';self::listing($other);echo '</details>';}
         }
+        if(class_exists(MatchFollowup::class))MatchFollowup::panel();
         self::settings();echo '</div>';
     }
     private static function listing(array $items): void {

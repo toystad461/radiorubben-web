@@ -1,0 +1,48 @@
+{
+  "release": "PR30 / Fotballrobot 0.10.5",
+  "runtime_commit": "7df9cce50217c2633eb642a0221990eab025d6e7",
+  "deployment_run": 37577103762,
+  "deployment_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37577103762",
+  "completed_at": "2026-10-07T05:36:32Z",
+  "baseline_commit": "75326d1c26cd3b30f7c52ead8246b4e99df950a4",
+  "runtime_manifest": "scripts/pr30-release.json",
+  "verification": {
+    "before_hashes": 32,
+    "after_hashes": 35,
+    "changed_files": 8,
+    "php_suites": 22,
+    "php_syntax_files": 55,
+    "baseline_tests": 11,
+    "club_checks": 65,
+    "installer_drift_and_rollback": "passed",
+    "mobile_desktop_review": "passed",
+    "api_preflight": "passed",
+    "newsroom_readback": "passed",
+    "existing_articles": "unchanged",
+    "senior_job": "unchanged"
+  },
+  "activation": {
+    "enabled": true,
+    "owner": 1,
+    "eligible_teams": 18,
+    "eligible_matches": 295,
+    "result_wait_seconds": 3600,
+    "weekly_local": "2026-10-11T18:00:00+02:00",
+    "week_start": "2026-10-12T00:00:00+02:00",
+    "week_end_exclusive": "2026-10-19T00:00:00+02:00"
+  },
+  "direct_readback": {
+    "plugin_version": "0.10.5",
+    "plugin_status": "active",
+    "first_automatic_feed_fetch": "2026-10-07T05:37:35+00:00",
+    "feed_teams": 18,
+    "feed_matches": 295,
+    "weekly_cron_utc": "2026-10-11T16:00:00Z"
+  },
+  "editorial_policy": "Drafts only; current factual and language checks plus explicit human approval.",
+  "notes": [
+    "No historical article backfill and no live article generation test.",
+    "WP-Cron execution was observed four seconds after the first scheduled club tick; the external triggering mechanism was not inspected.",
+    "PR30 remains an open pull request on the reconstructed 0.10.4 baseline. No main or PR63 merge was performed."
+  ]
+}

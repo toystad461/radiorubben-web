@@ -13,3 +13,14 @@ function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}fu
 $timeline=Report::timeline($m,$r);
 if(substr_count($timeline,'class="poll-event-row ')!==12||!str_contains($timeline,'47′')||strpos($timeline,'90′')>strpos($timeline,'24′')||!str_contains($timeline,'poll-event-icon red'))throw new RuntimeException('Timeline merging/order failed');
 echo "OK: combined timeline, minute rounding, newest first, card icon\n";
+function get_option($key,$default=false){return $GLOBALS['options'][$key]??$default;}
+$options=['rr_match_archive_8985501'=>['match'=>['home_id'=>30365],'state'=>['poll_award'=>['type'=>'award','side'=>'home','description'=>'Nr. 2 Testspiller · 4 stemmer · Trukket stemmevinner: Private Person']],
+    'results'=>[['number'=>2,'player'=>'Testspiller','total'=>4]],'sponsor'=>['name'=>'Testsponsor']]];
+$before=$options;$extra=Report::extras(8985501,['roster'=>[2=>'Testspiller']]);
+if(($extra['award']['players']??[])!==['Testspiller']||($extra['sponsor']['name']??'')!=='Testsponsor'||str_contains(json_encode($extra),'Private Person')||$before!==$options)throw new RuntimeException('Award/sponsor privacy or read-only contract failed');
+$options['rr_match_archive_8985501']['match']['home_id']=99;
+if(isset(Report::extras(8985501,['roster'=>[2=>'Testspiller']])['award']))throw new RuntimeException('Away match must not claim Dagens Bremnesing');
+$options['rr_match_archive_8985501']['match']['home_id']=30365;
+unset($options['rr_match_archive_8985501']['state']['poll_award']);
+if(isset(Report::extras(8985501,['roster'=>[2=>'Testspiller']])['award']))throw new RuntimeException('No award inferred from vote totals');
+echo "OK: optional award and sponsor, privacy and no poll mutations\n";

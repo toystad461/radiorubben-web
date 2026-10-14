@@ -1,0 +1,22 @@
+{
+  "completed_at": "2026-10-08T17:41:44+00:00",
+  "release_commit": "aa62323169676e6e32250291f904c66b010611a3",
+  "source_commit": "054d0927464b36b20100e5b4082dda36c9af7390",
+  "changed_files": [
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/publication-gate.php"
+  ],
+  "verified_plugin_files": 40,
+  "active_policy": "1.0.0",
+  "plugin_version": "0.10.5",
+  "backup": "~/.radiorubben-deploy/backups/ai-policy-aa6232316967",
+  "homepage_http": 200,
+  "content_publication_test": false,
+  "checks": [
+    "22 PHP regression suites",
+    "installer drift/rollback tests",
+    "CI verify success",
+    "PHP syntax before install",
+    "WordPress loaded policy 1.0.0",
+    "all 40 after hashes matched"
+  ]
+}

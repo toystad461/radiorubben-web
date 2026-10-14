@@ -44,11 +44,15 @@ final class Robot {
         if(strlen($html)>=2500000) throw new \RuntimeException('Kilden var for stor og kan være avkortet.');
         $data=['html'=>$html,'url'=>$url,'fetched_at'=>gmdate(DATE_ATOM)]; set_transient($key,$data,10*MINUTE_IN_SECONDS); return $data;
     }
-    public static function refresh(int $id,bool $confirmed=false): array {
+    public static function refresh(int $id,bool $confirmed=false,?array $sourceMatch=null): array {
         $source=self::fetch('match',$id); $m=Facts::match($source['html'],$id);
         if(!array_intersect([30365,48835],[$m['home']['id'],$m['away']['id']])) throw new \RuntimeException('Denne roboten dekker bare Bremnes herrer A og damer A.');
         $archive=get_option('rr_match_archive_'.$id,[]);
         $finished=MatchJobs::eligible($id,$archive)||MatchJobs::confirmed($id,$m);
+        if($sourceMatch!==null) {
+            if(!$sourceMatch['finished_confirmed']||!MatchFollowup::same($sourceMatch,$m))throw new \RuntimeException('Fotballdata og kampkortet er ikke enige om sluttresultat eller kampidentitet. Ny kontroll kreves.');
+            $finished=true;
+        }
         if($finished && isset($archive['score']['home'],$archive['score']['away']) && $m['score']!==[(int)$archive['score']['home'],(int)$archive['score']['away']]) throw new \RuntimeException('NFF-resultatet avviker fra kamparkivet. Kontroller før nytt utkast.');
         if($m['score']===null || strtotime($m['kickoff'])>time()) $confirmed=false;
         $forms=[]; $sources=[['url'=>$source['url'],'fetched_at'=>$source['fetched_at']]]; $warnings=[];
@@ -66,7 +70,8 @@ final class Robot {
         $lineups=Lineups::parse($source['html'],$m);
         $warnings=array_merge($warnings,$lineups['warnings']);
         $angles=Facts::angles($m,$forms);
-        $payload=['version'=>'0.1.0','match'=>$m,'finished_confirmed'=>($finished||$confirmed)&&$m['score']!==null&&strtotime($m['kickoff'])<=time(),'confirmation'=>$finished?'Eksisterende kamparkiv':($confirmed?'Bekreftet av innlogget administrator':'Kampslutt må bekreftes'),'forms'=>$forms,'angles'=>$angles,'lineups'=>$lineups,'warnings'=>$warnings,'sources'=>$sources,'created_at'=>gmdate(DATE_ATOM), 'writing_brief'=>self::brief()];
+        if($sourceMatch!==null)$sources[]=['url'=>'https://www.fotballdata.no/','provider'=>'Fotballdata','fetched_at'=>gmdate(DATE_ATOM)];
+        $payload=['version'=>'0.1.0','match'=>$m,'finished_confirmed'=>($finished||$confirmed)&&$m['score']!==null&&strtotime($m['kickoff'])<=time(),'confirmation'=>$sourceMatch!==null?'Bekreftet sluttresultat fra Fotballdata':($finished?'Eksisterende kamparkiv':($confirmed?'Bekreftet av innlogget administrator':'Kampslutt må bekreftes')),'forms'=>$forms,'angles'=>$angles,'lineups'=>$lineups,'warnings'=>$warnings,'sources'=>$sources,'created_at'=>gmdate(DATE_ATOM), 'writing_brief'=>self::brief()];
         return FactStore::save($id,$payload);
     }
     public static function brief(): string {

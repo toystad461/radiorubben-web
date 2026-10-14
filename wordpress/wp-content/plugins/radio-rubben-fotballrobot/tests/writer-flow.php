@@ -14,6 +14,7 @@ $f=['match'=>['id'=>123,'source'=>'https://www.fotball.no/fotballdata/kamp/?fiks
 function get_option($k,$d=false){global $options;return $options[$k]??$d;}
 function add_option($k,$v,...$args){global $options;if(isset($options[$k]))return false;$options[$k]=$v;return true;}
 function delete_option($k){global $options;unset($options[$k]);}
+function update_option($k,$v,...$args){global $options;$options[$k]=$v;return true;}
 function get_post_meta($id,$key,$single=true){global $meta;return $meta[$id][$key]??null;}
 function get_posts($q){global $posts,$lessons;return ($q['meta_key']??'')==='_rrfr_learning'?array_values($lessons??[]):array_values($posts);}
 function current_user_can(...$a){return true;}
@@ -81,4 +82,23 @@ ok($playerResult['_quality']['rulesVersion']==='1.0.0');
 $queue=[response($playerArticle),response(['approved'=>true,'issues'=>[]]),response($polished),response(['approved'=>false,'issues'=>['Omskrivingen inneholder en påstand uten dekning.']])];
 $blockedPlayer=Writer::playerArticle($playerFacts,$comment);
 ok($blockedPlayer['_quality']['publishable']===false && count($posts)===$postCount);
+// Durable automatic writing uses the actual Writer and quality pipeline.
+require __DIR__.'/../includes/match-work.php';
+use RadioRubben\Fotballrobot\MatchWork;
+$posts=[];$meta[1]['_rrfr_payload']=$f;$before=$calls;$queue=[response($a)];
+$r=Writer::generate(123,'hash','angle',false,true);$token=$r['review_token'];
+ok($calls===$before+1&&MatchWork::forMatch(123)['article']===$a&&MatchWork::forMatch(123)['in_flight']===false);
+delete_transient('rrfr_review_'.$token);$queue=[response(['approved'=>true,'issues'=>[]])];
+$r=Writer::review($token);ok($calls===$before+2&&MatchWork::load($token)['quality']['phase']==='language');
+// Restart with no transient: continue at language, never repeat generation or fact review.
+delete_transient('rrfr_review_'.$token);$queue=[response($a)];$r=Writer::review($token);
+ok($calls===$before+3&&count($posts)===1&&$inserted['post_status']==='draft');
+$savedCalls=$calls;$r=Writer::review($token);ok($r['existing']&&$calls===$savedCalls);
+// A safe quality checkpoint marked done can save without another paid call.
+$posts=[];$r=Writer::review($token);ok(count($posts)===1&&$calls===$savedCalls);
+$work=MatchWork::load($token);$work['in_flight']=true;MatchWork::save($token,$work);$posts=[];
+rejects(fn()=>Writer::review($token));ok($calls===$savedCalls);
+$user=11;$work['in_flight']=false;MatchWork::save($token,$work);rejects(fn()=>Writer::review($token));$user=10;
+// Changed source facts cannot inherit a saved review.
+$meta[1]['_rrfr_payload']['fact_hash']='changed';rejects(fn()=>Writer::review($token));ok($calls===$savedCalls);
 echo "OK: $n flow controls with mocked provider; no paid calls\n";

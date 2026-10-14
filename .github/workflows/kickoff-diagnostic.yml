@@ -1,0 +1,40 @@
+name: Fotballrobot read-only kickoff diagnostic
+on:
+  push:
+    branches: ['codex/football-kickoff-time']
+    paths: ['scripts/kickoff-diagnostic.php', '.github/workflows/kickoff-diagnostic.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Read only public kickoff fields through existing server credentials
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          php -l scripts/kickoff-diagnostic.php
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/kickoff/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz scripts/kickoff-diagnostic.php "$host:$stage/"
+          ssh "$host" "/usr/local/bin/wp --path=/run/webroots/r1417157 eval-file \$HOME/$stage/kickoff-diagnostic.php --use-include"
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
