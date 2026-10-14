@@ -2,7 +2,7 @@
 /** Approved image-only release. Never creates, edits or publishes news posts. */
 declare(strict_types=1);
 echo "RRNI_RELEASE_ENTERED\n";
-function rrni_release_assert(bool $ok, string $why): void { if (!$ok) throw new RuntimeException($why); }
+function rrni_release_assert(bool $ok, string $why): void { if (!$ok) { fwrite(STDERR,'RRNI_GUARD: '.$why."\n"); throw new RuntimeException($why); } }
 function rrni_release_posts(): array {
     global $wpdb;
     $rows=$wpdb->get_results("SELECT ID,post_status,post_title,post_excerpt,post_content,post_modified_gmt FROM {$wpdb->posts} WHERE post_type='post' ORDER BY ID",ARRAY_A);
@@ -22,7 +22,10 @@ $root='/customers/9/3/1/cptk37ymg/webroots/r1417157';
 rrni_release_assert(realpath(ABSPATH)===$root && get_option('home')==='https://www.radiorubben.no','Unexpected production root/site');
 rrni_release_assert(get_stylesheet()==='radio-rubben-next','Active theme changed; inspect before release');
 $stage=__DIR__;
-rrni_release_assert(preg_match('~^'.preg_quote(getenv('HOME'),'~').'/\.radiorubben-deploy/news-images/[0-9]+-[0-9]+$~D',$stage)===1&&!is_link($stage),'Private stage required');
+$stageRoot=getenv('HOME').'/.radiorubben-deploy/news-images';
+rrni_release_assert(preg_match('/^[0-9]+-[0-9]+$/D',basename($stage))===1
+    &&dirname($stage)===realpath($stageRoot)
+    &&!is_link($stageRoot.'/'.basename($stage)),'Private stage required');
 $manifest=json_decode(file_get_contents($stage.'/manifest.json'),true,32,JSON_THROW_ON_ERROR);
 $allowed=['contract.php','data/01-BILDEREGISTER.json','import.php','publication.php','rr-news-images.php','images.css','lib/media-policy.php'];
 rrni_release_assert(array_keys($manifest['files'])===$allowed && preg_match('/^[a-f0-9]{40}$/D',$manifest['commit'])===1,'Unexpected release file set');
