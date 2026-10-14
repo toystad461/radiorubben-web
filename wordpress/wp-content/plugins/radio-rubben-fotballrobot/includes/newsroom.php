@@ -24,6 +24,14 @@ final class Newsroom {
             if(!$m['quality'])$reasons[]='Fakta- og språkkontrollen må fullføres før publisering.';
             if($m['status']==='publishing')$reasons[]='Publiseringsstatus må avklares.';
         }
+        $facts=get_post_meta($id,'_rrfr_fact_snapshot',true);
+        if(str_starts_with((string)get_post_meta($id,'_rrfr_club_key',true),'match:') && is_array($facts)) {
+            if(get_post_meta($id,'_rrfr_detail_error',true))$reasons[]='Siste oppdatering av kampdetaljene feilet. Tidligere tekst er bevart; ny kontroll kreves.';
+            if(empty($facts['detail_check']))$reasons[]='Kampdetaljer mangler: grunnlaget har ikke gjennomgått detaljkontrollen mot Fotballdata og NFF.';
+            elseif(empty($facts['detail_check']['events_complete']))$reasons[]='Begrenset resultatnotis: registrerte mål dekker ikke hele resultatet.';
+            if(!empty($facts['detail_check']['checked_at']))$reasons[]='Kampgrunnlag kontrollert: '.$facts['detail_check']['checked_at'];
+            foreach($facts['warnings']??[] as $warning)if(is_string($warning))$reasons[]=$warning;
+        }
         $links=[];
         if(preg_match_all('~<a\b[^>]*href=["\']([^"\']+)["\'][^>]*>(.*?)</a>~is',$p->post_content,$matches,PREG_SET_ORDER))foreach($matches as $a){
             $url=html_entity_decode($a[1],ENT_QUOTES,'UTF-8');$parts=parse_url($url);

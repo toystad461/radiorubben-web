@@ -53,6 +53,7 @@ function wp_insert_post($data,$error=false){global $seq,$posts,$meta;$id=$seq++;
 function wp_update_post($data,$error=false){global $posts,$meta;$id=$data['ID'];foreach($data as $k=>$v){if($k==='meta_input')$meta[$id]=array_merge($meta[$id],$v);else $posts[$id]->$k=$v;}return $id;}
 function get_post($id){global $posts;return clone $posts[$id];}
 function update_post_meta($id,$k,$v){global $meta;$meta[$id][$k]=$v;}
+function delete_post_meta($id,$k){global $meta;unset($meta[$id][$k]);}
 function get_post_meta($id,$k,$single=true){global $meta;return $meta[$id][$k]??'';}
 function is_wp_error($v){return false;}
 function get_term_by($field,$value,$taxonomy){return (object)['term_id'=>['sport'=>16,'fotball'=>17,'bremnes-il'=>60][$value]];}
@@ -89,7 +90,15 @@ $apiMode='ok';$httpCalls=0;
 $apiTeams=['ClubId'=>827,'Teams'=>[team(2,'G13-1'),team(3,'J13-1'),team(7,'Menn Senior A')]];
 $raw['MatchId']=500;$raw['MatchStartDate']='/Date('.(($clock-3600)*1000).'+0000)/';
 $apiMatches=['ClubId'=>827,'Matches'=>[$raw,['MatchId'=>501,'HomeTeamId'=>7]+$raw]];
-function wp_safe_remote_get($url,$args){global $apiMode,$httpCalls,$apiTeams,$apiMatches;$httpCalls++;if($apiMode==='failure')throw new \RuntimeException('transport secret must not escape');return ['body'=>json_encode(str_contains($url,'/teams?')?$apiTeams:$apiMatches),'code'=>200];}
+function wp_safe_remote_get($url,$args){global $apiMode,$httpCalls,$apiTeams,$apiMatches;$httpCalls++;if($apiMode==='failure')throw new \RuntimeException('transport secret must not escape');$data=$apiMatches;if(str_contains($url,'/teams?'))$data=$apiTeams;elseif(preg_match('~/matches/(\d+)~',$url,$ids))foreach($apiMatches['Matches'] as $row)if($row['MatchId']===(int)$ids[1])$data=$row;return ['body'=>json_encode($data),'code'=>200];}
+// Transport orchestration doubles; club-details.php exercises the real parsers.
+class Facts {
+    public static function match($html,$id){global $apiMatches,$apiTeams;return ClubCoverage::matches($apiMatches,ClubCoverage::teams($apiTeams),time())[$id]+['half_time'=>null];}
+    public static function angles($m,$forms){return [];}
+}
+class Lineups {public static function parse($html,$m){return ['warnings'=>[],'home'=>[],'away'=>[]];}}
+function add_action(...$args){}
+require __DIR__.'/../includes/fact-store.php';
 function wp_remote_retrieve_response_code($r){return $r['code'];}
 function wp_remote_retrieve_body($r){return $r['body'];}
 class Writer {
@@ -111,6 +120,10 @@ check(get_current_user_id()===0&&$posts[$pid]->post_author===7,'cron owner resto
 check($meta[$pid]['_rrfr_editor_decision']['status']==='pending'&&$meta[$pid]['_thumbnail_id']===812&&isset($meta[$pid][PublicationGate::META]['postHash']),'current inbox state, image and bound quality');
 $bodyBefore=$posts[$pid]->post_content;$apiMatches['Matches'][0]['AwayTeamGoals']=0;ClubAutomation::tick();
 check($posts[$pid]->post_content===$bodyBefore&&$meta[$pid]['_rrfr_fact_snapshot']['match']['score']===[2,0],'new raw facts invalidate review without overwriting text');
+$snapshotBefore=$meta[$pid]['_rrfr_fact_snapshot'];$meta[$pid]['_rrfr_editor_decision']['status']='rejected';
+$apiMatches['Matches'][0]['AwayTeamGoals']=1;ClubAutomation::tick();
+check($meta[$pid]['_rrfr_fact_snapshot']===$snapshotBefore&&$meta[$pid]['_rrfr_editor_decision']['status']==='rejected','rejected article remains untouched');
+$meta[$pid]['_rrfr_editor_decision']['status']='pending';
 $oldCount=count($posts);ClubAutomation::match(500);check(count($posts)===$oldCount,'repeated job is idempotent');
 $apiMatches['Matches']=[['MatchId'=>502]+$raw];ClubAutomation::tick();$clock+=1800;$apiMatches['Matches'][0]['AwayTeamGoals']=0;ClubAutomation::tick();check(!wp_next_scheduled('rrfr_club_match',[502]),'result change restarts wait');
 $before=get_option('rrfr_club_seen');$apiMode='failure';ClubAutomation::tick();check(get_option('rrfr_club_seen')===$before,'API failure preserves prior state');

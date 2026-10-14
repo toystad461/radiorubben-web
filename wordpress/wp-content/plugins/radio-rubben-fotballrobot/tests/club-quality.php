@@ -12,7 +12,7 @@ function get_posts($args){return [];}
 $requests=[];
 $draft=['title'=>'Bremnes G13 vant på hjemmebane','lead'=>'Bremnes G13 vant 2–1 mot Viggo den 25.09.2026.',
     'paragraphs'=>['Kampen ble spilt på Testbanen.'],'checks'=>[['claim'=>'Kampresultat','support'=>'match.score']],'inline_sources'=>[]];
-$f=$facts;$f['match']['home']['registered_name']='Bremnes G13';$f['match']['venue']='Testbanen';
+$f=$facts;$f['detail_check']=['version'=>1,'match_id'=>123];$f['match']['home']['registered_name']='Bremnes G13';$f['match']['venue']='Testbanen';
 $queue=[response($draft),response($yes),response($draft)];
 $a=W::clubArticle($f);
 check(count($requests)===3&&$a['_quality']['publishable'],'Youth uses independent fact review and language review');
@@ -22,6 +22,10 @@ $meta[10]=$post['meta_input']+['_rrfr_club_key'=>'match:123','_rrfr_ai_match'=>1
 check(G::current(10,$posts[10]),'Youth approval binds its own API snapshot without the senior fact store');
 $meta[10]['_rrfr_fact_snapshot']['match']['score']=[4,1];
 check(!G::current(10,$posts[10]),'New raw score invalidates youth approval');
+$meta[10]['_rrfr_fact_snapshot']=$f;
+$meta[10]['_rrfr_fact_snapshot']['detail_check']=[];
+check(!G::current(10,$posts[10]),'Result-only legacy snapshot cannot pass detail gate');
+$meta[10]['_rrfr_fact_snapshot']=$f;
 $week=['key'=>'2026-10-12','start'=>'2026-10-12T00:00:00+02:00','end'=>'2026-10-19T00:00:00+02:00'];
 $m=$f['match'];$m['kickoff']='2026-10-13T18:00:00+02:00';$m['competition']=['name'=>'G13 2. divisjon'];$m['source']='https://www.fotball.no/fotballdata/kamp/?fiksId=123';
 $fetched='2026-10-11T16:00:00Z';$wf=C::weeklyFacts([$m],$week,$fetched);
