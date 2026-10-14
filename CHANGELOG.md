@@ -2,6 +2,15 @@
 
 Alle vesentlige endringer i Radio Rubben-løsningen dokumenteres her.
 
+## [rr-news-images 1.0.0] – 2026-10-14 – ikke aktivert
+
+- Verifisert import av RadioRubben-Nyhetsbilder-v1.2 med stabil asset-identitet, kontrollsummer og gjenopptakelse uten duplikater.
+- Autentisert katalog med faktiske WordPress-medie-ID-er/URL-er til Studios eksisterende godkjenningsflyt.
+- Bevaring av redaksjonelle bilder, kontrollert KI-proveniens, hele originaler og synlig KI-bildetekst.
+- Isolerte WordPress-import-/publiseringstester og mobil-/skrivebordskontroll; produksjonstema/CDN og aktivering gjenstår.
+
+Se [nyhetsbilder](wordpress/wp-content/plugins/rr-news-images/README.md). Ingen produksjonsendring.
+
 ## [site-functions 1.0.0-rc.1] - 2026-09-26
 
 - Fersk produksjonskode sikret i separat funksjonsutvidelse, inkludert dashboard-prototype fra Code Snippets.

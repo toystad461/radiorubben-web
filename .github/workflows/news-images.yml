@@ -1,0 +1,36 @@
+name: Nyhetsbilder – kontrakt og PHP
+on:
+  pull_request:
+    paths:
+      - 'wordpress/wp-content/plugins/rr-news-images/**'
+      - '.github/workflows/news-images.yml'
+      - '.github/workflows/news-images-release.yml'
+      - 'scripts/news-images/**'
+  push:
+    branches: [main]
+    paths:
+      - 'wordpress/wp-content/plugins/rr-news-images/**'
+permissions:
+  contents: read
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: ['8.2', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: zip, gd
+          coverage: none
+      - name: Syntax and pinned package contract
+        run: |
+          while IFS= read -r -d '' file; do
+            php -l "$file"
+          done < <(find wordpress/wp-content/plugins/rr-news-images -name '*.php' -print0)
+          php wordpress/wp-content/plugins/rr-news-images/tests/contract.php
+          php -l scripts/news-images/wordpress-release.php
+          php -l scripts/news-images/studio-activate.php
+          python3 scripts/news-images/test-package.py

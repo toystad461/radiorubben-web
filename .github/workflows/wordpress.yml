@@ -21,10 +21,27 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-24.04
+    outputs:
+      image_only: ${{ steps.scope.outputs.image_only }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
+          fetch-depth: 0
+      - name: Keep image-only releases in the scoped image workflow
+        id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          image_only=false
+          if [[ "$EVENT" == push && "$BEFORE" =~ ^[a-f0-9]{40}$ ]]; then
+            changed=$(git diff --name-only "$BEFORE" "$GITHUB_SHA" -- wordpress/)
+            if [[ -n "$changed" ]] && ! grep -qv '^wordpress/wp-content/plugins/rr-news-images/' <<< "$changed"; then
+              image_only=true
+            fi
+          fi
+          echo "image_only=$image_only" >> "$GITHUB_OUTPUT"
       - name: Kontroller PHP og shell
         run: |
           php --version
@@ -39,6 +56,7 @@ jobs:
     if: >-
       github.ref == 'refs/heads/main' &&
       github.event_name != 'pull_request' &&
+      needs.validate.outputs.image_only != 'true' &&
       vars.WP_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-24.04
     steps:
