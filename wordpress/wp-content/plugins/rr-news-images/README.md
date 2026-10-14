@@ -1,11 +1,12 @@
 # Nyhetsbilder v1.2 – kontrollert import og publisering
 
-Status 14.10.2026: kode og isolerte tester. Ikke installert eller aktivert i produksjon.
-Sammenhørende endring: `radiorubben-studio`, grenen `feat/news-image-pack-v12`.
+Status 14.10.2026: installert og aktiv i produksjon, 21 verifiserte mediefiler.
+Studio PR92 er publisert; automatisk bildevalg aktiveres etter egen modellpilot.
+Se `docs/NEWS-IMAGES-RELEASE.md` for faktiske driftskvitteringer.
 
 ## Behov og avgrensning
 
-Nyhetsroboten i Studio bruker ett fast bilde (1079). Nye utkast skal i stedet ha
+Den tidligere Studio-flyten brukte ett fast bilde (1079). Nye utkast får
 et begrunnet temavalg med tre formatvarianter og eksisterende menneskelig
 sluttgodkjenning. Denne utvidelsen eier import, faktisk WordPress-medieidentitet,
 filkontroll og WordPress-visning. Studio eier sak, valg og redaksjonell vurdering.
@@ -80,7 +81,7 @@ Yoast/Rank Math får originalen for lenkekort når de brukes, men tredjeparts
 beskjæring kan ikke garanteres. Optimole 4.2.16s kildekodefiltre bevarer
 originaladressen og hopper over optimalisering/lazy-crop for pakkevedlegg.
 Aktivt Next-temas prioriterte nyhetskort og doble artikkelbildetekst er håndtert
-med CSS avgrenset til pakkevedlegg. Faktisk visning kontrolleres før aktivering.
+med CSS avgrenset til pakkevedlegg. Produksjonens markup, CSS og faktiske medier er kontrollert ved 390/1280 px.
 Ingen NRK-logo eller kommunevåpen legges til.
 
 ## Kontroller og ferdigkriterier
@@ -94,7 +95,8 @@ Ingen NRK-logo eller kommunevåpen legges til.
 - Nettleserkontroll 390/1280 px med faktisk WordPress-bildepipeline og repositoryets
   next-tema: sju nyhetskort og artikkelbildet, alle hele, lastet og uten horisontal
   overflyt. Studio viser tre Bremnes-varianter i samme kontroll. Visuelt inspisert.
-  Dette er ikke etterkontroll av produksjonstema eller ekstern sosial beskjæring.
+  Produksjonens markup, aktive stilark og faktiske medier er også etterkontrollert.
+  Ekstern sosial beskjæring er ikke verifisert.
 - Ordinær `npm test`/`npm run build` består. Det er ikke en WP-runtime-test.
 - Testfil: `tests/wordpress.php`. Krever `RRNI_TEST_ISOLATED=true` i en
   **disponibel** WP-installasjon, og kjøres med `wp eval-file ... /absolutt/pakke.zip`.
