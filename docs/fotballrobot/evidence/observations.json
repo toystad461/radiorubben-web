@@ -1,0 +1,266 @@
+{
+  "audit_requested_date": "2026-10-06",
+  "basis": "Immutable release manifests, successful Actions jobs/logs and documented authenticated readback; no new production access or deployment.",
+  "latest_plugin_readback": {
+    "run": 37243206615,
+    "job": 111555901247,
+    "code_marker": "MOBILE_NEWSROOM_CODE_INSTALLED",
+    "runtime_marker": "MOBILE_NEWSROOM_RUNTIME_OK",
+    "bridge": "newsroom-1",
+    "cards": 11,
+    "image_id": 813,
+    "correction": true,
+    "public_story_and_pending_proposal": "unchanged",
+    "maintenance_deactivated": true,
+    "manifest": "mobile-newsroom-release.json",
+    "authenticated_http_readback_document": "https://github.com/toystad461/radiorubben-web/blob/c5dd3152d24f350ebf899dd186fe41e699621882/MOBILE-NEWSROOM-RELEASE.md"
+  },
+  "runs": [
+    {
+      "id": 37363419428,
+      "name": "Player score - test and selective release",
+      "head_sha": "90c12406f71d3743475c6a4e9ff7bd7360b597b9",
+      "status": "completed",
+      "conclusion": "failure",
+      "event": "push",
+      "created_at": "2026-10-05T19:26:40Z",
+      "updated_at": "2026-10-05T19:41:42Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37363419428"
+    },
+    {
+      "id": 37302620846,
+      "name": "Verify completed RSS release and legacy review results",
+      "head_sha": "f22ff54c9bb4e3289f4fd0b941a50bed23a37f0b",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-05T11:23:28Z",
+      "updated_at": "2026-10-05T11:23:48Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37302620846"
+    },
+    {
+      "id": 37302374295,
+      "name": "Release bounded review with fixed real RSS source and legacy completion",
+      "head_sha": "16670e6d2c91cd15fcbe4023ab06f73466ccd9fb",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-05T11:21:07Z",
+      "updated_at": "2026-10-05T11:22:04Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37302374295"
+    },
+    {
+      "id": 37243209317,
+      "name": "Fotballrobot integration checks",
+      "head_sha": "dd6b775ee2f80365c3b55b123ae8f418c9a9eea1",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "pull_request",
+      "created_at": "2026-10-04T23:17:18Z",
+      "updated_at": "2026-10-04T23:17:39Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37243209317"
+    },
+    {
+      "id": 37243206615,
+      "name": "Release mobile newsdesk without screen changes",
+      "head_sha": "dd6b775ee2f80365c3b55b123ae8f418c9a9eea1",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-04T23:17:16Z",
+      "updated_at": "2026-10-04T23:17:50Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37243206615"
+    },
+    {
+      "id": 37243108895,
+      "name": "Fotballrobot integration checks",
+      "head_sha": "29e49e75b7890dd885050b4ad83d97ad266288fa",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "pull_request",
+      "created_at": "2026-10-04T23:15:39Z",
+      "updated_at": "2026-10-04T23:15:58Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37243108895"
+    },
+    {
+      "id": 37241759848,
+      "name": "Connect staged story corrections to unified newsdesk",
+      "head_sha": "10b70edf246f2c1acd7a05682d4cbd88f9f63cf8",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-04T22:54:02Z",
+      "updated_at": "2026-10-04T22:54:35Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37241759848"
+    },
+    {
+      "id": 37241518291,
+      "name": "Fix player story images and staged corrections",
+      "head_sha": "69fbfd10a0cffe3ea4fa7c8d8f8bad49e63bcb64",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-04T22:50:11Z",
+      "updated_at": "2026-10-04T22:50:42Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37241518291"
+    },
+    {
+      "id": 37237964444,
+      "name": "Activate native WordPress newsroom jobs",
+      "head_sha": "05eca254c7ad3d071f021925bf94de5fd8e1342b",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-04T21:54:39Z",
+      "updated_at": "2026-10-04T21:55:12Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37237964444"
+    },
+    {
+      "id": 37232042917,
+      "name": "Publish player news filter",
+      "head_sha": "8fa0395c07dcc78a2b6c4909190928d11c60678d",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-04T20:25:36Z",
+      "updated_at": "2026-10-04T20:26:08Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37232042917"
+    },
+    {
+      "id": 37216121028,
+      "name": "Publish explicit editor facts and revise requested player draft",
+      "head_sha": "90dfb84dffb9de0f36f60761e3188f11ffc4cb7a",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-04T16:15:52Z",
+      "updated_at": "2026-10-04T16:17:07Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37216121028"
+    },
+    {
+      "id": 37213226425,
+      "name": "Publish match-driven player updates and corrected Hodd profile",
+      "head_sha": "8083fe324521ac208d9304dfb096b75d5a71134e",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-04T15:30:00Z",
+      "updated_at": "2026-10-04T15:31:51Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37213226425"
+    },
+    {
+      "id": 37201229773,
+      "name": "Test and release player candidates and media articles",
+      "head_sha": "5e6b787870d584ad154809d4f89f475a62aa5b31",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-04T12:11:03Z",
+      "updated_at": "2026-10-04T12:11:46Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37201229773"
+    },
+    {
+      "id": 37155321824,
+      "name": "Test and release manual approval desk",
+      "head_sha": "77bf90af9c0006b2c9fef6b5694612073bf289ea",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-03T21:30:11Z",
+      "updated_at": "2026-10-03T21:30:52Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37155321824"
+    },
+    {
+      "id": 37153585377,
+      "name": "Test and release inline sources",
+      "head_sha": "59cbfbd6d82b97a8d3cf7f5f4456467710174484",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-03T21:00:45Z",
+      "updated_at": "2026-10-03T21:01:22Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37153585377"
+    },
+    {
+      "id": 37148398186,
+      "name": "Test and release editorial prompts",
+      "head_sha": "1a8bddef1d64777ba70b88716e5a1a13585c6f7f",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-03T19:34:44Z",
+      "updated_at": "2026-10-03T19:35:11Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37148398186"
+    },
+    {
+      "id": 37144418125,
+      "name": "Test and release unified player monitor",
+      "head_sha": "bf8d586af88f370732a2aa0c424c4f799c9106c9",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-03T18:30:02Z",
+      "updated_at": "2026-10-03T18:30:38Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37144418125"
+    },
+    {
+      "id": 37142766989,
+      "name": "Test and release Bremnes standard image",
+      "head_sha": "7c122e94ebec102a380377d115de398529bcd38d",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-03T18:03:11Z",
+      "updated_at": "2026-10-03T18:03:44Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37142766989"
+    },
+    {
+      "id": 37141769345,
+      "name": "Release tested Bremnes lineup fix only",
+      "head_sha": "4f6c05ced6c10fbbc5941f237bc0571e0a0e97db",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-03T17:46:53Z",
+      "updated_at": "2026-10-03T17:47:13Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37141769345"
+    },
+    {
+      "id": 37140203259,
+      "name": "Release tested approved notice fix only",
+      "head_sha": "41b631e5b7e89c7db8f4b1c9fd4bb85526bcd9f0",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-03T17:21:26Z",
+      "updated_at": "2026-10-03T17:21:46Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37140203259"
+    },
+    {
+      "id": 37108010279,
+      "name": "Release tested Fotballrobot 0.9.1 only",
+      "head_sha": "d43ec970182baeda8f84ad916c9dcf2bd8036d8c",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "created_at": "2026-10-03T07:56:17Z",
+      "updated_at": "2026-10-03T07:56:41Z",
+      "html_url": "https://github.com/toystad461/radiorubben-web/actions/runs/37108010279"
+    }
+  ],
+  "excluded_later_changes": [
+    {
+      "pr": 54,
+      "reason": "Only private Studio RSS files; does not replace Fotballrobot runtime."
+    },
+    {
+      "pr": 61,
+      "reason": "Separate player widget; release 37363419428 failed before execution and is not evidence of deployed Fotballrobot changes."
+    }
+  ],
+  "limits": [
+    "No current full-server checksum sweep was performed.",
+    "Successful CI or stacked merges alone are not deployment proof.",
+    "Existing plugin documentation is historical; production-baseline.md is the reconciliation record."
+  ]
+}
