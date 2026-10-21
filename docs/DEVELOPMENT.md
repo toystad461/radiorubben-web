@@ -67,3 +67,32 @@ dokument-/produksjonsarkiv i OneDrive med verifiserte lenker.
 Chat/Work kan avklare og produsere innhold; Codex skal lese denne koden og
 instruksene. Ikke anta at tidligere samtaler er hele arbeidsgrunnlaget.
 Ferdig betyr dokumentert kode/teststatus og separat deploy-/etterkontrollstatus.
+
+## Slik gir Thomas instrukser og bekrefter neste steg
+
+Oppgi prosjekt/repo, ønsket resultat, prioritet, målmiljø og hva som skal
+fungere når oppgaven er ferdig. Tekniske filnavn eller valg av rammeverk er
+ikke nødvendig; agenten avklarer riktig komponent fra eksisterende kode.
+
+Eksempel: «Prosjekt: Radio Rubben Studio. Mål: legge musikk og ferdige stikk
+i en kø. Målmiljø: test-VPS. Ferdig når jeg kan legge til, flytte og spille av
+tre innslag i riktig rekkefølge. Bygg videre på eksisterende arbeid. Foreslå
+ett avgrenset steg og be meg bekrefte før utføring.»
+
+Agenten fullfører det bekreftede steget og rapporterer resultat og kontroller.
+Deretter beskriver den én konkret neste handling og ber om bekreftelse før
+den starter. Bekreftelse gjentas ikke for delsteg innenfor samme avtalte oppgave.
+Vesentlige endringer i omfang avklares. Allerede uttrykkelig godkjente steg
+kan fullføres.
+
+- «Utfør anbefalt steg» gjelder handlingen som nettopp er beskrevet.
+- «Klargjør for test» betyr å gjøre leveransen klar og gi konkrete testinstruksjoner.
+- «Godkjent for test-VPS» gjelder den konkret beskrevne utrullingen til testmiljøet.
+- «Godkjent for produksjon» gjelder den konkrete produksjonsleveransen som er gjennomgått.
+
+Hvis Thomas må gjøre handlingen selv, oppgis konkret app/side eller verifisert
+lenke, knapper/kommandoer og forventet resultat. Kommandoer merkes Windows,
+Mac eller VPS. Ingen tilgang eller filplassering skal antas.
+
+Denne arbeidsformen gjelder utviklingsoppgaver; den endrer ikke målet om
+automatisk TTS-produksjon og kølegging uten godkjenning av hvert innslag.
