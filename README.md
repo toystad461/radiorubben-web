@@ -1,5 +1,11 @@
 # Radio Rubben web
 
+> Start utvikling med [AGENTS.md](AGENTS.md) og
+> [kodekart, testvalg og miljøstatus](docs/DEVELOPMENT.md).
+> Kommandoene nedenfor gjelder den statiske nettsiden. WordPress, Next,
+> Fotballrobot og quiz har egne kontroller. Main er ikke et komplett
+> produksjonsgrunnlag; ikke rull ut hele repoet som en serverkopi.
+
 Kildekode og versjonshistorikk for Radio Rubben-nettsiden og kommende tjenester som Dagens Bremnesing, dashboard, speakerverktøy og RRLive.
 
 ## Kom i gang
