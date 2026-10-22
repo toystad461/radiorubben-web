@@ -34,7 +34,7 @@ $requests=[];$queue=[response($yes),function(){
 }];
 $post=C::weeklyArticle([$m],$week,$fetched);
 check(count($requests)===2&&$post['meta_input'][G::META]['publishable'],'Weekly introduction receives factual and language review');
-check(str_contains($post['post_content'],'Bremnes G13 – Viggo')&&str_contains($post['post_content'],'18:00')&&str_contains($post['post_content'],'G13 2. divisjon'),'Every fixture is rendered directly with team, time and competition');
+check(str_contains(strip_tags($post['post_content']),'Bremnes G13 – Viggo')&&str_contains($post['post_content'],'18:00')&&str_contains($post['post_content'],'G13 2. divisjon'),'Every fixture is rendered directly with team, time and competition');
 $posts[11]=(object)(['ID'=>11,'post_type'=>'post','post_status'=>'draft']+$post);
 $meta[11]=$post['meta_input']+['_rrfr_club_key'=>'week:2026-10-12','_rrfr_fact_snapshot'=>$wf];
 check(G::managed(11)&&G::current(11,$posts[11]),'Weekly posts are managed and their complete rendered body is bound');

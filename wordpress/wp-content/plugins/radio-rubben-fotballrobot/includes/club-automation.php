@@ -1,5 +1,6 @@
 <?php
 namespace RadioRubben\Fotballrobot;
+require_once __DIR__.'/weekly-coverage.php';
 
 final class ClubAutomation {
     public const RESULT_WAIT=3600;
@@ -38,7 +39,7 @@ final class ClubAutomation {
         }
     }
     public static function stop(): void {
-        foreach (['rrfr_club_tick','rrfr_club_weekly'] as $hook) wp_clear_scheduled_hook($hook);
+        foreach (['rrfr_club_tick','rrfr_club_weekly','rrfr_club_results'] as $hook) wp_clear_scheduled_hook($hook);
         // Jobs already queued are inert after disable; remove their known arguments as well.
         foreach (get_option('rrfr_club_seen',[]) as $id=>$unused) wp_clear_scheduled_hook('rrfr_club_match',[(int)$id]);
     }
@@ -148,7 +149,7 @@ final class ClubAutomation {
             if (!self::existing($key)) {
                 $feed=ClubCoverage::collect(); $matches=ClubCoverage::weekMatches($feed['matches'],$week);
                 $facts=self::weeklyFacts($matches,$week,$feed['fetched_at']);
-                self::create($key,$facts,static fn()=>self::weeklyArticle($matches,$week,$feed['fetched_at']));
+                self::create($key,$facts,static fn()=>WeeklyCoverage::article($facts));
             }
             delete_option('rrfr_club_error_weekly');
             update_option('rrfr_club_weekly_due',ClubCoverage::nextSunday(time()),false);
@@ -168,27 +169,20 @@ final class ClubAutomation {
         return $post;
     }
     public static function weeklyFacts(array $matches,array $week,string $fetched): array {
-        return ['week'=>$week,'matches'=>$matches,'fetched_at'=>$fetched,'provider'=>'Fotballdata',
+        foreach($matches as &$m){
+            $configured=get_option('rr_poll_match_'.(int)$m['id'],[]);$m['logos']=[];
+            foreach(['home','away'] as $side){
+                $url=$configured[$side.'_logo']??'';
+                if(WeeklyCoverage::validLogo($url))$m['logos'][$side]=$url;
+            }
+        }
+        unset($m);
+        return ['week'=>$week,'matches'=>$matches,'fetched_at'=>$fetched,'provider'=>'Fotballdata','kind'=>'preview','unresolved'=>[],
             'sources'=>array_map(static fn($m)=>['url'=>$m['source'],'provider'=>'Fotballdata','fetched_at'=>$fetched],$matches)];
     }
     public static function weeklyArticle(array $matches,array $week,string $fetched): array {
-        $tz=new \DateTimeZone('Europe/Oslo');
-        $period=wp_date('j. F',strtotime($week['start']),$tz).'–'.wp_date('j. F Y',strtotime($week['end'])-1,$tz);
-        $title='Dette er neste ukes Bremnes-kamper';
-        $lead=$matches?'Bremnes har '.count($matches).' registrerte kamper fra G13/J13 og oppover i perioden '.$period.'. Her er oversikten over hjemme- og bortekampene.':'Det er ingen registrerte Bremnes-kamper fra G13/J13 og oppover i perioden '.$period.' i det kontrollerte kampgrunnlaget.';
-        $facts=self::weeklyFacts($matches,$week,$fetched);
-        $a=['title'=>$title,'lead'=>$lead,'paragraphs'=>['Kampoppsettet kan endres. Oversikten bygger på registrerte kamper hos Fotballdata.'],
-            'inline_sources'=>[],'checks'=>[['claim'=>'Periode og antall registrerte kamper','support'=>'week og matches']]];
-        $quality=Writer::qualityReview($a,$facts);$a=$quality['article'];
-        // Fixture rows are rendered directly from validated facts, like the existing lineup block.
-        // Language review can refine the introduction, but cannot omit or change a fixture.
-        $body=Writer::body($a,$facts);
-        foreach ($matches as $m) {
-            $home=$m['home']['registered_name']??$m['home']['name']; $away=$m['away']['registered_name']??$m['away']['name'];
-            $body.='<h2>'.esc_html($home.' – '.$away).'</h2><p>'.esc_html(wp_date('l j. F \k\l. H:i',strtotime($m['kickoff']),$tz).' · '.$m['venue'].' · '.$m['competition']['name']).' · <small><a href="'.esc_url($m['source']).'">Kampinformasjon</a></small></p>';
-        }
-        $body.='<p><small>Oversikten er automatisk laget av Radio Rubben fra Fotballdata. Oppdatert '.esc_html(wp_date('d.m.Y H:i',strtotime($fetched),$tz)).'. Kampoppsettet kan endres. Avlyste, utsatte, avbrutte og walkover-kamper er utelatt.</small></p>';
-        return self::reviewedPost($a,$body,$quality);
+        $facts=self::weeklyFacts($matches,$week,$fetched)+['kind'=>'preview','unresolved'=>[]];
+        return WeeklyCoverage::article($facts);
     }
     public static function menu(): void { add_submenu_page('rr-fotballrobot','Bremnes fra 13 år','Bremnes fra 13 år','manage_options','rrfr-club',[self::class,'page']); }
     public static function action(): void {
@@ -204,10 +198,10 @@ final class ClubAutomation {
     }
     public static function page(): void {
         if (!Robot::allowed()) wp_die('Ingen tilgang.',403);
-        echo '<div class="wrap"><h1>Bremnes fra 13 år</h1><p>'.esc_html(self::active()?'Automatikken er aktiv.':'Automatikken er ikke aktivert.').'</p><p>Kampoppsummeringer for G13/J13 og eldre ungdomslag. Referatet lages tidligst én time etter at sluttresultatet er bekreftet og uendret. Seniorreferater beholder eksisterende kjøring. Ukesoversikten inkluderer også seniorlagene.</p><p>Søndag kl. 18.00, Europe/Oslo: én artikkel om kommende mandag–søndag. Alt lagres som utkast til gjennomlesning. Godkjenn og publiser i Studio når artikkelen er klar.</p><p>Nye kampdata kontrolleres hver halvtime. Ved forsinkelse beholdes riktig uke. Ved kildefeil prøver roboten igjen etter 30 minutter.</p>';
+        echo '<div class="wrap"><h1>Bremnes fra 13 år</h1><p>'.esc_html(self::active()?'Automatikken er aktiv.':'Automatikken er ikke aktivert.').'</p><p>Kampoppsummeringer for G13/J13 og eldre ungdomslag. Referatet lages tidligst én time etter at sluttresultatet er bekreftet og uendret. Seniorreferater beholder eksisterende kjøring. Ukesoversikten inkluderer også seniorlagene.</p><p>Søndag kl. 18.00, Europe/Oslo: én artikkel om kommende mandag–søndag. Mandag kl. 08.00: resultatoppsummering for avsluttet uke. Alt lagres som utkast til gjennomlesning. Godkjenn og publiser i Studio når artikkelen er klar.</p><p>Nye kampdata kontrolleres hver halvtime. Ved forsinkelse beholdes riktig uke. Ved kildefeil prøver roboten igjen etter 30 minutter.</p>';
         $last=get_option('rrfr_club_last',[]);
         if ($last) echo '<p>Siste vellykkede kontroll: '.esc_html($last['at']).' · '.count($last['teams']).' lag.</p>';
-        foreach (['configuration','matches','weekly'] as $job) { $e=get_option('rrfr_club_error_'.$job,[]); if ($e) echo '<p role="alert">'.esc_html($e['message'].' · '.$e['at']).'</p>'; }
+        foreach (['configuration','matches','weekly','results'] as $job) { $e=get_option('rrfr_club_error_'.$job,[]); if ($e) echo '<p role="alert">'.esc_html($e['message'].' · '.$e['at']).'</p>'; }
         echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'">'; wp_nonce_field('rrfr_club');
         echo '<input type="hidden" name="action" value="rrfr_club"><button class="button" name="operation" value="'.(self::active()?'disable':'enable').'">'.(self::active()?'Stans automatikk':'Kontroller tilgang og aktiver').'</button></form><h2>Artikler</h2><ul>';
         foreach (get_posts(['post_type'=>'post','post_status'=>['draft','pending','publish','private','future'],'numberposts'=>30,'meta_key'=>'_rrfr_club_key']) as $p) {

@@ -76,3 +76,15 @@ add_action('rrfr_club_tick',[ClubAutomation::class,'tick']);
 add_action('rrfr_club_match',[ClubAutomation::class,'match']);
 add_action('rrfr_club_weekly',[ClubAutomation::class,'weekly']);
 register_deactivation_hook(__FILE__,[ClubAutomation::class,'stop']);
+
+require_once __DIR__.'/includes/weekly-coverage.php';
+add_action('init',[WeeklyCoverage::class,'register']);
+add_action('rest_api_init',[WeeklyCoverage::class,'routes']);
+add_action(WeeklyCoverage::HOOK,[WeeklyCoverage::class,'tick']);
+register_deactivation_hook(__FILE__,[WeeklyCoverage::class,'stop']);
+
+require_once __DIR__.'/includes/published-edits.php';
+add_filter('rest_pre_insert_post',[PublishedEdits::class,'rest'],99,2);
+add_filter('wp_insert_post_empty_content',[PublishedEdits::class,'beforeWrite'],99,2);
+
+add_action('wp_head',[\RadioRubben\Fotballrobot\WeeklyCoverage::class,'styles'],99);
