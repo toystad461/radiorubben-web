@@ -6,10 +6,24 @@ final class PlayerCorrections {
     const META='_rrfr_pending_correction';
     private static function live(int $id): array {
         if(!Robot::allowed()||!current_user_can('edit_post',$id))throw new \RuntimeException('Ingen tilgang.');
-        $p=get_post($id);$s=PlayerReview::state($id);
-        if(!$p||$p->post_type!=='post'||$p->post_status!=='publish'||($s['status']??'')!=='published'||!empty($s['test'])||get_post_meta($id,'_rrfr_test_only',true))
-            throw new \RuntimeException('Bare publiserte spillersaker kan få en rettelse.');
+        $p=get_post($id);$s=get_post_meta($id,PlayerReview::META,true);
+        if(!is_array($s)||!$s){
+            if(!PublicationGate::managed($id))throw new \RuntimeException('Ukjent robotartikkel.');
+            $s=get_post_meta($id,ReviewDesk::META,true);if(!is_array($s))$s=[];
+            $s['status']=$p&&$p->post_status==='publish'?'published':($s['status']??'pending');
+            $s['facts']=PublicationGate::facts($id);
+        }
+        if(!$p||$p->post_type!=='post'||$p->post_status!=='publish'||($s['status']??'')!=='published'||!empty($s['test'])||get_post_meta($id,'_rrfr_test_only',true)||get_post_meta($id,'_rrfr_trial_match',true))
+            throw new \RuntimeException('Bare publiserte robotartikler kan få en rettelse.');
         return [$p,$s];
+    }
+    private static function stateKey(int $id): string {
+        $s=get_post_meta($id,PlayerReview::META,true);
+        return is_array($s)&&$s?PlayerReview::META:ReviewDesk::META;
+    }
+    private static function body(int $id,array $article,array $facts): string {
+        if(self::stateKey($id)===PlayerReview::META)return PlayerReview::body($article,$facts);
+        return Writer::body($article,$facts).(isset($facts['week'])?WeeklyCoverage::rows($facts):'');
     }
     public static function base(int $id): string {
         [$p,$s]=self::live($id);
@@ -34,7 +48,7 @@ final class PlayerCorrections {
             $quality=Writer::qualityReview(Writer::validate($article),$s['facts']);
             if(!hash_equals($base,self::base($id)))throw new \RuntimeException('Saken ble endret under kontrollen. Ingen rettelse er lagret.');
             if(($quality['publishable']??false)!==true)throw new \RuntimeException(implode(' ',$quality['findings']??['Ny kontroll kreves.']));
-            $a=$quality['article'];$post=['post_title'=>$a['title'],'post_excerpt'=>$a['lead'],'post_content'=>PlayerReview::body($a,$s['facts'])];
+            $a=$quality['article'];$post=['post_title'=>$a['title'],'post_excerpt'=>$a['lead'],'post_content'=>self::body($id,$a,$s['facts'])];
             $record=['status'=>'pending','base'=>$base,'article'=>$a,'post'=>$post,'quality'=>PublicationGate::bind($quality,$post),
                 'prepared_by'=>get_current_user_id(),'at'=>gmdate(DATE_ATOM)];
             $record['token']=hash('sha256',serialize($record));self::put($id,$record);
@@ -49,10 +63,11 @@ final class PlayerCorrections {
                 throw new \RuntimeException('Forslaget er endret. Les saken på nytt.');
             $comment=trim(sanitize_textarea_field($comment));
             if($comment===''||mb_strlen($comment)>2000)throw new \RuntimeException('Skriv ønsket endring, inntil 2000 tegn.');
+            if(self::stateKey($id)!==PlayerReview::META)throw new \RuntimeException('Lag et nytt kontrollert endringsforslag for kamp- og ukesartikler.');
             $a=Writer::playerArticle($s['facts'],$comment,$r['article']);$quality=$a['_quality']??[];unset($a['_quality']);
             if(($quality['publishable']??false)!==true)throw new \RuntimeException('Den nye teksten bestod ikke kontrollen. Forrige forslag er beholdt.');
             if(!hash_equals($r['base'],self::base($id)))throw new \RuntimeException('Saken ble endret under kontrollen. Forslaget er beholdt.');
-            $post=['post_title'=>$a['title'],'post_excerpt'=>$a['lead'],'post_content'=>PlayerReview::body($a,$s['facts'])];
+            $post=['post_title'=>$a['title'],'post_excerpt'=>$a['lead'],'post_content'=>self::body($id,$a,$s['facts'])];
             $r['history'][]=['article'=>$r['article'],'token'=>$r['token'],'requested_by'=>get_current_user_id(),'comment'=>$comment,'at'=>gmdate(DATE_ATOM)];
             $r['article']=$a;$r['post']=$post;$r['quality']=PublicationGate::bind($quality,$post);
             unset($r['token']);$r['token']=hash('sha256',serialize($r));self::put($id,$r);
@@ -67,20 +82,20 @@ final class PlayerCorrections {
             if(($q['rulesVersion']??'')!==EditorialQuality::RULES_VERSION||($q['publishable']??false)!==true||($q['languageStatus']??'')!=='completed'||($q['findings']??null)!==[]
                 ||!hash_equals($q['factsHash']??'',EditorialQuality::hash(EditorialQuality::packet($s['facts'])))||!hash_equals($q['postHash']??'',PublicationGate::hash($new)))
                 throw new \RuntimeException('Rettelsen trenger ny kvalitetskontroll.');
-            $oldQuality=get_post_meta($id,PublicationGate::META,true);$next=$s;
-            $next['status']='publishing';$next['version']++;$next['hash']=PlayerReview::hash((object)$new);$next['article']=$r['article'];
+            $oldQuality=get_post_meta($id,PublicationGate::META,true);$oldState=get_post_meta($id,self::stateKey($id),true);$next=$s;
+            $next['status']='publishing';$next['version']=(int)($next['version']??0)+1;$next['hash']=PlayerReview::hash((object)$new);$next['article']=$r['article'];
             $next['history'][]=['action'=>'correct','user'=>get_current_user_id(),'at'=>gmdate(DATE_ATOM),'hash'=>$next['hash'],'previous_hash'=>PlayerReview::hash($p),'rulesVersion'=>EditorialQuality::RULES_VERSION];
-            update_post_meta($id,PlayerReview::META,$next);update_post_meta($id,PublicationGate::META,$q);
+            update_post_meta($id,self::stateKey($id),$next);update_post_meta($id,PublicationGate::META,$q);
             try {
                 // The normal publication gate still verifies these exact facts and this exact text.
                 if(!PublicationGate::canPublish($id,(object)$new))throw new \RuntimeException('Publiseringskontrollen avviste rettelsen.');
                 $result=wp_update_post(['ID'=>$id]+$new,true);
                 if(is_wp_error($result)||get_post($id)->post_status!=='publish'||PlayerReview::hash(get_post($id))!==$next['hash'])throw new \RuntimeException('Oppdateringen ble ikke bekreftet.');
-                $next['status']='published';update_post_meta($id,PlayerReview::META,$next);
+                $next['status']='published';update_post_meta($id,self::stateKey($id),$next);
                 $r['status']='applied';$r['approved_by']=get_current_user_id();self::put($id,$r);
             }catch(\Throwable $e){
                 // Retain the original public version and its approval if a write fails.
-                update_post_meta($id,PlayerReview::META,$s);update_post_meta($id,PublicationGate::META,$oldQuality);
+                update_post_meta($id,self::stateKey($id),$oldState);update_post_meta($id,PublicationGate::META,$oldQuality);
                 wp_update_post(['ID'=>$id,'post_title'=>$p->post_title,'post_excerpt'=>$p->post_excerpt,'post_content'=>$p->post_content,'post_status'=>'publish']);
                 throw $e;
             }
@@ -116,7 +131,7 @@ final class PlayerCorrections {
         set_transient('rrfr_review_notice_'.get_current_user_id(),$message,120);wp_safe_redirect(PlayerReview::url($id));exit;
     }
     public static function routes(): void {
-        register_rest_route('rr-fotballrobot/v1','/player-corrections/(?P<id>[0-9]+)',[
+        foreach(['player-corrections','article-corrections'] as $route)register_rest_route('rr-fotballrobot/v1','/'.$route.'/(?P<id>[0-9]+)',[
             'methods'=>'POST','permission_callback'=>[Robot::class,'allowed'],
             'callback'=>static fn($r)=>Robot::response(static fn()=>self::prepare((int)$r['id'],(string)$r->get_param('hash'),(array)$r->get_param('article')))
         ]);

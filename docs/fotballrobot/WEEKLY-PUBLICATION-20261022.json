@@ -1,0 +1,38 @@
+{
+  "base_commit": "6c36802ee04879f7e79d319911902a03a5157c04",
+  "status": "prepared-not-deployed",
+  "files": {
+    "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/club-automation.php": {
+      "before_sha256": "3121537b8b5f2d779b5140404bd19077b05bd35741c880f9e36c6675e42e031b",
+      "after_sha256": "daee7af4b30d4ddfbf490efd1f4ccbcd9d2e1c5adc34b097299e7c88824868c6"
+    },
+    "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/newsroom.php": {
+      "before_sha256": "3174901dd7a196014ae32e2c41005e536a6ec9e9b5cca4d11f6e0b47fc0f74f5",
+      "after_sha256": "78b85a09d7a1b64e169fa82037ea0bc3a215917eccdbc0a8c1e20b2468643c01"
+    },
+    "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/player-corrections.php": {
+      "before_sha256": "340452cbfdd28221de3bb4a0b51a96331a98e1336ca90e9bc36f264e098664f3",
+      "after_sha256": "247966175f718b8bcb2a4be17e29495e12b9759f85ea6199783160d9a98f1177"
+    },
+    "wordpress/wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php": {
+      "before_sha256": "c9b94c3948140815d6b7c4ff944946c22cc06a21ae8ac545c3e7471516e03e6c",
+      "after_sha256": "061f79d1f4ab2cf58ebf1694a7d3b36b6152a91830bb8c60de2dc86c8032674f"
+    },
+    "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/published-edits.php": {
+      "before_sha256": null,
+      "after_sha256": "4a380485edee8acadbcb69b01d8772181f09e7897063b224b5174a87e8e09110"
+    },
+    "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.css": {
+      "before_sha256": null,
+      "after_sha256": "af34584a6a7ad16b92fbfaff4bdd5ce46803827695a75717ab625601ad43fc53"
+    },
+    "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.js": {
+      "before_sha256": null,
+      "after_sha256": "1d15b3553ba2a1565ca5623b809748da7d8ea905b6b211e2480dda13b4d9a5c3"
+    },
+    "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.php": {
+      "before_sha256": null,
+      "after_sha256": "f398678a679e7fca2f28a52aa9b6e5cf273d1beac93e153d5717f31ac62cb47a"
+    }
+  }
+}

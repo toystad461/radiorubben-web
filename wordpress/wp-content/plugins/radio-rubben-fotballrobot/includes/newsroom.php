@@ -50,8 +50,8 @@ final class Newsroom {
         $media=(int)get_post_meta($id,'_thumbnail_id',true);$imageUrl=$media?wp_get_attachment_image_url($media,'large'):false;
         $image=$imageUrl?['id'=>$media,'url'=>$imageUrl,'alt'=>(string)get_post_meta($media,'_wp_attachment_image_alt',true),'caption'=>(string)wp_get_attachment_caption($media)]:null;
         return ['id'=>$id,'type'=>'wordpress','token'=>$token,'title'=>$p->post_title,'intro'=>$p->post_excerpt,
-            'body'=>$body,'notice'=>$notice,'image'=>$image,'isCorrection'=>(bool)$correction,'canAddFacts'=>!$correction,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$correction?'Fotball · Oppdatering av publisert sak':($m['player']?'Fotball · Spillersak':(str_starts_with((string)get_post_meta($p->ID,'_rrfr_club_key',true),'week:')?'Fotball · Neste ukes kamper':'Fotball · Kampomtale')),
-            'sourceUrl'=>'','links'=>array_values($links),'canApprove'=>$m['can_approve'],'canRevise'=>$correction?$m['can_approve']:($m['player']&&$m['pending']),
+            'body'=>$body,'notice'=>$notice,'image'=>$image,'isCorrection'=>(bool)$correction,'canAddFacts'=>!$correction,'status'=>$status,'reasons'=>$reasons,'sourceName'=>$correction?'Fotball · Oppdatering av publisert sak':($m['player']?'Fotball · Spillersak':(str_starts_with((string)get_post_meta($p->ID,'_rrfr_club_key',true),'week:')?'Fotball · Ukens kampoversikt':(str_starts_with((string)get_post_meta($p->ID,'_rrfr_club_key',true),'results:')?'Fotball · Ukens resultater':'Fotball · Kampomtale'))),
+            'sourceUrl'=>'','links'=>array_values($links),'canApprove'=>$m['can_approve'],'canRevise'=>$correction?($m['can_approve']&&$m['player']):($m['player']&&$m['pending']),
             'publishedUrl'=>$status==='published'?get_permalink($id):null];
     }
     public static function response(): array {
