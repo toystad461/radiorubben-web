@@ -24,6 +24,21 @@ final class Facts {
         $d = \DateTimeImmutable::createFromFormat('!d.m.Y H:i', $text, new \DateTimeZone('Europe/Oslo'));
         return $d && $d->format('d.m.Y H:i') === $text ? $d->format(DATE_ATOM) : null;
     }
+    /** Only an explicit source label supplies duration; age class never does. */
+    public static function duration(\DOMXPath $x): ?int {
+        $values=[];
+        foreach ($x->query('//dt|//th|//td|//span|//p|//div|//li') as $node) {
+            $text=self::text($node);
+            if (preg_match('/^Spilletid\s*:?$/iu',$text)) $text.=' '.self::text($x->query('following-sibling::*[1]',$node)->item(0));
+            if (preg_match('/^Spilletid\s*:?\s*2\s*[x×]\s*(\d{2})\s*(?:min(?:utter)?\.?)?$/iu',$text,$m)) $values[2*(int)$m[1]]=true;
+            if (preg_match('/^Spilletid\s*:?\s*(\d{2,3})\s*(?:min(?:utter)?\.?)?$/iu',$text,$m)) $values[(int)$m[1]]=true;
+        }
+        $minutes=count($values)===1?(int)array_key_first($values):0;
+        return $minutes>=20 && $minutes<=120?$minutes:null;
+    }
+    public static function publicName(string $name): string {
+        return preg_match('/skjult|anonym|ukjent|ikke (?:tilgjengelig|offentlig)|hidden/iu',$name)?'':trim($name);
+    }
     public static function match(string $html, int $id): array {
         $x = self::dom($html); $card = $x->query('//*['.self::cls('a_matchCard').']')->item(0);
         if (!$card) throw new \RuntimeException('Fant ikke kampkortet hos NFF.');
@@ -45,13 +60,15 @@ final class Facts {
             $content=$x->query('.//*['.self::cls('timelineEventContent').']',$row)->item(0);
             if (!$side || !$content || !preg_match('/^(\d{1,3})(?:\+(\d{1,2}))?$/',$minute,$mm)) continue;
             $label=self::text($x->query('./div',$content)->item(0));
-            $name=self::text($x->query('.//*['.self::cls('eventHeading').']',$content)->item(0));
+            $name=self::publicName(self::text($x->query('.//*['.self::cls('eventHeading').']',$content)->item(0)));
             $key=$row->getAttribute('id') ?: hash('sha256',$side.$minute.$label.$name);
-            $events[$key]=['id'=>$key,'side'=>$side,'minute'=>$minute,'order'=>(int)$mm[1]*100+(int)($mm[2]??0),'name'=>$name,'type'=>$label];
+            $event=['id'=>$key,'side'=>$side,'minute'=>$minute,'order'=>(int)$mm[1]*100+(int)($mm[2]??0),'name'=>$name,'type'=>$label];
+            if (isset($events[$key]) && $events[$key]!==$event) throw new \RuntimeException('Motstridende kamphendelser med samme ID.');
+            $events[$key]=$event;
         }
         $events=array_values($events); usort($events,fn($a,$b)=>$a['order']<=>$b['order']);
         $referees=[]; foreach($x->query('//*[@data-tab="dommere"]//tbody/tr') as $row) {$td=$x->query('./td',$row);if($td->length>=2 && self::text($td->item(1))!=='')$referees[]=['role'=>self::text($td->item(0)),'name'=>self::text($td->item(1))];}
-        return ['referees'=>$referees,'id'=>$id,'home'=>$home,'away'=>$away,'kickoff'=>$kickoff,'competition'=>['id'=>self::id($competition),'name'=>self::text($competition)],'venue'=>self::text($x->query('.//*['.self::cls('footerElement').']',$card)->item(0)),'score'=>$score,'half_time'=>$half,'events'=>$events,'source'=>'https://www.fotball.no/fotballdata/kamp/?fiksId='.$id];
+        return ['duration_minutes'=>self::duration($x),'referees'=>$referees,'id'=>$id,'home'=>$home,'away'=>$away,'kickoff'=>$kickoff,'competition'=>['id'=>self::id($competition),'name'=>self::text($competition)],'venue'=>self::text($x->query('.//*['.self::cls('footerElement').']',$card)->item(0)),'score'=>$score,'half_time'=>$half,'events'=>$events,'source'=>'https://www.fotball.no/fotballdata/kamp/?fiksId='.$id];
     }
     public static function history(string $html, int $team): array {
         $x=self::dom($html); $tables=$x->query('//*['.self::cls('a_matches').']//table');
@@ -76,9 +93,11 @@ final class Facts {
         if (!$rows) throw new \RuntimeException('Ingen kamper kunne knyttes sikkert til laget.');
         return array_values($rows);
     }
-    public static function form(array $rows, array $match, int $team): array {
+    public static function form(array $rows, array $match, int $team, string $scope='all'): array {
+        if(!in_array($scope,['all','home','away'],true)) throw new \InvalidArgumentException('Ukjent historikkutvalg.');
         $before=[]; $next=[]; $seen=[]; $unknown=[];
         foreach ($rows as $r) {
+            if ($scope!=='all' && ($r[$scope]['id']??null)!==$team) continue;
             if (!in_array($team,[$r['home']['id'],$r['away']['id']],true) || $r['competition_id']!==$match['competition']['id'] || substr($r['kickoff'],0,4)!==substr($match['kickoff'],0,4) || $r['id']===$match['id']) continue;
             if(isset($seen[$r['id']])) { if($seen[$r['id']]!==$r) throw new \RuntimeException('Motstridende historikk.'); continue; }
             $seen[$r['id']]=$r;
@@ -94,7 +113,65 @@ final class Facts {
         $five=array_slice($suffix,0,5); $wins=0; $unbeaten=0; $winExact=false; $unbeatenExact=false;
         foreach($suffix as $r) { if($r['result']!=='V') {$winExact=true;break;} $wins++; }
         foreach($suffix as $r) { if($r['result']==='T') {$unbeatenExact=true;break;} $unbeaten++; }
-        return ['team_id'=>$team,'last_five'=>$five,'known_count'=>count($before),'unresolved_count'=>count($unknown),'wins'=>$wins,'wins_exact'=>$winExact,'unbeaten'=>$unbeaten,'unbeaten_exact'=>$unbeatenExact,'win_match_ids'=>array_column(array_slice($suffix,0,$wins),'id'),'points_last_five'=>array_sum(array_map(fn($r)=>$r['result']==='V'?3:($r['result']==='U'?1:0),$five)),'next'=>$next[0]??null];
+        $out=['scope'=>$scope,'team_id'=>$team,'last_five'=>$five,'known_count'=>count($before),'unresolved_count'=>count($unknown),'wins'=>$wins,'wins_exact'=>$winExact,'unbeaten'=>$unbeaten,'unbeaten_exact'=>$unbeatenExact,'win_match_ids'=>array_column(array_slice($suffix,0,$wins),'id'),'points_last_five'=>array_sum(array_map(fn($r)=>$r['result']==='V'?3:($r['result']==='U'?1:0),$five)),'next'=>$next[0]??null];
+        $out['win_evidence']=array_slice($suffix,0,$wins);
+        if($scope==='all') $out['venues']=['home'=>self::form($rows,$match,$team,'home'),'away'=>self::form($rows,$match,$team,'away')];
+        return $out;
+    }
+    /** Versioned match learning: evidence stays in the existing fact snapshot. */
+    public static function scoringAngles(array $m): array {
+        if (!is_array($m['score']??null)) return [];
+        $events=[]; $seen=[];
+        foreach ($m['events']??[] as $e) {
+            if (!in_array($e['type'],['Spillemål','Straffemål','Selvmål'],true)) continue;
+            $id=$e['id']??'';
+            if ($id==='' || !in_array($e['side'],['home','away'],true) ||
+                !preg_match('/^(\d{1,3})(?:\+(\d{1,2}))?$/',(string)$e['minute'],$mm)) return [];
+            if (isset($seen[$id])) { if ($seen[$id]!==$e) return []; continue; }
+            $seen[$id]=$e;
+            $e['order']=(int)$mm[1]*100+(int)($mm[2]??0);
+            $events[]=$e;
+        }
+        usort($events,fn($a,$b)=>$a['order']<=>$b['order']);
+        $score=[0,0]; $players=[]; $timeline=[]; $minutes=[]; $ambiguous=false;
+        foreach ($events as $e) {
+            $side=$e['side']==='home'?0:1;
+            if ($e['type']==='Selvmål') $side=1-$side;
+            $score[$side]++;
+            $e['scoring_side']=$side; $e['score']=$score; $timeline[]=$e;
+            if (isset($minutes[$e['order']])) $ambiguous=true;
+            $minutes[$e['order']]=true;
+            $name=self::publicName($e['name']);
+            if ($name==='' || $e['type']==='Selvmål') continue;
+            // Full published name AND side: never combine opponents or hidden names.
+            $key=$e['side']."\0".$name;
+            if (!isset($players[$key])) $players[$key]=['name'=>$name,'side'=>$e['side'],'event_ids'=>[],'minutes'=>[]];
+            $players[$key]['event_ids'][]=$e['id']; $players[$key]['minutes'][]=$e['minute'];
+        }
+        if ($score!==$m['score']) return [];
+        $out=[]; $hat=array_values(array_filter($players,fn($p)=>count($p['event_ids'])>=3));
+        if ($hat) {
+            $out[]=['id'=>'hattricks','title'=>count($hat)===1?$hat[0]['name'].' scoret minst tre mål':count($hat).' spillere scoret minst tre mål',
+                'reason'=>'Minst tre registrerte mål per navngitt spiller og lag; straffemål teller, selvmål gjør ikke det. Hele mållisten stemmer med sluttresultatet.',
+                'scorers'=>$hat,'event_ids'=>array_merge(...array_column($hat,'event_ids'))];
+        }
+        // Same-minute goals have no proven internal order. Totals remain usable.
+        if (!$ambiguous && $score[0]!==$score[1] && $timeline) {
+            $winner=$score[0]>$score[1]?0:1; $decisive=null; $equalizers=[[],[]];
+            foreach ($timeline as $e) {
+                if ($e['score'][0]===$e['score'][1]) $equalizers[$e['scoring_side']][]=$e['id'];
+                if ($e['score'][$winner]<=$e['score'][1-$winner]) $decisive=null;
+                elseif ($decisive===null) $decisive=$e;
+            }
+            if ($decisive && $decisive['type']!=='Selvmål') {
+                $name=self::publicName($decisive['name']); $side=$winner===0?'home':'away';
+                $out[]=['id'=>'winning_goal','title'=>($name!==''?$name:$m[$side]['name']).' avgjorde kampen',
+                    'reason'=>'Tok ledelsen i det '.$decisive['minute'].'. minutt og beholdt den. Ikke bevis for faktisk sluttid.',
+                    'minute'=>$decisive['minute'],'event_ids'=>array_column($timeline,'id'),
+                    'winning_event_id'=>$decisive['id'],'equalizer_event_ids'=>$equalizers];
+            }
+        }
+        return $out;
     }
     public static function angles(array $m, array $forms): array {
         if ($m['score']===null) return [];
@@ -106,8 +183,10 @@ final class Facts {
         }
         // Incomplete event feeds must not produce narrative about decisive goals.
         if($score===$m['score'] && $goals) {
-            $last=end($goals); $name=trim($last['name']);
-            if($score[0]===$score[1] && (int)$last['minute']>=80 && $last['type']!=='Selvmål') $a[]=['id'=>'late_equalizer','title'=>$name.' sikret poeng','reason'=>'Utligning i det '.$last['minute'].'. minutt; hendelsene summerer til sluttresultatet.','event_ids'=>[$last['id']]];
+            $last=end($goals); $name=self::publicName($last['name']);
+            $duration=$m['duration_minutes']??null;
+            $late=is_int($duration) && $duration>=20 && $duration<=120 && (int)$last['minute']>=($duration-10);
+            if($score[0]===$score[1] && $late && $last['type']!=='Selvmål') $a[]=['id'=>'late_equalizer','title'=>($name!==''?$name:$m[$last['scoring_side']===0?'home':'away']['name']).' sikret poeng','reason'=>'Utligning i det '.$last['minute'].'. minutt; hendelsene summerer til sluttresultatet.','event_ids'=>[$last['id']]];
             foreach(['home','away'] as $i=>$side) if($maxDeficit[$i]>=2 && $score[$i]>=$score[1-$i]) $a[]=['id'=>'comeback_'.$side,'title'=>$m[$side]['name'].' hentet inn ledelsen','reason'=>'Lå '.$maxDeficit[$i].' mål under og fikk poeng.','event_ids'=>array_column($goals,'id')];
         }
         $streakSides=['home','away'];
@@ -116,6 +195,16 @@ final class Facts {
             $i=$side==='home'?0:1; $f=$forms[$side]??null;
             if($f && $f['wins']>=3 && $m['score'][$i]<=$m['score'][1-$i]) $a[]=['id'=>'streak_'.$side,'title'=>'Seiersrekken til '.$m[$side]['name'].' tok slutt','reason'=>'Vant '.($f['wins_exact']?'':'minst ').$f['wins'].' kamper på rad før denne kampen.','match_ids'=>$f['win_match_ids']];
         }
+        foreach(['home','away'] as $side) {
+            $i=$side==='home'?0:1; $f=$forms[$side]['venues'][$side]??null;
+            if($f && $f['team_id']===$m[$side]['id'] && $f['wins']>=2 && $m['score'][$i]>$m['score'][1-$i]) {
+                $count=$f['wins']+1;$label=$side==='home'?'hjemmekampene':'bortekampene';
+                $a[]=['id'=>'venue_wins_'.$side,'title'=>$m[$side]['name'].' vant igjen',
+                    'reason'=>'Vant de '.$count.' siste registrerte '.$label.' i kontrollert historikk fra samme turnering. Listen er ikke bekreftet komplett; ikke påstå en ubetinget sammenhengende rekke.',
+                    'scope'=>$side,'includes_current_match'=>true,'match_ids'=>array_merge($f['win_match_ids'],[$m['id']])];
+            }
+        }
+        $a=array_merge($a,self::scoringAngles($m));
         $a[]=['id'=>'result','title'=>$m['home']['name'].' og '.$m['away']['name'].' spilte '.$m['score'][0].'–'.$m['score'][1],'reason'=>'Bekreftet kampresultat.'];
         return array_slice($a,0,3);
     }

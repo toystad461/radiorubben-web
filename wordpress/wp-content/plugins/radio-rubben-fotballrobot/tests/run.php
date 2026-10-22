@@ -13,6 +13,7 @@ check($vf['wins']===5 && $vf['wins_exact'],'Viggo fem strake, med bekreftet brud
 check($bf['wins']===4 && $bf['wins_exact'],'Bremnes fire strake før kampen');
 check(count($vf['last_five'])===5 && $vf['points_last_five']===15,'Fem siste');
 check(!in_array(8985491,array_column($vf['last_five'],'id'),true),'Ekskluder aktuell kamp');
+$m['duration_minutes']=90; // Explicit synthetic test input, never inferred in the parser.
 $angles=Facts::angles($m,['home'=>$bf,'away'=>$vf]);
 check(in_array('late_equalizer',array_column($angles,'id')),'Sen utligning');
 check(in_array('comeback_home',array_column($angles,'id')),'Opphenting');

@@ -33,7 +33,7 @@ final class Lineups {
                         $seen[$role]=true;
                         foreach($x->query('.//*['.Facts::cls('playerContent').']',$list) as $player) {
                             $links=$x->query('.//a['.Facts::cls('playerName').']',$player);
-                            $a=$links->item(0);$name=Facts::text($a);$pid=Facts::id($a);
+                            $a=$links->item(0);$name=Facts::publicName(Facts::text($a));$pid=Facts::id($a);
                             $number=Facts::text($x->query('.//*['.Facts::cls('playerNumber').']',$player)->item(0));
                             if($links->length!==1 || !$pid || $name==='' || !ctype_digit($number) || (int)$number<1 || (int)$number>999
                                 || isset($roster[(int)$number]) || isset($people[$pid]) || preg_match('/strøket/iu',Facts::text($player)))
