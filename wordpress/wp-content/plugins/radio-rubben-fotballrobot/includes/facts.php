@@ -62,7 +62,9 @@ final class Facts {
             $label=self::text($x->query('./div',$content)->item(0));
             $name=self::publicName(self::text($x->query('.//*['.self::cls('eventHeading').']',$content)->item(0)));
             $key=$row->getAttribute('id') ?: hash('sha256',$side.$minute.$label.$name);
-            $events[$key]=['id'=>$key,'side'=>$side,'minute'=>$minute,'order'=>(int)$mm[1]*100+(int)($mm[2]??0),'name'=>$name,'type'=>$label];
+            $event=['id'=>$key,'side'=>$side,'minute'=>$minute,'order'=>(int)$mm[1]*100+(int)($mm[2]??0),'name'=>$name,'type'=>$label];
+            if (isset($events[$key]) && $events[$key]!==$event) throw new \RuntimeException('Motstridende kamphendelser med samme ID.');
+            $events[$key]=$event;
         }
         $events=array_values($events); usort($events,fn($a,$b)=>$a['order']<=>$b['order']);
         $referees=[]; foreach($x->query('//*[@data-tab="dommere"]//tbody/tr') as $row) {$td=$x->query('./td',$row);if($td->length>=2 && self::text($td->item(1))!=='')$referees[]=['role'=>self::text($td->item(0)),'name'=>self::text($td->item(1))];}

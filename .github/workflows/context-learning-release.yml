@@ -1,0 +1,46 @@
+name: Fotballrobot learning package production audit
+on:
+  push:
+    branches: ['codex/football-context-learning-20261022']
+    paths: ['.github/workflows/context-learning-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Read production file hashes only
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one 'php' <<'PHP'
+          <?php
+          $root='/run/webroots/r1417157/wp-content/plugins/radio-rubben-fotballrobot';
+          if(!is_dir($root))exit(2);
+          $out=[];
+          foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS)) as $file){
+              if($file->isLink())exit(3);
+              $p=substr($file->getPathname(),strlen($root)+1);
+              if(!preg_match('/\.(php|css|js)$/',$p))continue;
+              $s=file_get_contents($file->getPathname());
+              $out[$p]=['sha256'=>hash('sha256',$s),'git_blob'=>sha1("blob ".strlen($s)."\0".$s)];
+          }
+          ksort($out);
+          echo "RR_LEARNING_MANIFEST ".json_encode($out,JSON_UNESCAPED_SLASHES)."\n";
+          PHP
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519

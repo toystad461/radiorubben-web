@@ -32,4 +32,7 @@ $d['duration_minutes']=70;array_pop($d['events']);check(!in_array('late_equalize
 $html=file_get_contents(__DIR__.'/fixtures/match.html');
 $html=preg_replace('/(<[^>]+class="eventHeading"[^>]*>).*?(<\/[^>]+>)/s','$1Målscorer skjult$2',$html);
 foreach(Facts::match($html,8985491)['events'] as $e)check(!str_contains($e['name'],'skjult'),'parser removes hidden placeholders');
+$conflict=str_replace('id="7389484"','id="7388220"',file_get_contents(__DIR__.'/fixtures/match.html'));
+$rejected=false;try{Facts::match($conflict,8985491);}catch(RuntimeException $e){$rejected=str_contains($e->getMessage(),'samme ID');}
+check($rejected,'parser rejects conflicting IDs before an event can be overwritten');
 echo "OK: $count context-learning checks\n";
