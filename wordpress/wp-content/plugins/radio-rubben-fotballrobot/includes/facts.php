@@ -116,6 +116,61 @@ final class Facts {
         if($scope==='all') $out['venues']=['home'=>self::form($rows,$match,$team,'home'),'away'=>self::form($rows,$match,$team,'away')];
         return $out;
     }
+    /** Versioned match learning: evidence stays in the existing fact snapshot. */
+    public static function scoringAngles(array $m): array {
+        if (!is_array($m['score']??null)) return [];
+        $events=[]; $seen=[];
+        foreach ($m['events']??[] as $e) {
+            if (!in_array($e['type'],['Spillemål','Straffemål','Selvmål'],true)) continue;
+            $id=$e['id']??'';
+            if ($id==='' || !in_array($e['side'],['home','away'],true) ||
+                !preg_match('/^(\d{1,3})(?:\+(\d{1,2}))?$/',(string)$e['minute'],$mm)) return [];
+            if (isset($seen[$id])) { if ($seen[$id]!==$e) return []; continue; }
+            $seen[$id]=$e;
+            $e['order']=(int)$mm[1]*100+(int)($mm[2]??0);
+            $events[]=$e;
+        }
+        usort($events,fn($a,$b)=>$a['order']<=>$b['order']);
+        $score=[0,0]; $players=[]; $timeline=[]; $minutes=[]; $ambiguous=false;
+        foreach ($events as $e) {
+            $side=$e['side']==='home'?0:1;
+            if ($e['type']==='Selvmål') $side=1-$side;
+            $score[$side]++;
+            $e['scoring_side']=$side; $e['score']=$score; $timeline[]=$e;
+            if (isset($minutes[$e['order']])) $ambiguous=true;
+            $minutes[$e['order']]=true;
+            $name=self::publicName($e['name']);
+            if ($name==='' || $e['type']==='Selvmål') continue;
+            // Full published name AND side: never combine opponents or hidden names.
+            $key=$e['side']."\0".$name;
+            if (!isset($players[$key])) $players[$key]=['name'=>$name,'side'=>$e['side'],'event_ids'=>[],'minutes'=>[]];
+            $players[$key]['event_ids'][]=$e['id']; $players[$key]['minutes'][]=$e['minute'];
+        }
+        if ($score!==$m['score']) return [];
+        $out=[]; $hat=array_values(array_filter($players,fn($p)=>count($p['event_ids'])>=3));
+        if ($hat) {
+            $out[]=['id'=>'hattricks','title'=>count($hat)===1?$hat[0]['name'].' scoret minst tre mål':count($hat).' spillere scoret minst tre mål',
+                'reason'=>'Minst tre registrerte mål per navngitt spiller og lag; straffemål teller, selvmål gjør ikke det. Hele mållisten stemmer med sluttresultatet.',
+                'scorers'=>$hat,'event_ids'=>array_merge(...array_column($hat,'event_ids'))];
+        }
+        // Same-minute goals have no proven internal order. Totals remain usable.
+        if (!$ambiguous && $score[0]!==$score[1] && $timeline) {
+            $winner=$score[0]>$score[1]?0:1; $decisive=null; $equalizers=[[],[]];
+            foreach ($timeline as $e) {
+                if ($e['score'][0]===$e['score'][1]) $equalizers[$e['scoring_side']][]=$e['id'];
+                if ($e['score'][$winner]<=$e['score'][1-$winner]) $decisive=null;
+                elseif ($decisive===null) $decisive=$e;
+            }
+            if ($decisive && $decisive['type']!=='Selvmål') {
+                $name=self::publicName($decisive['name']); $side=$winner===0?'home':'away';
+                $out[]=['id'=>'winning_goal','title'=>($name!==''?$name:$m[$side]['name']).' avgjorde kampen',
+                    'reason'=>'Tok ledelsen i det '.$decisive['minute'].'. minutt og beholdt den. Ikke bevis for faktisk sluttid.',
+                    'minute'=>$decisive['minute'],'event_ids'=>array_column($timeline,'id'),
+                    'winning_event_id'=>$decisive['id'],'equalizer_event_ids'=>$equalizers];
+            }
+        }
+        return $out;
+    }
     public static function angles(array $m, array $forms): array {
         if ($m['score']===null) return [];
         $a=[]; $score=[0,0]; $goals=[]; $maxDeficit=[0,0];
@@ -147,6 +202,7 @@ final class Facts {
                     'scope'=>$side,'includes_current_match'=>true,'match_ids'=>array_merge($f['win_match_ids'],[$m['id']])];
             }
         }
+        $a=array_merge($a,self::scoringAngles($m));
         $a[]=['id'=>'result','title'=>$m['home']['name'].' og '.$m['away']['name'].' spilte '.$m['score'][0].'–'.$m['score'][1],'reason'=>'Bekreftet kampresultat.'];
         return array_slice($a,0,3);
     }

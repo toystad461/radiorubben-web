@@ -101,4 +101,8 @@ rejects(fn()=>Writer::review($token));ok($calls===$savedCalls);
 $user=11;$work['in_flight']=false;MatchWork::save($token,$work);rejects(fn()=>Writer::review($token));$user=10;
 // Changed source facts cannot inherit a saved review.
 $meta[1]['_rrfr_payload']['fact_hash']='changed';rejects(fn()=>Writer::review($token));ok($calls===$savedCalls);
+// The learning revision reaches both real request paths, not only a standalone helper.
+ok(str_contains($requests[0]['instructions'],Writer::matchLearningRules()));
+ok(str_contains($requests[1]['instructions'],Writer::matchLearningRules()));
+ok(Writer::WRITING_PROMPT_VERSION==='2026-10-22.2');
 echo "OK: $n flow controls with mocked provider; no paid calls\n";

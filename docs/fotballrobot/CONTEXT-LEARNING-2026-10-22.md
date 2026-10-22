@@ -77,3 +77,51 @@ Dette er ikke en live API-, modell- eller VPS-test.
 
 Før test-VPS: separat godkjenning, ferskt serverfilmanifest, konkret differansepakke
 og kontroll av isolasjon. Før produksjon kreves egen gjennomgang og autorisasjon.
+
+## Læringspakke 2026-10-22.2
+
+Thomas ba 22.10.2026 om å bygge inn læringspakken. Dette versjonerer generelle
+regler i kode og syntetiske tester, ikke artikkeltekst som automatisk faktakilde.
+Deaktivering: tilbakefør denne revisjonens endringer i facts.php og writer.php.
+Eksisterende redaktørgodkjenning og binding til kilde-/innholdshash er uendret.
+
+Eksempler gjennomgått i samtalen (BT/PDF sammenholdt med NFF):
+- Tertnes–Voss: https://www.fotball.no/fotballdata/kamp/?fiksId=9187830
+  Vinnermål etter tre utligninger; 80 minutters kamp. Reserve og mål gir ikke
+  eksakt innbytteminutt. «Første hjemmeseier» krever full sesonghistorikk.
+- Os–Askøy: https://www.fotball.no/fotballdata/kamp/?fiksId=8992094
+  https://www.bt.no/lokalfotball/i/770RL9/os-og-askoey-maatte-dele-poengene-i-toppkampen
+  0–0 og utvisning. Skill spiller/trener og tabellens tidspunkt. Ikke utled
+  sjanser eller forsvarskvalitet fra null mål.
+- Askøy 2–Eikelandsfjorden: https://www.fotball.no/fotballdata/kamp/?fiksId=9185986
+  Hattrick på begge lag; skjult fjerde bortescorer. Bevar råminutt 74 i en
+  70-minutterskamp. Artikkelvisningens 70 og NFFs 74 må ikke harmoniseres ved gjetting.
+
+### Mekanisk beregning
+
+Facts::scoringAngles teller per fullt offentlig navn og lag. Straffemål teller,
+selvmål og skjulte navn gjør ikke det. Begge lag vurderes; fire mål bevares som
+fire. Eksakte duplikat-ID-er telles én gang, konflikter avviser vinkelen. Hele
+målregnskapet må stemme med sluttresultatet. Ved navnetvetydighet skal skriver
+og faktaredaktør utelate personpåstanden; adapteren har ikke person-ID-er her.
+
+Vinnermål er målet som ga ledelsen laget beholdt, ikke nødvendigvis siste mål.
+Hendelses-ID for dette målet, hele mållisten og utligningenes ID-er følger vinkelen.
+Flere mål i samme minutt sperrer denne kronologiske vinkelen. Selvmål gir ingen
+personlig vinnermålvinkel. Hattrick kan fortsatt beregnes uten intern rekkefølge.
+Eksisterende prioriterte sen-utligning/rekkevinkler beholdes; menyen viser høyst tre.
+
+### Skrive- og kontrollregler
+
+Samme versjonerte matchLearningRules brukes av kampreferatskriver og uavhengig
+faktaredaktør. Dette omfatter råminutter/overtid, ukjent sluttsignal, posisjon og
+innbytterrolle, kort til trener/reserve, målløs kamp, historisk tabell, fullstendig
+sesonghistorikk og unødvendig repetisjon. Dette er modellinstruksjoner, ikke
+mekaniske garantier for korrekt prosa. Det er ikke innført automatisk tabellarkiv,
+fullstendighetsbevis, oppstillingsreparasjon eller ny spilleridentifisering.
+
+tests/match-learning.php bruker oppdiktede navn og etterprøver begge hattrick,
+selvmål, straffemål, skjulte navn, duplikater/konflikter, manglende mål, 74/70+4,
+fire mål, samme minutt, tre utligninger og målløst resultat. Hele eksisterende
+CI-pakken skal kjøres, inkludert negative godkjennings-/kildeendringstester.
+Oppdatert kjøringsresultat føres i PR103. Ingen live modell- eller VPS-test inngår.
