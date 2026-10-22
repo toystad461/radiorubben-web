@@ -277,4 +277,3 @@ PROMPT;
         } finally {delete_option($lock);}
     }
 }
-

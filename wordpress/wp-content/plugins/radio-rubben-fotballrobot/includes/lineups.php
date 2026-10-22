@@ -106,4 +106,3 @@ final class Lineups {
         return '<!-- wp:paragraph -->'."\n".'<p><strong>Bremnes:</strong> '.esc_html($text).' <small style="font-size:0.85em;line-height:1.5;">('.esc_html($reserves).')</small></p>'."\n".'<!-- /wp:paragraph -->';
     }
 }
-

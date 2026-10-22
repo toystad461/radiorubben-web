@@ -43,4 +43,3 @@ check(Facts::date('31.02.2026 19:00')===null,'Ugyldig dato');
 try {Facts::history('<html><h1>Feil</h1></html>',19046);check(false,'Feilside');} catch(RuntimeException $e){check(true,'Feilside stoppet');}
 echo "OK: $count kontroller\n";
 echo json_encode(['home_form'=>$bf['wins'],'away_form'=>$vf['wins'],'angles'=>$angles],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT)."\n";
-

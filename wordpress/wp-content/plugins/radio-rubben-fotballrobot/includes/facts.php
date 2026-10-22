@@ -151,4 +151,3 @@ final class Facts {
         return array_slice($a,0,3);
     }
 }
-

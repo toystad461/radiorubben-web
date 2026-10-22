@@ -70,7 +70,10 @@ Kjør `python3 scripts/test-fotballrobot.py` fra repoets rot på utviklingsmaski
 med PHP, DOM og mbstring. Den finner også `tests/context-learning.php` automatisk.
 Eksisterende negative tester for publiseringsgodkjenning og endret grunnlag beholdes.
 GitHub-baselinejobben kjører på PR-er mot denne feature-basen. Lokal maskin mangler
-PHP; resultat fra faktisk CI må kontrolleres separat før kandidaten er testet.
+PHP. Første GitHub-kjøring 39837928779 bestod 63 PHP-syntakskontroller, alle 27
+isolerte suiter og mobil/desktop-kontroll av godkjenningsflaten. Bare blanklinjer
+ved filslutt feilet; de er rettet i oppfølgingscommit. Endelig CI-status står i PR103.
+Dette er ikke en live API-, modell- eller VPS-test.
 
 Før test-VPS: separat godkjenning, ferskt serverfilmanifest, konkret differansepakke
 og kontroll av isolasjon. Før produksjon kreves egen gjennomgang og autorisasjon.
