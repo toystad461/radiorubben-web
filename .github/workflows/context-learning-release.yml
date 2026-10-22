@@ -1,4 +1,4 @@
-name: Fotballrobot learning package production audit
+name: Fotballrobot learning package selective release
 on:
   push:
     branches: ['codex/football-context-learning-20261022']
@@ -9,11 +9,25 @@ concurrency:
   group: radiorubben-wordpress
   cancel-in-progress: false
 jobs:
-  audit:
+  release:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
-      - name: Read production file hashes only
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Test exact candidate, drift rejection and rollback before production
+        run: |
+          set -euo pipefail
+          python3 scripts/test-fotballrobot.py
+          php -l scripts/learning-install.php
+          php -l scripts/learning-postflight.php
+          php scripts/test-learning-install.php
+          bash -n scripts/deploy-learning.sh
+          python3 scripts/package-learning.py "$RUNNER_TEMP/learning"
+          git diff --check HEAD^ HEAD
+      - name: Install only four approved files with private backup
         env:
           DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
@@ -26,21 +40,11 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
-          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one 'php' <<'PHP'
-          <?php
-          $root='/run/webroots/r1417157/wp-content/plugins/radio-rubben-fotballrobot';
-          if(!is_dir($root))exit(2);
-          $out=[];
-          foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS)) as $file){
-              if($file->isLink())exit(3);
-              $p=substr($file->getPathname(),strlen($root)+1);
-              if(!preg_match('/\.(php|css|js)$/',$p))continue;
-              $s=file_get_contents($file->getPathname());
-              $out[$p]=['sha256'=>hash('sha256',$s),'git_blob'=>sha1("blob ".strlen($s)."\0".$s)];
-          }
-          ksort($out);
-          echo "RR_LEARNING_MANIFEST ".json_encode($out,JSON_UNESCAPED_SLASHES)."\n";
-          PHP
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/learning/$GITHUB_SHA"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz "$RUNNER_TEMP/learning/" "$host:$stage/"
+          ssh "$host" "bash $stage/scripts/deploy-learning.sh $GITHUB_SHA"
       - name: Remove runner key
         if: always()
         run: rm -f ~/.ssh/id_ed25519

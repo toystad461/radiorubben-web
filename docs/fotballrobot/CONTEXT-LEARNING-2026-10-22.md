@@ -125,3 +125,31 @@ selvmål, straffemål, skjulte navn, duplikater/konflikter, manglende mål, 74/7
 fire mål, samme minutt, tre utligninger og målløst resultat. Hele eksisterende
 CI-pakken skal kjøres, inkludert negative godkjennings-/kildeendringstester.
 Oppdatert kjøringsresultat føres i PR103. Ingen live modell- eller VPS-test inngår.
+
+## Produksjonsgjennomgang og autorisert utrulling
+
+Thomas ba uttrykkelig om gjennomgang og produksjonssetting 22.10.2026.
+Gjennomgangen fant at parseren kunne overskrive motstridende hendelser med
+samme ID før scoringAngles fikk kontrollert dem. Parseren avviser nå konflikten;
+ny test går gjennom den faktiske HTML-parseren. Alle 28 suiter bestod på
+a80040fb67ef436a4670c5974f0963305eb85a55 (CI 39841729649).
+
+Fersk SSH-audit 39841725173: alle 38 PHP/CSS/JS-filer på serveren matcher
+PR-basen b8be53ae19fdb5c4be37c97153a8c5019a4a14a0 byte for byte (Git blob-hash).
+Aktiv pluginversjon er 0.10.8. Main 5169765446b75f5c983695940241985beda2f7ad
+er ikke en komplett produksjonskilde for roboten og brukes ikke som full deploy.
+
+scripts/learning-release.json binder de 38 før-/etter-hashene til auditen og
+kandidatens fire filer: facts.php, writer.php, lineups.php, club-coverage.php.
+Installeren bygger på eksisterende details-install.php med innsnevret firefilsliste;
+egen kopi bevarer historiske kvitteringer og gamle utrullingsskript.
+Testene prøver driftsavvik, pakkeintegritet, privat backup, etterkontroll,
+tilbakeføring og samtidige kodeendringer. Ingen databasemigrering eller
+endring av scheduler, godkjenning, artikler, bilder eller TTS inngår.
+
+Utrullingen låser eksisterende scheduler-lås og deploy-lås, bruker kortvarig
+vedlikeholdsmodus og privat backup under ~/.radiorubben-deploy/backups/learning-<commit>.
+Ved feil forsøkes hashkontrollert tilbakeføring. Eksisterende backup fra en
+tidligere kjøring kan ikke overtas. WordPress-etterkontrollen bruker syntetiske
+data i minnet; ingen modellkall eller lagring av prøvesaker. Forside og REST
+kontrolleres via HTTP etterpå. Faktisk utrullingsresultat føres i PR103.
