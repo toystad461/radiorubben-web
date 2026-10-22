@@ -60,7 +60,19 @@ final class ClubCoverage {
             throw new \RuntimeException('Kampdetaljene kunne ikke hentes. Ingen ny artikkel er skrevet.');
         $html=wp_remote_retrieve_body($r);
         if(!is_string($html)||$html===''||strlen($html)>=2500000)throw new \RuntimeException('Kampdetaljene er tomme eller avkortet.');
-        return self::normalizeDetails($match,$html,gmdate(DATE_ATOM));
+        $facts=self::normalizeDetails($match,$html,gmdate(DATE_ATOM));
+        foreach(['home','away'] as $side) {
+            try {
+                $history=Fotballdata::history($facts['match'][$side]['id']);
+                $facts['forms'][$side]=Facts::form($history['rows'],$facts['match'],$facts['match'][$side]['id']);
+                $facts['sources'][]=['url'=>$history['url'],'provider'=>$history['provider'],'fetched_at'=>$history['fetched_at'],
+                    'team_id'=>$facts['match'][$side]['id'],'purpose'=>'team_history'];
+            } catch(\Throwable $e) {
+                $facts['warnings'][]='Historikk for '.$facts['match'][$side]['name'].' kunne ikke bekreftes. Utelat form og rekker for dette laget.';
+            }
+        }
+        $facts['angles']=Facts::angles($facts['match'],$facts['forms']);
+        return $facts;
     }
     public static function normalizeDetails(array $feed,string $html,string $at): array {
         $m=Facts::match($html,(int)$feed['id']);
@@ -100,3 +112,4 @@ final class ClubCoverage {
         return array_values(array_filter($matches,static fn($m)=>!self::blocked($m) && strtotime($m['kickoff'])>=strtotime($week['start']) && strtotime($m['kickoff'])<strtotime($week['end'])));
     }
 }
+

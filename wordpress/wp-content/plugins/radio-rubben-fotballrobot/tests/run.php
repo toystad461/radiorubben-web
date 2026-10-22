@@ -13,6 +13,7 @@ check($vf['wins']===5 && $vf['wins_exact'],'Viggo fem strake, med bekreftet brud
 check($bf['wins']===4 && $bf['wins_exact'],'Bremnes fire strake før kampen');
 check(count($vf['last_five'])===5 && $vf['points_last_five']===15,'Fem siste');
 check(!in_array(8985491,array_column($vf['last_five'],'id'),true),'Ekskluder aktuell kamp');
+$m['duration_minutes']=90; // Explicit synthetic test input, never inferred in the parser.
 $angles=Facts::angles($m,['home'=>$bf,'away'=>$vf]);
 check(in_array('late_equalizer',array_column($angles,'id')),'Sen utligning');
 check(in_array('comeback_home',array_column($angles,'id')),'Opphenting');
@@ -42,3 +43,4 @@ check(Facts::date('31.02.2026 19:00')===null,'Ugyldig dato');
 try {Facts::history('<html><h1>Feil</h1></html>',19046);check(false,'Feilside');} catch(RuntimeException $e){check(true,'Feilside stoppet');}
 echo "OK: $count kontroller\n";
 echo json_encode(['home_form'=>$bf['wins'],'away_form'=>$vf['wins'],'angles'=>$angles],JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT)."\n";
+
