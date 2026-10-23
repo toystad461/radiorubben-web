@@ -1,7 +1,7 @@
 # Samordnet Web #104 + Studio #110
 
 Arbeidsområder: Teknisk Produksjon / System & Kvalitet / Lokalt Engasjement.
-Status: klargjort kandidat, ikke godkjent for produksjon og ikke utrullet.
+Status: lastet opp i PR #105 og kontrollert mot server 24.10.2026; ikke godkjent for produksjon og ikke utrullet.
 
 ## Fastlåst omfang
 
@@ -29,7 +29,23 @@ Kandidaten rulles ut selektivt fra disse kildecommitene. Verken main, hele PR-gr
 
 Visuell kortkontroll ved 320/390/1280 px er dokumentert i #104, men er ikke gjentatt i denne runden: lokal Chromium var ikke installert, og nettlesernedlastingen feilet. Aktivt produksjonstema og autentisert redigeringsløp må fortsatt kontrolleres.
 
-Grønn CI erstatter ikke faktisk produksjonskontroll. Den samordnede workflowen kjører tester og en lesende SSH-kontroll via eksisterende `WP_DEPLOY_SSH_KEY` / `WP_DEPLOY_KNOWN_HOSTS`. Den laster ingen filer opp til serveren, starter ikke WordPress og har ingen deployjobb. Workflowen er foreløpig bare klargjort lokalt. Automatisk godkjenningskontroll avviste `git push` av forberedelsesgrenen: den tolket brukerens tillatelse som forberedelse og inspeksjon, ikke opplasting av kildekode til GitHub. Ingen workflow ble kjørt, og ferske serverhasher er derfor ikke verifisert. Neste nødvendige godkjenning gjelder opplasting av denne avgrensede grenen og kjøring av den lesende kontrollen, uten produksjonsutrulling.
+Grønn CI erstatter ikke faktisk produksjonskontroll. Den samordnede workflowen kjører tester og en lesende SSH-kontroll via eksisterende `WP_DEPLOY_SSH_KEY` / `WP_DEPLOY_KNOWN_HOSTS`. Den laster ingen filer opp til serveren, starter ikke WordPress og har ingen deployjobb. Opplasting og lesende serverkontroll ble uttrykkelig godkjent av Thomas 24.10.2026. GitHub-integrasjonen opprettet [PR #105](https://github.com/toystad461/radiorubben-web/pull/105), med identisk Git-tre som den kontrollerte lokale kandidaten.
+
+## Serverkontroll gjennomført 24. oktober
+
+[Kontrollkjøring 40031428884](https://github.com/toystad461/radiorubben-web/actions/runs/40031428884) på commit `bab38cd0ac8a456fdcc5a410eeb4ab0e59dd1d06` er success. Serveravlesningen ble gjort kl. 00.06.41 Europe/Oslo (22.06.41 UTC 23. oktober).
+
+- Alle 47 filbaner samsvarer med manifestets før-tilstand, inkludert korrekt fravær av de fire nye Web-filene.
+- Begge faktiske bildekontrakter har identisk SHA-256, og begge bilderegistrene har forventet hash.
+- Pakken inneholder nøyaktig ni kjørefiler. Manifesthashen ovenfor er uendret.
+- 67 PHP-syntakskontroller, 29 Web-suiter, Studio-bildekontroller, 60 installasjons-/tilbakeføringskontroller og den kombinerte testen består i GitHub.
+- PR-kjøringene [40031455596](https://github.com/toystad461/radiorubben-web/actions/runs/40031455596) og [40031455647](https://github.com/toystad461/radiorubben-web/actions/runs/40031455647) er også success.
+- SSH bruker PHP CLI 8.4.27. Dette er forskjellig fra web-PHP 8.2.35 observert via WordPress; tidligere Studio-CI dekker 8.2 og 8.4.
+- Ingen kode ble installert på serveren, ingen WordPress-oppstart ble utført av SSH-kontrollen, og ingen artikkel eller godkjenning ble endret.
+
+Den maskinlesbare kvitteringen er `COORDINATED-PREFLIGHT-20261024.json`. Den inneholder kun kodefilbaner og kontrollsummer. Privat kodebackup tas først rett før en uttrykkelig godkjent installasjon; en produksjonsbackup er ikke opprettet i denne lesende kontrollen.
+
+Dokumentasjonskvitteringen endrer ingen kode eller workflow. CI-belegget gjelder den identiske runtime-/installasjonskoden på `bab38cd`; dokumentasjonscommit bruker [skip ci] for å unngå en unødvendig ny serveravlesning. Fersk driftkontroll må likevel gjentas under deploylåsen rett før eventuell installasjon.
 
 ## Gjennomføring etter uttrykkelig godkjenning
 
