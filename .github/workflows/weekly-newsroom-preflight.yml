@@ -1,0 +1,62 @@
+name: Weekly newsroom coordinated verification (no deployment)
+on:
+  push:
+    branches: ['release/weekly-newsroom-20261023']
+  pull_request:
+    paths: ['scripts/weekly-newsroom/**', '.github/workflows/weekly-newsroom-preflight.yml']
+permissions:
+  contents: read
+concurrency:
+  group: weekly-newsroom-preflight
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Fetch pinned companion sources
+        run: |
+          git fetch origin 5169765446b75f5c983695940241985beda2f7ad
+          git clone --no-checkout https://github.com/toystad461/radiorubben-studio.git "$RUNNER_TEMP/studio"
+          git -C "$RUNNER_TEMP/studio" checkout --detach b77ac3d01eeff9b93763d6a086cab590f6cde7b2
+      - name: Build and test exact release
+        run: |
+          python3 scripts/weekly-newsroom/prepare.py "$RUNNER_TEMP/studio" "$RUNNER_TEMP/weekly-newsroom"
+          python3 scripts/test-fotballrobot.py
+          php "$RUNNER_TEMP/studio/tests/recovered/test-news-images.php"
+          php "$RUNNER_TEMP/studio/tests/recovered/test-news-images-bridge.php"
+          php "$RUNNER_TEMP/studio/tests/recovered/test-news-images-conflict.php"
+          php scripts/weekly-newsroom/test-install.php
+          php scripts/weekly-newsroom/test-integration.php "$RUNNER_TEMP/studio"
+          bash -n scripts/weekly-newsroom/deploy.sh
+          git diff --check HEAD^ HEAD
+      - name: Read server code hashes only (no upload or WordPress bootstrap)
+        if: github.event_name == 'push'
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php < "$RUNNER_TEMP/weekly-newsroom/scripts/preflight.php" > "$RUNNER_TEMP/preflight.json"
+          cat "$RUNNER_TEMP/preflight.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: weekly-newsroom-candidate
+          path: |
+            ${{ runner.temp }}/weekly-newsroom
+            ${{ runner.temp }}/preflight.json
+          retention-days: 7
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
