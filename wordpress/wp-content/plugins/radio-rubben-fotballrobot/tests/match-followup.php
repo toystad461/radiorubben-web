@@ -9,7 +9,8 @@ namespace RadioRubben\Fotballrobot {
         }
         public static function latest($id){return $GLOBALS['facts'][$id];}
     }
-    final class PublicationGate {public static function current($id,$post){return $post->quality??false;}}
+    final class PlayerReview {static function url($id){return 'https://example.test/review/'.$id;}}
+    final class PublicationGate {const META="_rrfr_quality_review";public static function current($id,$post){return $post->quality??false;}}
     final class Writer {
         public static function generate($id,$hash,$angle,$test=false,$durable=false){
             $GLOBALS['calls']++;$token=str_pad((string)$id,40,'x');
@@ -47,6 +48,9 @@ namespace {
     function _get_cron_array(){ksort($GLOBALS['events']);return $GLOBALS['events'];}
     function do_action_ref_array($hook,$args){if($hook==='rrfr_match_job')RadioRubben\Fotballrobot\MatchJobs::run(...$args);}
     function get_posts($q){$out=[];foreach($GLOBALS['posts'] as $id=>$p){if(($q['meta_key']??'')==='_rrfr_ai_match'&&$id===(int)($q['meta_value']??0))$out[]=$p;elseif(isset($q['name'])&&$p->post_name===$q['name'])$out[]=$p;}return $out;}
+    function get_post($id){return $GLOBALS['posts'][$id]??null;}
+    function get_post_meta($id,$key,...$args){return '';}
+    function current_user_can(...$args){return true;}
     function get_edit_post_link($id,...$a){return 'edit/'.$id;}
     function admin_url($p){return 'https://example.test/'.$p;}
     function esc_html($s){return htmlspecialchars((string)$s,ENT_QUOTES,'UTF-8');}
@@ -118,10 +122,14 @@ namespace {
     $user=7;try{J::retry(33);check(false,'Unknown paid retry');}catch(RuntimeException $e){check(true,'Unknown paid retry rejected');}$user=0;
     $options['rrfr_match_job_37']=['status'=>'waiting','phase'=>'prepare']+$s;
     $options['rrfr_match_job_38']=['status'=>'error','phase'=>'prepare','error'=>'Kontroller datakilden']+$s;
+    $posts[8985501]->post_status='draft';
     ob_start();F::panel();$panel=ob_get_clean();
-    foreach(['Kampoppfølging','Venter på sluttbekreftelse','I kø','Under arbeid','Feilet','Blokkert','Les utkast','Siste kjøring uten nettsidebesøk'] as $label)check(str_contains($panel,$label),'Progress panel exposes '.$label);
+    check(str_contains($panel,'Kontrollen mangler eller gjelder en eldre versjon'),'Stale control explains next action');
+    check(!str_contains($panel,'<table'),'No white table remains');
+    foreach(['Kampoppfølging','Venter på sluttresultat','I kø','Under arbeid','Kjøring feilet','Trenger kontroll','Åpne utkast','Siste kjøring uten nettsidebesøk'] as $label)check(str_contains($panel,$label),'Progress panel exposes '.$label);
     check(!str_contains($panel,str_repeat('z',40))&&!str_contains($panel,'rr_fd_cwd'),'Panel never exposes source access or private review token');
     $render=getenv('RRFR_RENDER_DIR');
-    if($render){if(!is_dir($render))mkdir($render,0700,true);file_put_contents($render.'/followup.html','<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:8px;font-family:system-ui}table{border-collapse:collapse}td,th{padding:8px;text-align:left}main{max-width:1100px;margin:auto}</style><body><main>'.$panel.'</main></body></html>');}
+    ob_start();require __DIR__.'/../includes/review-desk-style.php';$styles=ob_get_clean();
+    if($render){if(!is_dir($render))mkdir($render,0700,true);file_put_contents($render.'/followup.html','<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:8px;font-family:system-ui}table{border-collapse:collapse}td,th{padding:8px;text-align:left}main{max-width:1100px;margin:auto}</style><body style="background:#0c1421;color:#eef3fa"><main class="rrfr rrfr-desk">'.$styles.$panel.'</main></body></html>');}
     echo "OK: $n source, scheduling, recovery and duplicate controls; mocked AI\n";
 }

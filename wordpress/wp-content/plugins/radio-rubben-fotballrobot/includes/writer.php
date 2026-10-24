@@ -85,6 +85,11 @@ PROMPT;
         $a=$result['article'];$a['_quality']=$result;
         return $a;
     }
+    public static function briefArticle(array $facts): array {
+        $instructions=self::prompt()."\nSkriv en kort kampartikkel for ukens resultatoversikt, normalt 60–120 ord i ingress og 1–3 korte avsnitt. Kortere er bedre når kildene er sparsomme. Bruk registrerte lagnavn og en konkret journalistisk tittel. Varm, lokal og nøktern bokmålsstemme; ingen oppdiktet tilstedeværelse, sitater, stemning eller kampforløp. Ikke kall alle kamper ungdomskamper. Bare sluttresultat betyr en kort resultatnotis. Unngå ordene registrerte kamper i løpende tekst. Ikke ta med fulle lagoppstillinger eller generisk avslutning.";
+        $a=self::validate(self::call($instructions,['facts'=>$facts,'editorial_examples'=>Learning::context($facts)],self::schema()));
+        $q=self::qualityReview($a,$facts);$a=$q['article'];$a['_quality']=$q;return $a;
+    }
     public static function playerArticle(array $facts,string $comment='',?array $previous=null): array {
         $a=self::validate(self::call(self::playerPrompt(), ['facts'=>$facts,'editor_comment'=>$comment,'previous_article'=>$previous],self::schema()));
         $result=self::qualityReview($a,$facts);

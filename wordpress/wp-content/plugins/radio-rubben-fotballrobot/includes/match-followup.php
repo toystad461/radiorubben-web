@@ -110,17 +110,37 @@ final class MatchFollowup {
         $runner=get_option('rrfr_match_followup_runner',[]);
         echo '<p>'.esc_html($runner?'Siste kjøring uten nettsidebesøk: '.wp_date('d.m.Y H:i',$runner['at']):'Ingen bekreftet serverkjøring uten nettsidebesøk registrert.').'</p>';
         if($e=get_option('rrfr_match_followup_error',[]))echo '<p role="alert">'.esc_html($e['message'].' · '.$e['attempts'].' mislykkede kildekontroller').'</p>';
-        echo '<style>@media(max-width:600px){.rrfr-match-progress thead{display:none}.rrfr-match-progress,.rrfr-match-progress tbody,.rrfr-match-progress tr,.rrfr-match-progress td{display:block;width:auto}.rrfr-match-progress tr{padding:12px 0;border-bottom:1px solid #c3c4c7}.rrfr-match-progress td{padding:6px 12px;overflow-wrap:anywhere}.rrfr-match-progress td:before{content:attr(data-label);display:block;font-weight:600;margin-bottom:4px}}</style><div style="overflow:auto"><table class="widefat rrfr-match-progress"><thead><tr><th>Kamp</th><th>Sluttstatus / siste kildekontroll</th><th>Planlagt behandling</th><th>Jobbstatus / blokkering</th><th>Utkast</th></tr></thead><tbody>';
-        foreach(self::rows() as $r) {
-            $labels=['waiting'=>'Venter på sluttbekreftelse','queued'=>'I kø','running'=>'Under arbeid','error'=>'Feilet','blocked'=>'Blokkert – trenger kontroll','done'=>'Klar til godkjenning'];
+        echo '<div class="rrfr-followup-list">';
+        $rows=self::rows();
+        if(!$rows)echo '<p>Ingen kamper til oppfølging akkurat nå.</p>';
+        foreach($rows as $r) {
+            $labels=['waiting'=>'Venter på sluttresultat','queued'=>'I kø','running'=>'Under arbeid','error'=>'Kjøring feilet','blocked'=>'Trenger kontroll','done'=>'Klar til vurdering'];
             $status=$labels[$r['status']??'waiting']??'Trenger kontroll';
+            $id=(int)($r['post_id']??0);$p=$id?get_post($id):null;
+            if($p){
+                $r['post_status']=$p->post_status;
+                $r['quality_passed']=PublicationGate::current($id,$p);
+                $status=$p->post_status==='publish'?'Publisert':($r['quality_passed']?'Klar til vurdering':'Trenger kontroll');
+            }
             if(($r['post_status']??'')==='publish')$status='Publisert';
-            if(($r['status']??'')==='done'&&empty($r['quality_passed'])&&($r['post_status']??'')!=='publish')$status='Utkast – trenger kontroll';
+            elseif(($r['status']??'')==='done'&&empty($r['quality_passed']))$status='Trenger kontroll';
+            $error=(string)($r['error']??'');
+            if($p&&$p->post_status!=='publish'&&empty($r['quality_passed'])){
+                $quality=get_post_meta($id,PublicationGate::META,true);
+                $findings=is_array($quality)?($quality['findings']??[]):[];
+                $error=implode(' ',array_filter(array_merge([$error,(string)get_post_meta($id,'_rrfr_detail_error',true)],$findings)));
+                if($error==='')$error='Kontrollen mangler eller gjelder en eldre versjon av tekst eller kilder. Åpne utkastet for ny kontroll.';
+            }
             $phases=['prepare'=>'Klargjør kampgrunnlag','write'=>'Skriver referat','review'=>'Faktakontroll og språkvask'];
-            echo '<tr><td data-label="Kamp">'.esc_html($r['match'].' ('.$r['match_id'].')').'</td><td data-label="Sluttstatus / siste kildekontroll">'.esc_html(($r['reason']??$r['source_status']??'Sluttstatus må kontrolleres').' · '.(!empty($r['last_source_check'])?wp_date('d.m.Y H:i',$r['last_source_check']):'Ingen kildekontroll registrert')).'</td><td data-label="Planlagt behandling">'.esc_html(!empty($r['due_at'])?wp_date('d.m.Y H:i',$r['due_at']):'Venter').'</td><td data-label="Jobbstatus / blokkering">'.esc_html($status.' · '.($phases[$r['phase']??'']??'').' '.($r['error']??'')).'</td><td data-label="Utkast">';
-            if(!empty($r['review_url']))echo '<a href="'.esc_url($r['review_url']).'">Les utkast</a>';
-            echo '</td></tr>';
+            echo '<article class="rrfr-followup-item"><div class="rrfr-followup-top"><h3>'.esc_html($r['match']).'</h3><span class="rrfr-badge">'.esc_html($status).'</span></div>';
+            if($error!=='')echo '<p class="rrfr-followup-reason">'.esc_html($error).'</p>';
+            elseif(!empty($r['reason']))echo '<p class="rrfr-muted">'.esc_html($r['reason']).'</p>';
+            if($id&&current_user_can('edit_post',$id))echo '<a class="rrfr-secondary" href="'.esc_url(PlayerReview::url($id)).'">Åpne '.(($r['post_status']??'')==='publish'?'artikkel':'utkast').' →</a>';
+            elseif(!empty($r['review_url']))echo '<a class="rrfr-secondary" href="'.esc_url($r['review_url']).'">Åpne utkast →</a>';
+            echo '<details><summary>Vis detaljer</summary><dl><dt>Kamp-ID</dt><dd>'.(int)$r['match_id'].'</dd><dt>Sluttstatus / siste kildekontroll</dt><dd>'.esc_html(($r['reason']??$r['source_status']??'Uavklart').' · '.(!empty($r['last_source_check'])?wp_date('d.m.Y H:i',$r['last_source_check']):'Ingen kildekontroll')).'</dd><dt>Planlagt behandling</dt><dd>'.esc_html(!empty($r['due_at'])?wp_date('d.m.Y H:i',$r['due_at']):'Venter').'</dd>';
+            if(isset($phases[$r['phase']??'']))echo '<dt>Arbeidssteg</dt><dd>'.esc_html($phases[$r['phase']]).'</dd>';
+            echo '</dl></details></article>';
         }
-        echo '</tbody></table></div></section>';
+        echo '</div></section>';
     }
 }

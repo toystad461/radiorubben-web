@@ -94,6 +94,7 @@ final class ReviewDesk {
         $pending=array_filter($items,static fn($m)=>$m['pending']&&!$m['test']);
         $ready=array_filter($pending,static fn($m)=>$m['quality']);
         echo '<div class="wrap rrfr rrfr-desk">';require __DIR__.'/review-desk-style.php';
+        if(class_exists(WeeklyCoverage::class))WeeklyCoverage::stylesheet();
         echo '<header><p class="rrfr-eyebrow">FOTBALLROBOTEN · REDAKSJON</p><h1>Les og godkjenn</h1><p>Les artikkelen. Publiser når du er fornøyd, eller be om endringer.</p></header>';
         $notice=get_transient('rrfr_review_notice_'.get_current_user_id());delete_transient('rrfr_review_notice_'.get_current_user_id());
         if($notice)echo '<p class="rrfr-notice" role="status">'.esc_html($notice).'</p>';
@@ -133,7 +134,8 @@ final class ReviewDesk {
             $caption=wp_get_attachment_caption($image);if($caption)echo '<figcaption>'.wp_kses_post($caption).'</figcaption>';echo '</figure>';
         }
         // Display the stored text and its sources, without running shortcodes, embeds or filters.
-        echo '<article class="rrfr-review-prose" aria-label="Lagret artikkeltekst">'.wp_kses_post($p->post_content).'</article>';
+        echo '<article class="rrfr-review-prose" aria-label="Lagret artikkeltekst">'.wp_kses_post(preg_replace('~<style\b[^>]*>.*?</style>~is','',$p->post_content)).'</article>';
+        if(class_exists(MatchStories::class))MatchStories::panel($id);
         if($m['pending']) {
             echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'" class="rrfr-decision" aria-label="Din sluttgodkjenning">';self::fields($id,$m);
             echo '<p>'.($m['test']?'Dette er en test. Artikkelen blir ikke publisert.':'Knappen publiserer den lagrede teksten du nettopp har lest.').'</p><div class="rrfr-row">';
