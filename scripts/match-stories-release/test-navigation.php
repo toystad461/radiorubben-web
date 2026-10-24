@@ -20,3 +20,14 @@ navAssert($blocked,'Concurrent content overwritten');wp_update_post(wp_slash(['I
 rrSportNavigation($plan,$tmp,'rollback');navAssert(get_post_field('post_content',$id)===$text&&rrSportMenu($mid)===$menu,'Navigation rollback incomplete');
 rrSportNavigation($plan,$tmp,'rollback');unlink($tmp);
 echo "SPORT_NAVIGATION_APPLY_ROLLBACK_AND_CONCURRENCY_OK\n";
+
+require __DIR__.'/job-lock.php';
+$lockfile=sys_get_temp_dir().'/sport-lock-'.bin2hex(random_bytes(6));
+rrSportJobLock($lockfile,'acquire');navAssert(get_option('rrfr_match_followup_lock')!==false,'Lock missing');
+$foreign=$lockfile.'-foreign';$blocked=false;try{rrSportJobLock($foreign,'acquire');}catch(RuntimeException $e){$blocked=true;}
+navAssert($blocked,'Second owner acquired lock');rrSportJobLock($lockfile,'release');navAssert(get_option('rrfr_match_followup_lock',null)===null,'Owned lock remains');
+rrSportJobLock($lockfile,'acquire');update_option('rrfr_match_followup_lock','foreign-owner');$blocked=false;
+try{rrSportJobLock($lockfile,'release');}catch(RuntimeException $e){$blocked=true;}
+navAssert($blocked&&get_option('rrfr_match_followup_lock')==='foreign-owner','Foreign lock removed');
+delete_option('rrfr_match_followup_lock');unlink($lockfile);
+echo "SPORT_FOLLOWUP_OWNER_LOCK_TESTS_OK\n";

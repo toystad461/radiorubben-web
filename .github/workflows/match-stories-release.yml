@@ -1,4 +1,4 @@
-name: Sport release rollback diagnosis
+name: Sport selective approved production release
 on:
   push:
     branches: ['release/match-stories-sport-20261024']
@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify:
-    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[sport-diagnose-20261024]')
+    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[sport-approved-20261024-v3]')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -58,18 +58,17 @@ jobs:
           printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
           ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php -- before < "$RUNNER_TEMP/sport-release/scripts/preflight.php" > "$RUNNER_TEMP/preflight.json"
           cat "$RUNNER_TEMP/preflight.json"
-      - name: Read rollback fingerprints and differing option names
+      - name: Install approved eight-file package and Sport navigation
+        env:
+          APPROVED_MANIFEST: ae4b64f885b5f2ff4414237aaad17c7c21b4e677206bc4dd03f023f004304d47
         run: |
           set -euo pipefail
-          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php <<'PHP' | tee "$RUNNER_TEMP/release.log"
-          <?php
-          $b=getenv('HOME').'/.radiorubben-deploy/backups/match-stories-sport-20261024T083207Z-ae4b64f885b5';
-          $a=json_decode(file_get_contents($b.'/state-before.json'),true);$z=json_decode(file_get_contents($b.'/state-after.json'),true);
-          foreach(array_unique(array_merge(array_keys($a),array_keys($z)))as$k){
-            echo $k.' '.(($a[$k]??null)===($z[$k]??null)?'UNCHANGED':'CHANGED').PHP_EOL;
-            if($k==='option_hashes')foreach(array_unique(array_merge(array_keys($a[$k]),array_keys($z[$k])))as$n)if(($a[$k][$n]??null)!==($z[$k][$n]??null))echo 'OPTION '.$n.' before='.($a[$k][$n]??'absent').' after='.($z[$k][$n]??'absent').PHP_EOL;
-          }
-          PHP
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/sport-${GITHUB_RUN_ID}-${GITHUB_SHA}"
+          ssh "$host" "umask 077; mkdir '$stage'"
+          rsync -rltz --chmod=D700,F600 "$RUNNER_TEMP/sport-release/" "$host:$stage/"
+          ssh "$host" "RR_SPORT_APPROVED_MANIFEST='$APPROVED_MANIFEST' bash '$stage/scripts/deploy.sh' '$stage'" | tee "$RUNNER_TEMP/release.log"
+          grep -q '^SPORT_RELEASE_OK ' "$RUNNER_TEMP/release.log"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
