@@ -1,5 +1,5 @@
 name: Approved weekly newsroom selective release
-# Retry only after fixing host path resolution; prior attempt stopped before installation.
+# Canonicalize both staging and private state through the provider home symlink.
 on:
   push:
     branches: ['release/weekly-newsroom-20261023']

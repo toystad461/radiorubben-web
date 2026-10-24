@@ -2,7 +2,8 @@
 # Approval-gated selective release. Runtime manifest must match user-approved package.
 set -Eeuo pipefail
 umask 077
-for tool in php sha256sum cut flock mkdir date find mktemp grep cp rm cmp curl; do command -v "$tool" >/dev/null; done
+trap 'echo "Release precheck failed at line $LINENO" >&2' ERR
+for tool in php sha256sum cut flock mkdir date find mktemp grep cp rm cmp curl; do command -v "$tool" >/dev/null || { echo "Missing required command: $tool" >&2; exit 1; }; done
 resolve_path(){ php -r '$p=realpath($argv[1]);if($p===false)exit(1);echo $p;' "$1"; }
 stage=$(resolve_path "${1:?Private verified package path required}")
 expected=${RR_WEEKLY_APPROVED_MANIFEST:?Exact approved manifest SHA-256 required}
@@ -10,7 +11,7 @@ expected=${RR_WEEKLY_APPROVED_MANIFEST:?Exact approved manifest SHA-256 required
 [[ $(sha256sum "$stage/manifest.json" | cut -d' ' -f1) == "$expected" ]]
 root=/run/webroots/r1417157
 [[ $(resolve_path "$root") == /customers/9/3/1/cptk37ymg/webroots/r1417157 ]]
-state="$HOME/.radiorubben-deploy"
+state=$(resolve_path "$HOME/.radiorubben-deploy")
 [[ "$stage" == "$state"/* ]]
 # Cooperate with the WordPress scheduler, selective releases and Studio releases.
 exec 9>"$state/fotballrobot-scheduler/runner.lock"; flock -w 60 9
