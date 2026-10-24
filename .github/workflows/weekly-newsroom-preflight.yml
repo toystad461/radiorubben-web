@@ -47,7 +47,7 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
-          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php < "$RUNNER_TEMP/weekly-newsroom/scripts/preflight.php" > "$RUNNER_TEMP/preflight.json"
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php -- after < "$RUNNER_TEMP/weekly-newsroom/scripts/preflight.php" > "$RUNNER_TEMP/preflight.json"
           cat "$RUNNER_TEMP/preflight.json"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()

@@ -1,5 +1,5 @@
-name: Approved weekly newsroom selective release
-# Recheck all state after maintenance starts; any drift still triggers rollback.
+name: Weekly newsroom production aftercheck
+# Installation completed. This workflow now only clears page cache and checks installed code.
 on:
   push:
     branches: ['release/weekly-newsroom-20261023']
@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify:
-    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[approved-weekly-release-20261024]')
+    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[weekly-postflight-20261024]')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -48,20 +48,30 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
-          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php < "$RUNNER_TEMP/weekly-newsroom/scripts/preflight.php" > "$RUNNER_TEMP/preflight.json"
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php -- after < "$RUNNER_TEMP/weekly-newsroom/scripts/preflight.php" > "$RUNNER_TEMP/preflight.json"
           cat "$RUNNER_TEMP/preflight.json"
-      - name: Install approved nine-file package with private backup and rollback
-        env:
-          RR_WEEKLY_APPROVED_MANIFEST: aae582dc433a37f01a42dd7ab9e06bc78e8e8ee51ebace17d9a61522154be48a
+      - name: Clear WP-Optimize page cache and verify installed runtime
         run: |
           set -euo pipefail
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one bash -s <<'REMOTE' | tee "$RUNNER_TEMP/release.log"
+          set -Eeuo pipefail
           umask 077
-          test "$(sha256sum "$RUNNER_TEMP/weekly-newsroom/manifest.json" | cut -d' ' -f1)" = "$RR_WEEKLY_APPROVED_MANIFEST"
-          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
-          stage=".radiorubben-deploy/weekly-newsroom-${GITHUB_RUN_ID}-${GITHUB_SHA}"
-          ssh "$host" "umask 077; mkdir \"\$HOME/$stage\""
-          tar -C "$RUNNER_TEMP/weekly-newsroom" -cf - . | ssh "$host" "tar -C \"\$HOME/$stage\" -xf -"
-          ssh "$host" "RR_WEEKLY_APPROVED_MANIFEST=$RR_WEEKLY_APPROVED_MANIFEST bash \"\$HOME/$stage/scripts/deploy.sh\" \"\$HOME/$stage\"" | tee "$RUNNER_TEMP/release.log"
+          stage="$HOME/.radiorubben-deploy/weekly-newsroom-40067554321-72a5ca54a6114e12b29651c6125ae5d1fc82d598"
+          backup="$HOME/.radiorubben-deploy/backups/weekly-newsroom-20261024T054632Z-aae582dc433a"
+          exec 9>"$HOME/.radiorubben-deploy/fotballrobot-scheduler/runner.lock"; flock -w 60 9
+          exec 8>"$HOME/.radiorubben-studio-deploy/deploy.lock"; flock -w 60 8
+          mkdir "$HOME/.radiorubben-deploy/lock"; trap 'rmdir "$HOME/.radiorubben-deploy/lock"' EXIT
+          php "$stage/scripts/install.php" "$stage" "$backup" after
+          wp_read(){ /usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes "$@"; }
+          wp_live(){ /usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad "$@"; }
+          wp_read eval-file "$stage/scripts/state.php" > "$stage/cache-before.json"
+          wp_live eval 'if (!function_exists("wpo_cache_flush")) throw new Exception("Expected WP-Optimize API missing"); wpo_cache_flush(); echo "WP_OPTIMIZE_CACHE_CLEARED\n";'
+          wp_live eval-file "$stage/scripts/postflight.php"
+          wp_read eval-file "$stage/scripts/state.php" > "$stage/cache-after.json"
+          cmp "$stage/cache-before.json" "$stage/cache-after.json"
+          php "$stage/scripts/install.php" "$stage" "$backup" after
+          echo CONTENT_AND_CODE_UNCHANGED_AFTER_CACHE_CLEAR
+          REMOTE
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
