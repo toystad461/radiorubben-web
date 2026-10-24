@@ -1,0 +1,70 @@
+name: Sport selective release preflight
+on:
+  push:
+    branches: ['release/match-stories-sport-20261024']
+permissions:
+  contents: read
+concurrency:
+  group: sport-release-production
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Build approved package and test installer
+        run: |
+          set -euo pipefail
+          python3 scripts/match-stories-release/prepare.py "$RUNNER_TEMP/sport-release"
+          php scripts/match-stories-release/test-install.php
+          for f in scripts/match-stories-release/*.php; do php -l "$f"; done
+          bash -n scripts/match-stories-release/deploy.sh
+      - name: Real isolated WordPress integration
+        env:
+          RRFR_ISOLATED_WP: '1'
+          RRFR_RENDER_DIR: ${{ runner.temp }}/rrfr-render
+        run: |
+          set -euo pipefail
+          sudo systemctl start mysql
+          mysql -uroot -proot -e "CREATE DATABASE rrfr_ci; CREATE USER 'rrfr_ci'@'localhost' IDENTIFIED BY 'isolated-ci-only'; GRANT ALL ON rrfr_ci.* TO 'rrfr_ci'@'localhost';"
+          curl --fail --silent --show-error --location https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -o "$RUNNER_TEMP/wp-cli.phar"
+          mkdir "$RUNNER_TEMP/rrfr-wp"
+          php "$RUNNER_TEMP/wp-cli.phar" core download --version=7.1.3 --path="$RUNNER_TEMP/rrfr-wp"
+          cd "$RUNNER_TEMP/rrfr-wp"
+          php "$RUNNER_TEMP/wp-cli.phar" config create --dbname=rrfr_ci --dbuser=rrfr_ci --dbpass=isolated-ci-only --skip-check
+          php "$RUNNER_TEMP/wp-cli.phar" config set DISABLE_WP_CRON true --raw
+          php "$RUNNER_TEMP/wp-cli.phar" core install --url=http://127.0.0.1:8765 --title='RRFR isolated integration' --admin_user=rrfr_test --admin_password=isolated-test-password --admin_email=ci@example.invalid --skip-email
+          php "$RUNNER_TEMP/wp-cli.phar" language core install nb_NO --activate
+          cp -R "$GITHUB_WORKSPACE/wordpress/wp-content/plugins/radio-rubben-fotballrobot" wp-content/plugins/
+          php "$RUNNER_TEMP/wp-cli.phar" plugin activate radio-rubben-fotballrobot
+          php "$RUNNER_TEMP/wp-cli.phar" eval-file "$GITHUB_WORKSPACE/scripts/test-match-stories-wordpress.php"
+          php "$RUNNER_TEMP/wp-cli.phar" eval-file "$GITHUB_WORKSPACE/scripts/match-stories-release/test-navigation.php"
+      - name: Read production hashes with existing SSH mechanism
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php -- before < "$RUNNER_TEMP/sport-release/scripts/preflight.php" > "$RUNNER_TEMP/preflight.json"
+          cat "$RUNNER_TEMP/preflight.json"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: sport-release-check
+          path: |
+            ${{ runner.temp }}/preflight.json
+            ${{ runner.temp }}/sport-release/manifest.json
+          retention-days: 30
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
