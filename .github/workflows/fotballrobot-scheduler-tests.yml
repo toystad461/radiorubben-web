@@ -1,0 +1,45 @@
+name: Fotballrobot scheduler regression
+on:
+  pull_request:
+    paths:
+      - 'scripts/fotballrobot-cron.php'
+      - 'scripts/tests/fotballrobot-cron.php'
+      - '.github/workflows/fotballrobot-scheduler-tests.yml'
+  push:
+    branches: ['fix/football-scheduler-results-20261024']
+    paths:
+      - 'scripts/fotballrobot-cron.php'
+      - 'scripts/tests/fotballrobot-cron.php'
+      - '.github/workflows/fotballrobot-scheduler-tests.yml'
+permissions:
+  contents: read
+jobs:
+  scheduler-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        php: ['8.2', '8.3']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: shivammathur/setup-php@d52fc211a0436f8839a587b3b5b8efddab4744ea
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+      - name: PHP and isolated scheduler regression (no WordPress or network)
+        run: |
+          php --version
+          php -l scripts/fotballrobot-cron.php
+          php -l scripts/tests/fotballrobot-cron.php
+          php scripts/tests/fotballrobot-cron.php
+      - name: Verify that the regression detects the production runner omission
+        run: |
+          git fetch --no-tags --depth=1 origin f31b4765f6ec8020d97eb6779e37b344002cb16d
+          git show f31b4765f6ec8020d97eb6779e37b344002cb16d:scripts/fotballrobot-cron.php > "$RUNNER_TEMP/baseline.php"
+          if RRFR_TEST_RUNNER="$RUNNER_TEMP/baseline.php" php scripts/tests/fotballrobot-cron.php > "$RUNNER_TEMP/baseline.log" 2>&1; then
+            cat "$RUNNER_TEMP/baseline.log"
+            exit 1
+          fi
+          grep -F 'Weekly results were not dispatched exactly once' "$RUNNER_TEMP/baseline.log"
