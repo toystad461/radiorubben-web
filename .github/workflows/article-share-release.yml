@@ -1,0 +1,51 @@
+name: Approved article share one-file release
+on:
+  push:
+    branches: [release/article-sharing-20261024]
+    paths: [.github/workflows/article-share-release.yml]
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    environment: wordpress-production
+    timeout-minutes: 10
+    if: vars.WP_DEPLOY_ENABLED == 'true'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Validate pinned candidate
+        run: |
+          set -euo pipefail
+          git fetch origin f2fb30db3c25c854fd68236540723e56fa88bac3
+          git show f2fb30db3c25c854fd68236540723e56fa88bac3:theme-next/radio-rubben-next/template-parts/article-share.php > /tmp/article-share.php
+          echo '3452ca0eb3a9cccf2eb703514259e73dc4ad1be613e0e384585011abf9bbd966  /tmp/article-share.php' | sha256sum -c -
+          php -l /tmp/article-share.php
+          php theme-next/tests/article-share-render.php > /tmp/rr-share.json
+          RR_SHARE_RENDER=/tmp/rr-share.json node --test theme-next/tests/article-share.cjs
+          bash -n scripts/deploy-article-share.sh
+      - name: Backup and install single file
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=.radiorubben-deploy/article-share-f2fb30db
+          ssh "$host" "umask 077; mkdir -p $stage"
+          scp /tmp/article-share.php scripts/deploy-article-share.sh "$host:$stage/"
+          ssh "$host" "bash $stage/deploy-article-share.sh $stage"
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
