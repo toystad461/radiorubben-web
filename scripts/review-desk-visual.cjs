@@ -11,7 +11,7 @@ const fs=require('fs');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
     if(overflow)throw new Error(name+' overflows at '+width);
     if(!['queue','followup','weekly'].includes(name)&&!(await page.locator('.rrfr-review-prose').innerText()).trim())throw new Error('Article text missing');
-    if(name==='followup'&&!(await page.locator('.rrfr-followup-list').innerText()).includes('Sluttstatus'))throw new Error('Match progress missing');
+    if(name==='followup'&&!(await page.locator('.rrfr-followup-list').innerText()).includes('Trenger kontroll'))throw new Error('Match progress missing');
     if(name==='weekly') {
      const layouts=await page.locator('.rrfr-match-layout').all();
      for(const layout of layouts){
@@ -24,7 +24,7 @@ const fs=require('fs');
     if(name==='followup') {
      if(await page.locator('table').count())throw new Error('Legacy white table remains');
      await page.locator('summary').first().click();
-     if(!(await page.locator('dl').first().isVisible()))throw new Error('Technical details inaccessible');
+     if(!(await page.locator('dl').first().isVisible())||!(await page.locator('dl').first().innerText()).includes('Sluttstatus'))throw new Error('Technical details inaccessible');
      await page.locator('summary').first().click();
      await page.screenshot({path:process.env.RRFR_RENDER_DIR+'/followup-'+width+'.png',fullPage:true});
     }
