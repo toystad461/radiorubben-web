@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Manual, approval-gated candidate. No workflow invokes this installer.
+# Approval-gated selective release. Runtime manifest must match user-approved package.
 set -Eeuo pipefail
 umask 077
 stage=$(realpath "${1:?Private verified package path required}")
@@ -25,6 +25,10 @@ while IFS= read -r -d '' f; do php -l "$f"; done < <(find "$stage/runtime" -name
 # A private pre-state file is separate from the new backup directory.
 prestate=$(mktemp "$state/weekly-state.XXXXXXXX")
 wp_read eval-file "$stage/scripts/state.php" > "$prestate"
+# Preserve pre-existing schedules; rollback may remove only our newly introduced hook.
+cron_before=$(wp_read cron event list --fields=hook --format=csv)
+results_existed=false
+if grep -qx 'rrfr_club_results' <<< "$cron_before"; then results_existed=true; fi
 owned=false
 rollback(){
  trap - ERR HUP INT TERM
@@ -33,6 +37,9 @@ rollback(){
    if ! php "$stage/scripts/install.php" "$stage" "$backup" rollback; then
      echo 'Rollback blocked by changed code. Maintenance retained; inspect private backup.' >&2; exit 1
    fi
+ fi
+ if [[ -f "$backup/receipt.json" && "$results_existed" == false ]]; then
+   wp_read cron event delete rrfr_club_results
  fi
  # No database restore: preserve all concurrent/new editorial work.
  if [[ "$owned" == true ]]; then wp_read maintenance-mode deactivate; fi
@@ -53,4 +60,5 @@ curl --fail --silent --show-error --output /dev/null https://www.radiorubben.no/
 curl --fail --silent --show-error --output /dev/null https://www.radiorubben.no/bremnes-kamper-19-25-oktober-2026/
 php "$stage/scripts/install.php" "$stage" "$backup" after
 trap - ERR HUP INT TERM
+printf 'PRIVATE_BACKUP %s\n' "$backup"
 printf 'WEEKLY_NEWSROOM_RELEASE_OK %s\n' "$expected"
