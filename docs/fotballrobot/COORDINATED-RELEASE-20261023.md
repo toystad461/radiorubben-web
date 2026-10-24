@@ -1,7 +1,9 @@
 # Samordnet Web #104 + Studio #110
 
 Arbeidsområder: Teknisk Produksjon / System & Kvalitet / Lokalt Engasjement.
-Status: lastet opp i PR #105 og kontrollert mot server 24.10.2026; ikke godkjent for produksjon og ikke utrullet.
+Status: selektivt utrullet og kontrollert 24.10.2026. Se [utrullingskvitteringen](COORDINATED-DEPLOYMENT-20261024.md) for gjeldende status, backup, avvik og etterkontroll.
+
+Tidligere kontroll- og godkjenningsbeskrivelser nedenfor er historikk. Utrullingskvitteringen over gjelder foran tidligere «ikke utrullet»-status.
 
 ## Fastlåst omfang
 
