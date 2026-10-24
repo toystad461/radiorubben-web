@@ -24,6 +24,10 @@ jobs:
           python3 --version
       - name: Kontroller kildekode og presentasjonsgrense
         run: python3 theme-next/scripts/check.py
+      - name: Artikkeldeling og kanalparametere
+        run: |
+          php theme-next/tests/article-share-render.php > /tmp/rr-article-share.json
+          RR_SHARE_RENDER=/tmp/rr-article-share.json node --test theme-next/tests/article-share.cjs
       - name: Første Vipps-kobling og avstemning uten blokkerende kildehenting
         run: php theme-next/tests/poll-performance.php
       - name: Test lesekontroller uten nettverk
