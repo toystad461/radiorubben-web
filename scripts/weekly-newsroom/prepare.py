@@ -43,7 +43,7 @@ def build(studio, out):
         dest=out/'runtime'/p;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(b)
     (out/'scripts').mkdir()
     (out/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
-    for name in ['install.php','deploy.sh','state.php','postflight.php']:
+    for name in ['install.php','deploy.sh','state.php','postflight.php','diagnose.sh']:
         source=pathlib.Path(__file__).parent/name
         if source.exists():shutil.copyfile(source,out/'scripts'/name)
     probe=(pathlib.Path(__file__).parent/'preflight.php').read_text().replace('/* MANIFEST */',json.dumps(json.dumps(manifest)))

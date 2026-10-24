@@ -9,6 +9,6 @@ $queries=[
  'terms'=>"SELECT r.* FROM {$wpdb->term_relationships} r JOIN {$wpdb->posts} p ON p.ID=r.object_id WHERE p.post_type IN ('post','attachment') ORDER BY r.object_id,r.term_taxonomy_id",
  'editorial_options'=>"SELECT option_name,option_value FROM {$wpdb->options} WHERE option_name LIKE 'rrfr_%' AND option_name NOT LIKE '%lock%' ORDER BY option_name",
 ];
-$state=[];foreach($queries as$key=>$sql){$rows=$wpdb->get_results($sql,ARRAY_A);if($wpdb->last_error)throw new RuntimeException('State read failed');$state[$key]=hash('sha256',serialize($rows));}
+$state=[];foreach($queries as$key=>$sql){$rows=$wpdb->get_results($sql,ARRAY_A);if($wpdb->last_error)throw new RuntimeException('State read failed');$state[$key]=hash('sha256',serialize($rows));if($key==='editorial_options'){foreach($rows as $row)$state['option_hashes'][$row['option_name']]=hash('sha256',$row['option_value']);}}
 $board=ABSPATH.'studio-private/config/sending-board.json';$state['studio_board']=is_file($board)?hash_file('sha256',$board):null;
 echo json_encode($state,JSON_UNESCAPED_SLASHES)."\n";
