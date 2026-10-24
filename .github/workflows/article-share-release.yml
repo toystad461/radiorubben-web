@@ -45,7 +45,7 @@ jobs:
           stage=.radiorubben-deploy/article-share-f2fb30db
           ssh "$host" "umask 077; mkdir -p $stage"
           scp /tmp/article-share.php scripts/deploy-article-share.sh "$host:$stage/"
-          ssh "$host" "bash $stage/deploy-article-share.sh $stage"
+          ssh "$host" "bash -x $stage/deploy-article-share.sh $stage"
       - name: Remove runner key
         if: always()
         run: rm -f ~/.ssh/id_ed25519
