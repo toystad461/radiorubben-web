@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 umask 077
-stage=${1:?Private package required}
+resolve_path(){ php -r '$p=realpath($argv[1]);if($p===false)exit(1);echo $p;' "$1"; }
+stage=$(resolve_path "${1:?Private package required}")
 expected=${RR_SPORT_APPROVED_MANIFEST:?Approved manifest required}
 [[ "$expected" =~ ^[a-f0-9]{64}$ ]]
 [[ $(sha256sum "$stage/manifest.json" | cut -d' ' -f1) == "$expected" ]]
 root=/run/webroots/r1417157
 state="$HOME/.radiorubben-deploy"
-[[ $(realpath "$root") == /customers/9/3/1/cptk37ymg/webroots/r1417157 ]]
-[[ $(realpath "$stage") == "$(realpath "$state")"/* ]]
+[[ $(resolve_path "$root") == /customers/9/3/1/cptk37ymg/webroots/r1417157 ]]
+[[ $(resolve_path "$stage") == "$(resolve_path "$state")"/* ]]
 exec 9>"$state/fotballrobot-scheduler/runner.lock"; flock -w 60 9
 exec 8>"$HOME/.radiorubben-studio-deploy/deploy.lock"; flock -w 60 8
 mkdir "$state/lock"; trap 'rmdir "$state/lock"' EXIT
