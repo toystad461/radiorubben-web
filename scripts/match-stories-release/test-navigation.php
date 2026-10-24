@@ -31,3 +31,10 @@ try{rrSportJobLock($lockfile,'release');}catch(RuntimeException $e){$blocked=tru
 navAssert($blocked&&get_option('rrfr_match_followup_lock')==='foreign-owner','Foreign lock removed');
 delete_option('rrfr_match_followup_lock');unlink($lockfile);
 echo "SPORT_FOLLOWUP_OWNER_LOCK_TESTS_OK\n";
+
+require __DIR__.'/cron-lock.php';
+$cronfile=sys_get_temp_dir().'/sport-cron-'.bin2hex(random_bytes(6));
+rrSportCronLock($cronfile,'acquire');navAssert((float)get_transient('doing_cron')>microtime(true),'Cron mutex ineffective');
+$blocked=false;try{rrSportCronLock($cronfile.'-second','acquire');}catch(RuntimeException $e){$blocked=true;}navAssert($blocked,'Second cron owner accepted');
+rrSportCronLock($cronfile,'release');navAssert(get_transient('doing_cron')===false,'Cron not resumed');
+echo "SPORT_CORE_CRON_MUTEX_TESTS_OK\n";

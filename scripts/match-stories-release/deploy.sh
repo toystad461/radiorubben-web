@@ -36,12 +36,16 @@ rollback(){
  fi
  wp_live eval 'if(function_exists("wpo_cache_flush"))wpo_cache_flush();' || true
  if [[ -f "$stage/job-lock-owner" ]]; then RR_SPORT_LOCK_ACTION=release wp_read eval-file "$stage/scripts/job-lock.php" || exit 1; fi
+ if [[ -f "$stage/cron-lock-owner" ]]; then RR_SPORT_CRON_ACTION=release wp_read eval-file "$stage/scripts/cron-lock.php" || exit 1; fi
  if [[ "$owned" == true ]]; then wp_read maintenance-mode deactivate; fi
  echo 'SPORT_RELEASE_ROLLED_BACK' >&2
  exit 1
 }
 trap rollback ERR HUP INT TERM
 wp_read maintenance-mode activate; owned=true
+RR_SPORT_CRON_ACTION=acquire wp_read eval-file "$stage/scripts/cron-lock.php"
+exec 7>"$root/studio-private/config/sending-board.json.newsroom.lock"; flock -w 60 7
+sleep 1
 RR_SPORT_LOCK_ACTION=acquire wp_read eval-file "$stage/scripts/job-lock.php"
 wp_read eval-file "$stage/scripts/state.php" > "$prestate"
 php "$stage/scripts/install.php" "$stage" "$backup" install
@@ -62,5 +66,6 @@ grep -q 'id="rr-weekly-results"' "$backup/http-_sport_.html"
 if grep -q '\[rrfr_weekly_results\]' "$backup/http-_sport_.html"; then false; fi
 php "$stage/scripts/install.php" "$stage" "$backup" after
 RR_SPORT_LOCK_ACTION=release wp_read eval-file "$stage/scripts/job-lock.php"
+RR_SPORT_CRON_ACTION=release wp_read eval-file "$stage/scripts/cron-lock.php"
 trap - ERR HUP INT TERM
 printf 'PRIVATE_BACKUP %s\nSPORT_RELEASE_OK %s\n' "$backup" "$expected"
