@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify:
-    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[sport-menu-approved-20261024]')
+    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[sport-menu-approved-20261024-v2]')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -41,7 +41,7 @@ jobs:
           cat "$RUNNER_TEMP/preflight.json"
       - name: Complete approved Sport link in active navigation template
         env:
-          APPROVED_MANIFEST: 3dc3b64cbb7f44edb6c7fa7f50e47daef0c9d710c717e4ef0d0cfbc0b15c3cad
+          APPROVED_MANIFEST: a1f1d1b458a4b223729ee016721637c4dc1d2aade30f6f409d15b175829bed70
         run: |
           set -euo pipefail
           host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one

@@ -50,7 +50,7 @@
     "studio-private/app/news-images-contract.php": "2eb92f83cd4282d5ee57ee7b9257794743b8d7ee47180f87f1ef7b17a2135230",
     "studio-private/app/data/01-BILDEREGISTER.json": "0f090e476d8042339e1dab75b7653b34548ff24496294bb38908b3db0fabe0da",
     "wp-content/plugins/radio-rubben-fotballrobot/includes/match-stories.php": "0c68eb4139771995b1508a34cd2e62afedf967106a6e4b3b4c6da9f1308e75ed",
-    "wp-content/themes/radio-rubben-next/template-parts/site/navigation.php": "757cac057f9ea70133940fd718648de18a04bbf3ff030c0f6916b52a40ea257f"
+    "wp-content/themes/radio-rubben-next/template-parts/site/navigation.php": "45cdd7bd72f1894a1be9d1d61559f7d60d5323fd84596b19b2d1b533f529b53b"
   },
   "after": {
     "wp-content/plugins/radio-rubben-fotballrobot/admin.css": "1bef09eb598ad9b8cbccbcd8006cf8ae035d102f1ecfc7baaf0b7d32fb4fc01e",
