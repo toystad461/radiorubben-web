@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: weekly-newsroom-preflight
+  group: weekly-newsroom-production
   cancel-in-progress: false
 jobs:
   verify:
