@@ -42,3 +42,14 @@ Fersk GitHub-kontroll: #106 endrer ekstern scheduler og er ikke utrullet; #107s 
 Lokalt: PHP-WASM 8.5.10, syntakskontroll av 69 PHP-filer og 30 isolerte suiter. Ny suite dekker tillatelser, gammel nettlesertoken, endret foreldrekilde/tekst, ferskt resultatavvik, avlysning, låser, eksisterende uavklart jobb, endring under skriving, duplikater, utkaststatus, offentlig synlighet, kildelenker og draft-only malbytte. Eksisterende publiserings- og endrede-kilder-tester kjøres uendret.
 
 CI er utvidet med syntetiske visningsprøver ved 320, 390 og 1280 piksler og skjermbilder som artifact. CI-skjermbilder er ikke bevis på faktisk WordPress-produksjon eller Safari. Ingen reelle modellkall eller produksjonsdata brukes i testene. Produksjonskontroll og redaksjonell vurdering av en ekte kortartikkel gjenstår.
+
+
+## Neste steg: virkelig WordPress og navigasjon (24.10.2026)
+
+Lesende kontroll bekrefter produksjon WordPress 7.1.3, aktiv hovedmeny 58 (primary), uten Sport. Sport-siden er 769, publisert med standard sidemal og sist endret 04.10.2026 14:29:14 UTC. Siden har en manuelt lagret oversikt for uke 38, ikke en dynamisk lenke til ukesresultater. Kun produksjonen er tilkoblet WPVibe; det er ikke bekreftet en tilgjengelig separat WordPress-testinstans der.
+
+Ny shortcode `[rrfr_weekly_results]` gir en fast seksjon «Ukesresultater» med de tolv nyeste publiserte ukesoppsummeringene. Private, passordbeskyttede, testmerkede og upubliserte innlegg vises ikke. Ingen publiserte resultater gir en ærlig tomtilstand. Leservei: Forside → Sport → Ukesresultater → ukesoppsummering → publisert kampreferat.
+
+Den konkrete produksjonsendringen er klargjort i SPORT-NAVIGATION-20261024.json, med hash av dagens side og den utdaterte, avgrensede ukesblokken. Ved separat godkjent aktivering: ta revisjons-/menybackup, krev samme før-hash, erstatt bare blokken mellom de oppgitte markørene med shortcoden, endre snarveien til «Ukesresultater», og legg Sport (side 769) i meny 58 bare dersom den ikke allerede finnes. Bevar øvrige menypunkter, toppscorere, spillerkamper og artikler. Ikke publiser en ukeartikkel for å fylle tomtilstanden. Tilbakeføring gjelder bare denne siderevisjonen og et eventuelt nyopprettet menypunkt, med kontroll mot senere endringer.
+
+CI utvides med en disponibel, ekte WordPress-installasjon og MySQL. Kandidatpluginen aktiveres der. Testen bruker virkelige WordPress-roller, REST, KSES, post-/metahåndtering, kortkodetolkning, menyer og eksisterende publiseringssperrer, men bare syntetiske innlegg og kontrollmetadata. Nettverk og e-post blokkeres under selve integrasjonstesten; ingen reelle AI-kall. Produksjonspublisering, produksjonsmenyer og produksjonssiden endres ikke av denne testen. Faktisk produksjonsnettleser/Safari gjenstår etter separat godkjent installasjon.

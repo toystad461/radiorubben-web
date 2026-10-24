@@ -6,11 +6,11 @@ const fs=require('fs');
  try {
   for(const width of [320,390,1280]) {
    const page=await browser.newPage({viewport:{width,height:844}});
-   for(const name of ['ready','blocked','queue',...(fs.existsSync(process.env.RRFR_RENDER_DIR+'/followup.html')?['followup']:[]),...(fs.existsSync(process.env.RRFR_RENDER_DIR+'/weekly.html')?['weekly']:[])]) {
+   for(const name of ['ready','blocked','queue',...(fs.existsSync(process.env.RRFR_RENDER_DIR+'/followup.html')?['followup']:[]),...(fs.existsSync(process.env.RRFR_RENDER_DIR+'/weekly.html')?['weekly']:[]),...(fs.existsSync(process.env.RRFR_RENDER_DIR+'/wp-review.html')?['wp-review','wp-sport']:[])]) {
     await page.goto('file://'+process.env.RRFR_RENDER_DIR+'/'+name+'.html');
     const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth);
     if(overflow)throw new Error(name+' overflows at '+width);
-    if(!['queue','followup','weekly'].includes(name)&&!(await page.locator('.rrfr-review-prose').innerText()).trim())throw new Error('Article text missing');
+    if(!['queue','followup','weekly','wp-sport'].includes(name)&&!(await page.locator('.rrfr-review-prose').innerText()).trim())throw new Error('Article text missing');
     if(name==='followup'&&!(await page.locator('.rrfr-followup-list').innerText()).includes('Trenger kontroll'))throw new Error('Match progress missing');
     if(name==='weekly') {
      const layouts=await page.locator('.rrfr-match-layout').all();
@@ -29,6 +29,7 @@ const fs=require('fs');
      await page.locator('summary').first().click();
      await page.screenshot({path:process.env.RRFR_RENDER_DIR+'/followup-'+width+'.png',fullPage:true});
     }
+    if(name.startsWith('wp-'))await page.screenshot({path:process.env.RRFR_RENDER_DIR+'/'+name+'-'+width+'.png',fullPage:true});
     const approve=page.locator('button[value="approve"]');
     if(name==='ready'&&await approve.isDisabled())throw new Error('Ready approval disabled');
     if(name==='blocked'&&!(await approve.isDisabled()))throw new Error('Blocked approval enabled');

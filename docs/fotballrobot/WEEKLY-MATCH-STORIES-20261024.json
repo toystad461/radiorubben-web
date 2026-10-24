@@ -5,12 +5,12 @@
     {
       "path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php",
       "before_sha256": "061f79d1f4ab2cf58ebf1694a7d3b36b6152a91830bb8c60de2dc86c8032674f",
-      "after_sha256": "c1c9b278c5dc261403d116c1149aa8055c636bc9577e6e147435c011eea73178"
+      "after_sha256": "3c0e0dc0190a6838663565a68b15656a9ab368f52b519323960b39002603b296"
     },
     {
       "path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/match-stories.php",
       "before_sha256": null,
-      "after_sha256": "e029fe808be965ed7529e6f569840e9175c8922eeaf7f5a1df7d5f640372fa7c"
+      "after_sha256": "0c68eb4139771995b1508a34cd2e62afedf967106a6e4b3b4c6da9f1308e75ed"
     },
     {
       "path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/match-followup.php",
@@ -30,12 +30,12 @@
     {
       "path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.php",
       "before_sha256": "f398678a679e7fca2f28a52aa9b6e5cf273d1beac93e153d5717f31ac62cb47a",
-      "after_sha256": "2db19b70ff2c102fc85e642285e45e34bfbcf8a00dd5ab4112540a61a076836d"
+      "after_sha256": "b9d7f8c760040ca95819ecc1a7690c188f2be07b1eb12e917514e0b3dab96f76"
     },
     {
       "path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.css",
       "before_sha256": "88367c34a01c931aea3bbb728cae00705b50ec020424a3f281f77ff8ff25ce04",
-      "after_sha256": "c93b81e86e8accf58f1192ed5d64457fa1964d1402590f7074a53310de7f711a"
+      "after_sha256": "5a5a3b39cd30e4a3a591c74bdf6f4b67a9c77e9740331cf902cff91106a1c1bf"
     },
     {
       "path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/writer.php",

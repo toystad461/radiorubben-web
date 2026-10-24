@@ -1,0 +1,30 @@
+{
+  "status": "prepared-not-applied",
+  "page_id": 769,
+  "page_modified_gmt": "2026-10-04T14:29:14",
+  "page_content_sha256": "a25c3b7cb49958ea3b5b847627c90a49f46300a5b059c57a51c1fbc2de9023c4",
+  "legacy_weekly_block_sha256": "9c2b2e1cec19f05269cd3f3c686420497d05d9c3ac73deecd26729eac73395ac",
+  "replace_block_between": [
+    "<!-- rr-weekly-fixtures:start -->",
+    "<!-- rr-weekly-fixtures:end -->"
+  ],
+  "replacement": "[rrfr_weekly_results]",
+  "shortcut": {
+    "old": "href=\"#rr-weekly-fixtures\">Ukens kamper ↓",
+    "new": "href=\"#rr-weekly-results\">Ukesresultater ↓"
+  },
+  "menu": {
+    "id": 58,
+    "location": "primary",
+    "operation": "add Sport only if absent",
+    "target_page": 769,
+    "title": "Sport"
+  },
+  "preserve": [
+    "toppscorere",
+    "spillerkamper",
+    "sportsartikler",
+    "other menu items",
+    "all article and approval data"
+  ]
+}

@@ -3,6 +3,19 @@ namespace RadioRubben\Fotballrobot;
 
 /** Short match drafts reuse the existing reservation, fact and publication boundaries. */
 final class MatchStories {
+    /** A permanent Sport landing section, containing only public weekly result articles. */
+    public static function archive(): string {
+        $posts=get_posts(['post_type'=>'post','post_status'=>'publish','has_password'=>false,'numberposts'=>12,
+            'orderby'=>'date','order'=>'DESC','meta_query'=>[['key'=>'_rrfr_club_key','value'=>'results:','compare'=>'LIKE']]]);
+        $html='<section id="rr-weekly-results" class="rrfr-results-archive" aria-labelledby="rrfr-results-title"><h2 id="rrfr-results-title">Ukesresultater</h2><p>Bremnes-kampene samlet uke for uke. Åpne en oppsummering og trykk på kampkortene for publiserte referater.</p><ul>';
+        $count=0;
+        foreach($posts as $p){
+            if($p->post_status!=='publish'||!empty($p->post_password)||get_post_meta($p->ID,'_rrfr_test_only',true)
+                ||get_post_meta($p->ID,'_rrfr_trial_match',true)||!str_starts_with((string)get_post_meta($p->ID,'_rrfr_club_key',true),'results:'))continue;
+            $count++;$html.='<li><a href="'.esc_url(get_permalink($p->ID)).'">'.esc_html($p->post_title).'</a></li>';
+        }
+        return $html.'</ul>'.(!$count?'<p>Ingen ukesresultater er publisert ennå.</p>':'').'</section>';
+    }
     public static function identity(array $m): string {
         return hash('sha256',wp_json_encode([(int)$m['id'],(int)$m['home']['id'],(int)$m['away']['id'],
             (int)($m['competition']['id']??0),strtotime($m['kickoff']),$m['score']]));

@@ -43,6 +43,7 @@ final class WeeklyCoverage {
         return is_string($url)&&preg_match('~^https://(?:images\.fotball\.no/clublogos/[a-zA-Z0-9._/-]+|logo\.fotballdata\.no/logos/[0-9]+\.(?:jpg|png)(?:\?w=[0-9]{1,4})?)$~D',$url)===1;
     }
     public static function styles(): void {
+        if(is_page()&&has_shortcode((string)get_post_field('post_content',get_queried_object_id()),'rrfr_weekly_results')){self::stylesheet();return;}
         if(!is_singular('post'))return;
         $facts=get_post_meta(get_queried_object_id(),'_rrfr_fact_snapshot',true);
         if(!is_array($facts)||(!isset($facts['week'])&&!isset($facts['match'])))return;

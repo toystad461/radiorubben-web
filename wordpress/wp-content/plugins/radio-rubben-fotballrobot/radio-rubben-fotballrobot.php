@@ -91,3 +91,4 @@ add_action('wp_head',[\RadioRubben\Fotballrobot\WeeklyCoverage::class,'styles'],
 
 add_filter('the_content',[MatchStories::class,'links'],20);
 add_action('wp_after_insert_post',[MatchStories::class,'invalidate'],20,4);
+add_action('init',static function(){add_shortcode('rrfr_weekly_results',[MatchStories::class,'archive']);});
