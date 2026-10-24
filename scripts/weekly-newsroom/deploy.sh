@@ -27,7 +27,6 @@ php "$stage/scripts/install.php" "$stage" "$backup" check
 while IFS= read -r -d '' f; do php -l "$f"; done < <(find "$stage/runtime" -name '*.php' -print0)
 # A private pre-state file is separate from the new backup directory.
 prestate=$(mktemp "$state/weekly-state.XXXXXXXX")
-wp_read eval-file "$stage/scripts/state.php" > "$prestate"
 # Preserve pre-existing schedules; rollback may remove only our newly introduced hook.
 cron_before=$(wp_read cron event list --fields=hook --format=csv)
 results_existed=false
@@ -51,12 +50,16 @@ rollback(){
 }
 trap rollback ERR HUP INT TERM
 wp_read maintenance-mode activate; owned=true
+wp_read eval-file "$stage/scripts/state.php" > "$prestate"
 php "$stage/scripts/install.php" "$stage" "$backup" install
 cp "$prestate" "$backup/state-before.json"; rm "$prestate"
 wp_live eval-file "$stage/scripts/postflight.php" | tee "$backup/postflight.log"
 grep -q '^WEEKLY_NEWSROOM_RUNTIME_OK$' "$backup/postflight.log"
 wp_read eval-file "$stage/scripts/state.php" > "$backup/state-after.json"
-cmp "$backup/state-before.json" "$backup/state-after.json"
+if ! cmp -s "$backup/state-before.json" "$backup/state-after.json"; then
+ php -r '$a=json_decode(file_get_contents($argv[1]),true);$b=json_decode(file_get_contents($argv[2]),true);foreach(array_unique(array_merge(array_keys($a),array_keys($b)))as$k)if(($a[$k]??null)!==($b[$k]??null)){echo "CHANGED_GROUP ".$k.PHP_EOL;if($k==="option_hashes")foreach(array_unique(array_merge(array_keys($a[$k]),array_keys($b[$k])))as$n)if(($a[$k][$n]??null)!==($b[$k][$n]??null))echo "CHANGED_OPTION ".$n.PHP_EOL;}' "$backup/state-before.json" "$backup/state-after.json"
+ false
+fi
 php "$stage/scripts/install.php" "$stage" "$backup" after
 wp_read maintenance-mode deactivate; owned=false
 curl --fail --silent --show-error --output /dev/null https://www.radiorubben.no/
