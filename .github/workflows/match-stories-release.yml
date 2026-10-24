@@ -1,4 +1,4 @@
-name: Complete approved Sport menu in active theme
+name: Read-only verification of deployed Sport release
 on:
   push:
     branches: ['release/match-stories-sport-20261024']
@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   verify:
-    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[sport-menu-approved-20261024-v3]')
+    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[sport-final-readcheck-20261024]')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -17,15 +17,12 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-      - name: Build approved package and test installer
+      - name: Build hash-bound read-only checker
         run: |
           set -euo pipefail
           python3 scripts/match-stories-release/prepare-theme.py "$RUNNER_TEMP/sport-release"
-          php scripts/match-stories-release/test-theme-install.php
-          for f in "$RUNNER_TEMP"/sport-release/scripts/*.php; do php -l "$f"; done
-          bash -n scripts/match-stories-release/theme-deploy.sh
-          php -l theme-next/radio-rubben-next/template-parts/site/navigation.php
-      - name: Read production hashes with existing SSH mechanism
+          php -l "$RUNNER_TEMP/sport-release/scripts/preflight.php"
+      - name: Read all 49 production after-hashes with existing SSH mechanism
         env:
           DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
@@ -37,26 +34,14 @@ jobs:
           printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
-          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php -- before < "$RUNNER_TEMP/sport-release/scripts/preflight.php" > "$RUNNER_TEMP/preflight.json"
-          cat "$RUNNER_TEMP/preflight.json"
-      - name: Complete approved Sport link in active navigation template
-        env:
-          APPROVED_MANIFEST: a1f1d1b458a4b223729ee016721637c4dc1d2aade30f6f409d15b175829bed70
-        run: |
-          set -euo pipefail
-          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
-          stage=".radiorubben-deploy/sport-${GITHUB_RUN_ID}-${GITHUB_SHA}"
-          ssh "$host" "umask 077; mkdir '$stage'"
-          rsync -rltz --chmod=D700,F600 "$RUNNER_TEMP/sport-release/" "$host:$stage/"
-          ssh "$host" "RR_SPORT_APPROVED_MANIFEST='$APPROVED_MANIFEST' bash '$stage/scripts/deploy.sh' '$stage'" | tee "$RUNNER_TEMP/release.log"
-          grep -q '^SPORT_RELEASE_OK ' "$RUNNER_TEMP/release.log"
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php -- after < "$RUNNER_TEMP/sport-release/scripts/preflight.php" > "$RUNNER_TEMP/aftercheck.json"
+          cat "$RUNNER_TEMP/aftercheck.json"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
-          name: sport-release-check
+          name: sport-release-final-readcheck
           path: |
-            ${{ runner.temp }}/preflight.json
-            ${{ runner.temp }}/release.log
+            ${{ runner.temp }}/aftercheck.json
             ${{ runner.temp }}/sport-release/manifest.json
           retention-days: 30
       - name: Remove runner key
