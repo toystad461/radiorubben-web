@@ -44,7 +44,9 @@ jobs:
           host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
           stage=.radiorubben-deploy/article-share-f2fb30db
           ssh "$host" "umask 077; mkdir -p $stage"
-          scp /tmp/article-share.php scripts/deploy-article-share.sh "$host:$stage/"
+          echo SHARE_STAGE_READY
+          rsync -rltz /tmp/article-share.php scripts/deploy-article-share.sh "$host:$stage/"
+          echo SHARE_TRANSFER_READY
           ssh "$host" "bash -x $stage/deploy-article-share.sh $stage"
       - name: Remove runner key
         if: always()
