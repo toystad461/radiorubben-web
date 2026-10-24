@@ -5,8 +5,8 @@ if(!defined('WP_CLI')||!WP_CLI||getenv('RRFR_ISOLATED_WP')!=='1'||get_option('bl
 add_filter('pre_http_request',static fn()=>new WP_Error('offline_test','Network is disabled in the integration test'),1);
 add_filter('pre_wp_mail',static fn()=>false);
 wp_set_current_user(1);
-$count=0;
-function verify($v,$message){global $count;$count++;if(!$v)throw new RuntimeException($message);}
+$GLOBALS['rrfr_check_count']=0;
+function verify($v,$message){$GLOBALS['rrfr_check_count']++;if(!$v)throw new RuntimeException($message);}
 function refused($fn,$message){try{$fn();}catch(Throwable $e){verify(true,$message);return;}verify(false,$message);}
 function approveQuality($id){$p=get_post($id);update_post_meta($id,G::META,G::bind(['rulesVersion'=>Q::RULES_VERSION,'factsHash'=>Q::hash(Q::packet(G::facts($id))),'publishable'=>true,'languageStatus'=>'completed','findings'=>[]],(array)$p));}
 function renderTest($name,$html){$dir=getenv('RRFR_RENDER_DIR');if(!$dir)throw new RuntimeException('Missing output directory');wp_mkdir_p($dir);ob_start();require WP_PLUGIN_DIR.'/radio-rubben-fotballrobot/includes/review-desk-style.php';W::stylesheet();$styles=ob_get_clean();$admin=file_get_contents(WP_PLUGIN_DIR.'/radio-rubben-fotballrobot/admin.css');file_put_contents($dir.'/'.$name.'.html','<!doctype html><html lang="nb"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#0c1421;color:#eef3fa;padding:16px;font-family:system-ui}main{max-width:780px;margin:auto}'.$admin.'</style>'.$styles.'<main class="rrfr rrfr-desk">'.$html.'</main></html>');}
@@ -40,4 +40,4 @@ $routes=rest_get_server()->get_routes();verify(isset($routes['/rr-fotballrobot/v
 wp_set_current_user(0);$response=rest_do_request(new WP_REST_Request('POST','/rr-fotballrobot/v1/weekly-template'));verify($response->get_status()>=400,'Anonymous REST denied');wp_set_current_user(1);
 ob_start();D::article($parent,D::model($parent));$html=ob_get_clean();verify(str_contains($html,'rrfr-match-layout')&&!str_contains(strip_tags($html),'.rrfr-week-card{color:red}'),'Actual KSES preview has cards and no CSS text leak');
 renderTest('wp-review',$html);renderTest('wp-sport',$nav.$archive);
-echo 'OK: '.$count.' real WordPress integration checks; WordPress '.get_bloginfo('version').'; synthetic isolated database only'.PHP_EOL;
+echo 'OK: '.$GLOBALS['rrfr_check_count'].' real WordPress integration checks; WordPress '.get_bloginfo('version').'; synthetic isolated database only'.PHP_EOL;
