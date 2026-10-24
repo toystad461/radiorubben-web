@@ -21,7 +21,7 @@ jobs:
           set -euo pipefail
           python3 scripts/match-stories-release/prepare.py "$RUNNER_TEMP/sport-release"
           php scripts/match-stories-release/test-install.php
-          for f in scripts/match-stories-release/*.php; do php -l "$f"; done
+          for f in "$RUNNER_TEMP"/sport-release/scripts/*.php; do php -l "$f"; done
           bash -n scripts/match-stories-release/deploy.sh
       - name: Real isolated WordPress integration
         env:
