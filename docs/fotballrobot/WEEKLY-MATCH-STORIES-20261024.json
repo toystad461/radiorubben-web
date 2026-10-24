@@ -30,7 +30,7 @@
     {
       "path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.php",
       "before_sha256": "f398678a679e7fca2f28a52aa9b6e5cf273d1beac93e153d5717f31ac62cb47a",
-      "after_sha256": "594a87e966c0c818a40b68b22f51ef4bbd49ebe5000e1eedfb74c92179eaebc3"
+      "after_sha256": "2db19b70ff2c102fc85e642285e45e34bfbcf8a00dd5ab4112540a61a076836d"
     },
     {
       "path": "wordpress/wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.css",

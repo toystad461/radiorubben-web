@@ -18,6 +18,7 @@ const fs=require('fs');
       const boxes=await layout.evaluate(el=>[el.children[0],el.children[1],el.children[2]].map(x=>{const r=x.getBoundingClientRect();return {x:r.x,right:r.right,width:r.width}}));
       if(!(boxes[0].right<=boxes[1].x&&boxes[1].right<=boxes[2].x))throw new Error('Score not between teams at '+width);
      }
+     if(!(await page.locator('.rrfr-week-team img').evaluateAll(imgs=>imgs.length===2&&imgs.every(i=>i.complete&&i.naturalWidth>0))))throw new Error('Demo logos not loaded');
      if(await page.locator('.rrfr-match-story-link').count()!==1)throw new Error('Public story link missing');
      await page.screenshot({path:process.env.RRFR_RENDER_DIR+'/weekly-'+width+'.png',fullPage:true});
     }

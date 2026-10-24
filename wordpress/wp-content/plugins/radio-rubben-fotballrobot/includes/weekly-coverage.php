@@ -58,7 +58,7 @@ final class WeeklyCoverage {
             if($i===1)$html.='<p class="rrfr-week-score"><span>'.($results?esc_html($m['score'][0].'–'.$m['score'][1]):'–').'</span><small>'.($results?'Sluttresultat':'Mot').'</small></p>';
             $html.='<div class="rrfr-week-team">';$logo=$m['logos'][$side]??'';
             if(self::validLogo($logo))$html.='<img src="'.esc_url($logo).'" alt="" width="40" height="40" loading="lazy" decoding="async">';
-            $html.='<span>'.esc_html($m[$side]['registered_name']??$m[$side]['name']).'</span></div>';
+            $html.='<span>'.str_replace('/','/<wbr>',esc_html($m[$side]['registered_name']??$m[$side]['name'])).'</span></div>';
         }
         $html.='</div><p class="rrfr-week-time">'.esc_html(wp_date('l j. F \k\l. H:i',strtotime($m['kickoff']),new \DateTimeZone('Europe/Oslo'))).'</p><p class="rrfr-week-venue">'.esc_html($m['venue']).'</p>';
         return $html.'<p class="rrfr-week-source"><small><a href="'.esc_url($m['source']).'">Kampinformasjon hos NFF</a></small></p></section>';
