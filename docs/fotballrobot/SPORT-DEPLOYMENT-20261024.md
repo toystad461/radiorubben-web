@@ -4,7 +4,7 @@ Status: **utrullet 24. oktober 2026 etter uttrykkelig brukergodkjenning**. Ingen
 
 Leservei kontrollert i produksjonsnettleser: Forsiden → **Sport** → **Ukesresultater**. URL: https://www.radiorubben.no/sport/#rr-weekly-results. Oversikten viser korrekt «Ingen ukesresultater er publisert ennå» så lenge ukesoppsummeringen er et utkast.
 
-![Sport i hovedmenyen og snarvei til ukesresultater](evidence/sport-live-20261024.png)
+![Sport i hovedmenyen og snarvei til ukesresultater](sport-evidence/sport-live-20261024.png)
 
 ## Installert omfang og kvitteringer
 
@@ -48,7 +48,7 @@ To tidligere installasjonsforsøk rullet automatisk tilbake kode og navigasjon f
 
 Andre forsøk stoppet før kodeendring: lint av en uutfylt sjablong, manglende `realpath`-kommando på verten, én ekstra linjeslutt i temaets Git-kandidat og en allerede aktiv cron-jobb. Disse ble løst med kontroll av den genererte sjablongen, PHPs `realpath`, eksakt bekreftet serverhash og begrenset venting. Ingen ukjent filvariant ble overskrevet.
 
-Engangsjobben som installerte kode er nå erstattet av en **kun lesende** kontroll av alle 49 etter-hasher. Den strømmer en PHP-leser over eksisterende SSH, uten WordPress-bootstrap, filinstallasjon, databaseendring eller cachetømming. Historiske installasjonsmanifest og kvitteringer beholdes.
+Engangsjobben som installerte kode er nå erstattet av en **kun lesende** kontroll av alle 49 etter-hasher. [Sluttkontroll 40079936850](https://github.com/toystad461/radiorubben-web/actions/runs/40079936850) bestod 08:55 UTC med `ready: true` og alle 49 hasher like forventet. Den strømmer en PHP-leser over eksisterende SSH, uten WordPress-bootstrap, filinstallasjon, databaseendring eller cachetømming. Historiske installasjonsmanifest og kvitteringer beholdes.
 
 ## Neste redaksjonelle steg
 
