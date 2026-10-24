@@ -39,7 +39,13 @@ rollback(){
 }
 trap rollback ERR HUP INT TERM
 wp_read maintenance-mode activate; owned=true
-RR_SPORT_CRON_ACTION=acquire wp_read eval-file "$stage/scripts/cron-lock.php"
+cron_owned=false
+for attempt in $(seq 1 24); do
+  if RR_SPORT_CRON_ACTION=acquire wp_read eval-file "$stage/scripts/cron-lock.php" > "$stage/cron-acquire.log" 2>&1; then cron_owned=true; cat "$stage/cron-acquire.log"; break; fi
+  echo 'Waiting for active WordPress cron to finish before any code change.'
+  sleep 5
+done
+[[ "$cron_owned" == true ]]
 exec 7>"$root/studio-private/config/sending-board.json.newsroom.lock"; flock -w 60 7
 sleep 1
 RR_SPORT_LOCK_ACTION=acquire wp_read eval-file "$stage/scripts/job-lock.php"
