@@ -88,3 +88,6 @@ add_filter('rest_pre_insert_post',[PublishedEdits::class,'rest'],99,2);
 add_filter('wp_insert_post_empty_content',[PublishedEdits::class,'beforeWrite'],99,2);
 
 add_action('wp_head',[\RadioRubben\Fotballrobot\WeeklyCoverage::class,'styles'],99);
+
+add_filter('the_content',[MatchStories::class,'links'],20);
+add_action('wp_after_insert_post',[MatchStories::class,'invalidate'],20,4);

@@ -16,4 +16,11 @@
 .rrfr-desk summary{min-height:48px}.rrfr-desk .rrfr-settings{margin-top:28px}.rrfr-desk .rrfr-muted{font-size:14px}
 .rrfr-desk .rrfr-next{padding:20px 0 0}.rrfr-desk button:disabled{opacity:.6}
 @media(max-width:600px){.rrfr-desk{padding:14px}.rrfr-desk .rrfr-card{padding:16px}.rrfr-desk .rrfr-story-title{font-size:26px}.rrfr-decision .rrfr-row{display:grid;grid-template-columns:1fr}.rrfr-decision .rrfr-row>*{width:100%;justify-content:center;text-align:center}.rrfr-review-prose p{font-size:16px}.rrfr-desk .rrfr-review-image{margin-left:0;margin-right:0}}
+
+.rrfr-followup-list{display:grid;gap:12px}.rrfr-followup-item{padding:18px;border:1px solid #43516a;border-radius:16px;background:#121c2a;color:#eef3fa;min-width:0;overflow-wrap:anywhere}
+.rrfr-followup-top{display:flex;gap:12px;justify-content:space-between;align-items:start;flex-wrap:wrap}.rrfr-followup-top h3{margin:0;flex:1 1 230px;font-size:18px;line-height:1.4;color:#eef3fa}
+.rrfr-followup-item .rrfr-badge{margin:0;background:#24334a;color:#ffe184;font-size:12px;padding:5px 10px;border-radius:20px}.rrfr-followup-item p{font-size:14px;line-height:1.6;margin:10px 0}
+.rrfr-followup-item .rrfr-secondary{color:#fff;background:#293d58;border-color:#7085a1;font-weight:650}.rrfr-followup-reason{color:#ffe1ad}
+.rrfr-followup-item details{margin-top:8px}.rrfr-followup-item summary{font-size:13px;color:#c1cde0;cursor:pointer}.rrfr-followup-item dl{font-size:13px;margin:8px 0}.rrfr-followup-item dt{font-weight:700;color:#e4eaf4}.rrfr-followup-item dd{margin:3px 0 12px;color:#bbc9dc}
+.rrfr-match-stories .rrfr-review-list li{padding:14px 0}.rrfr-match-stories .rrfr-review-list strong{font-size:16px}
 </style>

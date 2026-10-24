@@ -45,25 +45,30 @@ final class WeeklyCoverage {
     public static function styles(): void {
         if(!is_singular('post'))return;
         $facts=get_post_meta(get_queried_object_id(),'_rrfr_fact_snapshot',true);
-        if(!is_array($facts)||empty($facts['week']))return;
+        if(!is_array($facts)||(!isset($facts['week'])&&!isset($facts['match'])))return;
         wp_enqueue_script('rrfr-week-logos',plugins_url('weekly-coverage.js',__FILE__),[],(string)filemtime(__DIR__.'/weekly-coverage.js'),true);
+        self::stylesheet();
+    }
+    /** The same markup is stored in drafts and shown in both reading surfaces. */
+    public static function card(array $m,bool $results=true,bool $linkable=false): string {
+        $name=($m['home']['registered_name']??$m['home']['name']).' – '.($m['away']['registered_name']??$m['away']['name']);
+        $attrs=$linkable&&$results?' data-rrfr-match="'.(int)$m['id'].'" data-rrfr-evidence="'.MatchStories::identity($m).'"':'';
+        $html='<section class="rrfr-week-card"'.$attrs.'><p class="rrfr-week-competition">'.esc_html($m['competition']['name']).'</p><h2 class="rrfr-match-heading">'.esc_html($name).'</h2><div class="rrfr-match-layout">';
+        foreach(['home','away'] as $i=>$side){
+            if($i===1)$html.='<p class="rrfr-week-score"><span>'.($results?esc_html($m['score'][0].'–'.$m['score'][1]):'–').'</span><small>'.($results?'Sluttresultat':'Mot').'</small></p>';
+            $html.='<div class="rrfr-week-team">';$logo=$m['logos'][$side]??'';
+            if(self::validLogo($logo))$html.='<img src="'.esc_url($logo).'" alt="" width="40" height="40" loading="lazy" decoding="async">';
+            $html.='<span>'.esc_html($m[$side]['registered_name']??$m[$side]['name']).'</span></div>';
+        }
+        $html.='</div><p class="rrfr-week-time">'.esc_html(wp_date('l j. F \k\l. H:i',strtotime($m['kickoff']),new \DateTimeZone('Europe/Oslo'))).'</p><p class="rrfr-week-venue">'.esc_html($m['venue']).'</p>';
+        return $html.'<p class="rrfr-week-source"><small><a href="'.esc_url($m['source']).'">Kampinformasjon hos NFF</a></small></p></section>';
+    }
+    public static function stylesheet(): void {
         echo '<style id="rrfr-week-style">'.file_get_contents(__DIR__.'/weekly-coverage.css').'</style>';
     }
     public static function rows(array $facts): string {
         $tz=new \DateTimeZone('Europe/Oslo');$html='';$results=($facts['kind']??'preview')==='results';
-        foreach($facts['matches'] as $m){
-            $html.='<section class="rrfr-week-card"><p class="rrfr-week-competition">'.esc_html($m['competition']['name']).'</p><h2 class="rrfr-week-teams">';
-            foreach(['home','away'] as $i=>$side){
-                if($i===1)$html.='<span class="rrfr-week-versus" aria-hidden="true"> – </span>';
-                $html.='<span class="rrfr-week-team">';
-                $logo=$m['logos'][$side]??'';
-                if(self::validLogo($logo))$html.='<img src="'.esc_url($logo).'" alt="" width="48" height="48" loading="lazy" decoding="async">';
-                $html.='<span>'.esc_html($m[$side]['registered_name']??$m[$side]['name']).'</span></span>';
-            }
-            $html.='</h2>';
-            if($results)$html.='<p class="rrfr-week-score"><span>'.esc_html($m['score'][0].'–'.$m['score'][1]).'</span><small>Sluttresultat</small></p>';
-            $html.='<p class="rrfr-week-time">'.esc_html(wp_date('l j. F \k\l. H:i',strtotime($m['kickoff']),$tz)).'</p><p class="rrfr-week-venue">'.esc_html($m['venue']).'</p><p class="rrfr-week-source"><small><a href="'.esc_url($m['source']).'">Kampinformasjon hos NFF</a></small></p></section>';
-        }
+        foreach($facts['matches'] as $m)$html.=self::card($m,$results,true);
         if(!empty($facts['unresolved'])){
             $html.='<h2>Resultat ikke bekreftet</h2><p>Disse registrerte kampene er ikke tatt med i resultatoppsummeringen:</p><ul>';
             foreach($facts['unresolved'] as $m)$html.='<li><small><a href="'.esc_url($m['source']).'">'.esc_html(($m['home']['registered_name']??$m['home']['name']).' – '.($m['away']['registered_name']??$m['away']['name'])).'</a></small></li>';
@@ -74,7 +79,7 @@ final class WeeklyCoverage {
     public static function article(array $facts): array {
         $results=$facts['kind']==='results';$period=self::period($facts['week']);$count=count($facts['matches']);
         $a=['title'=>($results?'Slik gikk Bremnes-kampene ':'Bremnes-kamper ').$period,
-            'lead'=>$results?'Her er resultatene fra '.$count.' registrerte Bremnes-kamper fra G13/J13 og oppover i perioden '.$period.'.':'Bremnes har '.$count.' registrerte kamper fra G13/J13 og oppover i perioden '.$period.'. Her er oversikten over hjemme- og bortekampene.',
+            'lead'=>$results?'Her er resultatene fra '.$count.' Bremnes-kamper fra G13/J13 og oppover i perioden '.$period.'.':'Bremnes har '.$count.' registrerte kamper fra G13/J13 og oppover i perioden '.$period.'. Her er oversikten over hjemme- og bortekampene.',
             'paragraphs'=>[$results?'Oversikten omfatter bare bekreftede sluttresultater i det kontrollerte kampgrunnlaget.':'Kampoppsettet kan endres. Oversikten bygger på registrerte kamper hos Fotballdata.'],
             'inline_sources'=>[],'checks'=>[['claim'=>'Periode, antall og bekreftede resultater','support'=>'week, matches og unresolved i faktagrunnlaget']]];
         if(!$count)$a['lead']='Det er ingen registrerte '.($results?'bekreftede resultater':'Bremnes-kamper').' fra G13/J13 og oppover i perioden '.$period.' i det kontrollerte kampgrunnlaget.';
@@ -107,6 +112,7 @@ final class WeeklyCoverage {
         finally{wp_set_current_user($previous);self::register();}
     }
     public static function routes(): void {
+        MatchStories::routes();
         register_rest_route('rr-fotballrobot/v1','/weekly',[
             'methods'=>'POST','permission_callback'=>[Robot::class,'allowed'],
             'callback'=>static fn($r)=>Robot::response(static function()use($r){
@@ -116,3 +122,5 @@ final class WeeklyCoverage {
         ]);
     }
 }
+
+require_once __DIR__.'/match-stories.php';

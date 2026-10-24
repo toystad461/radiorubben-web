@@ -66,9 +66,16 @@ jobs:
           set -euo pipefail
           php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/review-desk.php
           php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/match-followup.php
+          php wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/match-stories.php
           npm install --prefix "$RUNNER_TEMP/rrfr-ui" --no-audit --no-fund playwright@1.62.1
           node scripts/review-desk-visual.cjs > "$RUNNER_TEMP/rrfr-visual.log"
           tail -n 1 "$RUNNER_TEMP/rrfr-visual.log"
+      - name: Save visual review artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-match-stories-preview
+          path: ${{ runner.temp }}/rrfr-render
       - name: Whitespace check
         # Preserve exact captured upstream HTML fixture bytes, including whitespace.
         run: git diff --check HEAD^ HEAD -- . ':(exclude)wordpress/wp-content/plugins/radio-rubben-fotballrobot/tests/fixtures/**'
