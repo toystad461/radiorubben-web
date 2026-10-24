@@ -1,4 +1,5 @@
 name: Approved weekly newsroom selective release
+# Retry only after fixing host path resolution; prior attempt stopped before installation.
 on:
   push:
     branches: ['release/weekly-newsroom-20261023']

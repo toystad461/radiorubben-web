@@ -2,12 +2,14 @@
 # Approval-gated selective release. Runtime manifest must match user-approved package.
 set -Eeuo pipefail
 umask 077
-stage=$(realpath "${1:?Private verified package path required}")
+for tool in php sha256sum cut flock mkdir date find mktemp grep cp rm cmp curl; do command -v "$tool" >/dev/null; done
+resolve_path(){ php -r '$p=realpath($argv[1]);if($p===false)exit(1);echo $p;' "$1"; }
+stage=$(resolve_path "${1:?Private verified package path required}")
 expected=${RR_WEEKLY_APPROVED_MANIFEST:?Exact approved manifest SHA-256 required}
 [[ "$expected" =~ ^[0-9a-f]{64}$ ]]
 [[ $(sha256sum "$stage/manifest.json" | cut -d' ' -f1) == "$expected" ]]
 root=/run/webroots/r1417157
-[[ $(realpath "$root") == /customers/9/3/1/cptk37ymg/webroots/r1417157 ]]
+[[ $(resolve_path "$root") == /customers/9/3/1/cptk37ymg/webroots/r1417157 ]]
 state="$HOME/.radiorubben-deploy"
 [[ "$stage" == "$state"/* ]]
 # Cooperate with the WordPress scheduler, selective releases and Studio releases.
