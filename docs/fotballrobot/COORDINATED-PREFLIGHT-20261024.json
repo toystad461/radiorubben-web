@@ -1,0 +1,198 @@
+{
+  "release": "weekly-newsroom-20261023",
+  "checked_at_utc": "2026-10-23T22:06:41+00:00",
+  "php": "8.4.27",
+  "web_commit": "a9e11eab643e81557948c1a12531f714e6b9b0e1",
+  "studio_commit": "b77ac3d01eeff9b93763d6a086cab590f6cde7b2",
+  "files": {
+    "wp-content/plugins/radio-rubben-fotballrobot/admin.css": {
+      "sha256": "1bef09eb598ad9b8cbccbcd8006cf8ae035d102f1ecfc7baaf0b7d32fb4fc01e",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/club-automation.php": {
+      "sha256": "3121537b8b5f2d779b5140404bd19077b05bd35741c880f9e36c6675e42e031b",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/club-coverage.php": {
+      "sha256": "80e405f29a2985172f2738f26fd5e9d8012ae9d433efc4e775a2da48e0d528a3",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/editorial-notice.php": {
+      "sha256": "38b3164ede0a59aa28598281c798abf0baeb40873fc7ea3fa913a87027698b3c",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/editorial-quality.php": {
+      "sha256": "a3b7dcf06e4dc88fad1f9e95a2265460bd8a0bd6fa5d5028934da6219fa68a9c",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/fact-store.php": {
+      "sha256": "4d0cf137184563441f5558413f4c95faa9497864fb4b254737c60c08cd22be6f",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/facts.php": {
+      "sha256": "bb74cf39d3fbc3e0e068f27d0d0f85968a6623d09255d34d9902c3ac858a0e74",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/fotballdata.php": {
+      "sha256": "1e64f04174dd1d16b36c6b866d0dff3eb2da13b89510eba2fe823e3e3e4c8196",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/inline-sources.php": {
+      "sha256": "30eea3ccd845dc719de9123e8319bd9801810e7ee4f5293dc7e65b062f4301c1",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/learning.php": {
+      "sha256": "a4b90d4989df2b420a3b8369d8806becb86986e72cf6ef25db2800cd5292c753",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/lineups.php": {
+      "sha256": "29ef1d8a1be590d7c78c2a5e01bc8e969f54ec1f5712680132767fd0f4ae95e2",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/match-followup.php": {
+      "sha256": "a4d7aa1916be173fce92e33d76d05fd188016ca4e6ea0a25ac23abae4c874054",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/match-jobs.php": {
+      "sha256": "bd91de45f88de71aa3e243adc80a5e1985957fa70877873d27eb6dd53c4b9411",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/match-work.php": {
+      "sha256": "4ddced260f18fc4770f01d8395b795529b2872f34fb0e1c37d4fbb1c917bc4c5",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/media-sources.php": {
+      "sha256": "0f51d2cafaf0bc10afaa7303c42b6cdb4611439aecd22bae1721ddf51d054c51",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/microsoft-mail-page.php": {
+      "sha256": "e46f2eeac5431f0e8d782b06850384c91361bd1f9cb58d0a2049cd563fc63f04",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/microsoft-mail.php": {
+      "sha256": "e67abc664e7e381ef01de224da6886409aeac0a5635a865c2c926b2c14ae4c71",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/newsroom.php": {
+      "sha256": "3174901dd7a196014ae32e2c41005e536a6ec9e9b5cca4d11f6e0b47fc0f74f5",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-candidates-page.php": {
+      "sha256": "ace77a1ad3417e7dc96a9bcb2db79a606fe465aff3a7cad67b8cca154f9956f0",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-candidates.php": {
+      "sha256": "f0f84e58badf5c514b5f52b13011eadfcd5202c9db456676d8a522e6dae17848",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-corrections.php": {
+      "sha256": "340452cbfdd28221de3bb4a0b51a96331a98e1336ca90e9bc36f264e098664f3",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-facts.php": {
+      "sha256": "d9ee32b47e96cad5b4f2aa9163f15ca12bae30c81409dc778f396ab350f5accd",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-monitor.php": {
+      "sha256": "77482c834650288a41b33c372a30f773a0c12d72140613f3aaf031b907df1c7f",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-news-filter.php": {
+      "sha256": "a8e79312c18c92d0fc4e93f6393a24eaa21b1d400016a4b0ab036aeeb5c0071c",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-review-page.php": {
+      "sha256": "4af5192e144cf9fa969c65d5d4065d100f58995c439f5939903797108d954f0b",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/player-review.php": {
+      "sha256": "4c3552f17c16083e65547f5b4ee7b6eb65a8cfc17deefc65c6c325250eb24f32",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/players-page.php": {
+      "sha256": "19366c93eb3696cefeabad569149a947f21d102656fa3a4b58ffaf538fd2d8f9",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/players.php": {
+      "sha256": "725203ccf3c419b30a247db549873706323229e801255ef057683053e84ee0b2",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/publication-gate.php": {
+      "sha256": "4bae83712c00dde522b91d17f137763e822be3fff8ebc1f05bdf54f98e887ac8",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/report.css": {
+      "sha256": "983f0bf3b77918d7dc2861508897eafd8b739ff2581f738248133e2b3c7eba27",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/report.php": {
+      "sha256": "85c46d266f1f2f0fe64917be264f0c87077ed6434ac0dc2fb30bef46c0460aad",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/review-desk-style.php": {
+      "sha256": "5c7e712d4934f1ba773a950098272a2eeb09912ddf3ad34d19867772c2012bf2",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/review-desk.php": {
+      "sha256": "536298055a9aabee8f14d8f224f7839220158e74c3dcd904c9d87bc6e61a069d",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/review-digest.php": {
+      "sha256": "0cd10e9fa73e127613970c1daafd25d3580fe996f82b91d62c4532feaa64dd9a",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/robot.php": {
+      "sha256": "829c782631a3787c05810b29794320d883d17898b00e34899d79b88e4254615a",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/shared-rules.php": {
+      "sha256": "3133c129a51dd1e87929997173c338e7d0de6c24ee85cba9b472c15a53e446db",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/writer.php": {
+      "sha256": "5d8f60d908c50a2bfcf505219781a38d856b1b4ac2df5bcafc7ac64405da9a1d",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php": {
+      "sha256": "c9b94c3948140815d6b7c4ff944946c22cc06a21ae8ac545c3e7471516e03e6c",
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/published-edits.php": {
+      "sha256": null,
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.css": {
+      "sha256": null,
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.js": {
+      "sha256": null,
+      "matches_before": true
+    },
+    "wp-content/plugins/radio-rubben-fotballrobot/includes/weekly-coverage.php": {
+      "sha256": null,
+      "matches_before": true
+    },
+    "studio-private/app/news-images.php": {
+      "sha256": "e34bd54e48210acc0fa6411752183171ab3d22badc655f72b6bd172c9a3813d9",
+      "matches_before": true
+    },
+    "wp-content/plugins/rr-news-images/contract.php": {
+      "sha256": "2eb92f83cd4282d5ee57ee7b9257794743b8d7ee47180f87f1ef7b17a2135230",
+      "matches_before": true
+    },
+    "wp-content/plugins/rr-news-images/data/01-BILDEREGISTER.json": {
+      "sha256": "0f090e476d8042339e1dab75b7653b34548ff24496294bb38908b3db0fabe0da",
+      "matches_before": true
+    },
+    "studio-private/app/news-images-contract.php": {
+      "sha256": "2eb92f83cd4282d5ee57ee7b9257794743b8d7ee47180f87f1ef7b17a2135230",
+      "matches_before": true
+    },
+    "studio-private/app/data/01-BILDEREGISTER.json": {
+      "sha256": "0f090e476d8042339e1dab75b7653b34548ff24496294bb38908b3db0fabe0da",
+      "matches_before": true
+    }
+  },
+  "ready": true
+}

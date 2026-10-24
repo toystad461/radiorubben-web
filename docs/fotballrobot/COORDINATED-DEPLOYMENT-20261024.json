@@ -1,0 +1,37 @@
+{
+  "release": "weekly-newsroom-20261023",
+  "completed_at_utc": "2026-10-24T05:46:44Z",
+  "completed_at_oslo": "2026-10-24T07:46:44+02:00",
+  "web_commit": "a9e11eab643e81557948c1a12531f714e6b9b0e1",
+  "studio_commit": "b77ac3d01eeff9b93763d6a086cab590f6cde7b2",
+  "deployment_commit": "72a5ca54a6114e12b29651c6125ae5d1fc82d598",
+  "aftercheck_commit": "3855c62cea1840300cf4a78fb54a0d92ee1a4d2d",
+  "manifest_sha256": "aae582dc433a37f01a42dd7ab9e06bc78e8e8ee51ebace17d9a61522154be48a",
+  "changed_files": 9,
+  "guarded_paths": 47,
+  "deploy_run": 40067554321,
+  "aftercheck_run": 40067761547,
+  "backup_relative": ".radiorubben-deploy/backups/weekly-newsroom-20261024T054632Z-aae582dc433a",
+  "stage_relative": ".radiorubben-deploy/weekly-newsroom-40067554321-72a5ca54a6114e12b29651c6125ae5d1fc82d598",
+  "maintenance_seconds_approx": 8,
+  "editorial_equality_on_success": true,
+  "post_1398_unchanged": true,
+  "image_catalog_assets": 21,
+  "generated_articles": 0,
+  "published_articles": 0,
+  "merged_prs": 0,
+  "prior_rollback": {
+    "run": 40067306512,
+    "code_restored": true,
+    "owned_cron_removed": true,
+    "maintenance_deactivated": true,
+    "unchanged": [
+      "posts",
+      "postmeta",
+      "terms",
+      "studio_board"
+    ],
+    "changed": "editorial_options",
+    "cause": "Not determined from aggregate fingerprints; isolated old-runtime bootstrap was stable. Successful retry measured baseline after maintenance activation; all option fingerprints equal."
+  }
+}

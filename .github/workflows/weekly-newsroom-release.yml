@@ -1,0 +1,86 @@
+name: Weekly newsroom production aftercheck
+# Installation completed. This workflow now only clears page cache and checks installed code.
+on:
+  push:
+    branches: ['release/weekly-newsroom-20261023']
+    paths: ['.github/workflows/weekly-newsroom-release.yml']
+permissions:
+  contents: read
+concurrency:
+  group: weekly-newsroom-production
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.run_attempt == 1 && contains(github.event.head_commit.message, '[weekly-postflight-20261024]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Fetch pinned companion sources
+        run: |
+          git fetch origin 5169765446b75f5c983695940241985beda2f7ad
+          git clone --no-checkout https://github.com/toystad461/radiorubben-studio.git "$RUNNER_TEMP/studio"
+          git -C "$RUNNER_TEMP/studio" checkout --detach b77ac3d01eeff9b93763d6a086cab590f6cde7b2
+      - name: Build and test exact release
+        run: |
+          python3 scripts/weekly-newsroom/prepare.py "$RUNNER_TEMP/studio" "$RUNNER_TEMP/weekly-newsroom"
+          python3 scripts/test-fotballrobot.py
+          php "$RUNNER_TEMP/studio/tests/recovered/test-news-images.php"
+          php "$RUNNER_TEMP/studio/tests/recovered/test-news-images-bridge.php"
+          php "$RUNNER_TEMP/studio/tests/recovered/test-news-images-conflict.php"
+          php scripts/weekly-newsroom/test-install.php
+          php scripts/weekly-newsroom/test-integration.php "$RUNNER_TEMP/studio"
+          bash -n scripts/weekly-newsroom/deploy.sh
+          git diff --check HEAD^ HEAD
+      - name: Read server code hashes only (no upload or WordPress bootstrap)
+        if: github.event_name == 'push'
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"; test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one php -- after < "$RUNNER_TEMP/weekly-newsroom/scripts/preflight.php" > "$RUNNER_TEMP/preflight.json"
+          cat "$RUNNER_TEMP/preflight.json"
+      - name: Clear WP-Optimize page cache and verify installed runtime
+        run: |
+          set -euo pipefail
+          ssh cptk37ymg_w1417156@ssh.cptk37ymg.service.one bash -s <<'REMOTE' | tee "$RUNNER_TEMP/release.log"
+          set -Eeuo pipefail
+          umask 077
+          stage="$HOME/.radiorubben-deploy/weekly-newsroom-40067554321-72a5ca54a6114e12b29651c6125ae5d1fc82d598"
+          backup="$HOME/.radiorubben-deploy/backups/weekly-newsroom-20261024T054632Z-aae582dc433a"
+          exec 9>"$HOME/.radiorubben-deploy/fotballrobot-scheduler/runner.lock"; flock -w 60 9
+          exec 8>"$HOME/.radiorubben-studio-deploy/deploy.lock"; flock -w 60 8
+          mkdir "$HOME/.radiorubben-deploy/lock"; trap 'rmdir "$HOME/.radiorubben-deploy/lock"' EXIT
+          php "$stage/scripts/install.php" "$stage" "$backup" after
+          wp_read(){ /usr/local/bin/wp --path=/run/webroots/r1417157 --skip-plugins --skip-themes "$@"; }
+          wp_live(){ /usr/local/bin/wp --path=/run/webroots/r1417157 --skip-themes --user=toystad "$@"; }
+          wp_read eval-file "$stage/scripts/state.php" > "$stage/cache-before.json"
+          wp_live eval 'if (!function_exists("wpo_cache_flush")) throw new Exception("Expected WP-Optimize API missing"); wpo_cache_flush(); echo "WP_OPTIMIZE_CACHE_CLEARED\n";'
+          wp_live eval-file "$stage/scripts/postflight.php"
+          wp_read eval-file "$stage/scripts/state.php" > "$stage/cache-after.json"
+          cmp "$stage/cache-before.json" "$stage/cache-after.json"
+          php "$stage/scripts/install.php" "$stage" "$backup" after
+          echo CONTENT_AND_CODE_UNCHANGED_AFTER_CACHE_CLEAR
+          REMOTE
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: weekly-newsroom-candidate
+          path: |
+            ${{ runner.temp }}/weekly-newsroom
+            ${{ runner.temp }}/preflight.json
+            ${{ runner.temp }}/release.log
+          retention-days: 7
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
