@@ -1,6 +1,6 @@
 <?php
 if (!defined('ABSPATH')) throw new RuntimeException('WordPress required');
-$expected=json_decode('{"plugins/radio-rubben-fotballrobot/includes/club-automation.php":"0c52b337decc2086b6f021c0aed717386748ad7b","plugins/radio-rubben-fotballrobot/includes/robot.php":"404cd7570e74e05f630d35fe2bb6b194710b8e8b","plugins/radio-rubben-fotballrobot/includes/weekly-coverage.php":"88517ed9d857be0873f77f8b2406c1f1331c1445","plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php":"067133ada0eb75c23604d4319faeb3b015b33e43"}',true);
+$expected=json_decode('{"plugins/radio-rubben-fotballrobot/includes/club-automation.php":"0c52b337decc2086b6f021c0aed717386748ad7b","plugins/radio-rubben-fotballrobot/includes/robot.php":"404cd7570e74e05f630d35fe2bb6b194710b8e8b","plugins/radio-rubben-fotballrobot/includes/weekly-coverage.php":"784b44f28b704e194ea38b75428605269f6f4a7d","plugins/radio-rubben-fotballrobot/radio-rubben-fotballrobot.php":"067133ada0eb75c23604d4319faeb3b015b33e43"}',true);
 foreach($expected as $relative=>$sha) {
  $file=WP_CONTENT_DIR.'/'.$relative;
  $bytes=file_get_contents($file);
