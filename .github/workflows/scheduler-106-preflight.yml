@@ -1,0 +1,63 @@
+name: Scheduler 106 production preflight
+on:
+  push:
+    branches: ['ops/scheduler-106-preflight-20261025']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-fotballrobot-scheduler
+  cancel-in-progress: false
+jobs:
+  tick:
+    # Explicit operational activation after a separate, verified selective release.
+    if: github.ref == 'refs/heads/ops/scheduler-106-preflight-20261025' && vars.RRFR_SCHEDULER_ENABLED == 'true' && vars.RRFR_SCHEDULER_REF != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Require an explicitly approved immutable runner version
+        env:
+          RUNNER_REF: ${{ github.sha }}
+        run: |
+          [[ "$RUNNER_REF" =~ ^[a-f0-9]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$RUNNER_REF"
+      - name: Run only the football jobs using the existing verified SSH connection
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/scheduler-106-preflight/$(git rev-parse HEAD)"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz scripts/scheduler-106-preflight.php "$host:$stage/run.php"
+          cat > "$RUNNER_TEMP/rrfr-cli-bootstrap.php" <<'PHP'
+          <?php
+          echo "RRFR_CLI_BOOTSTRAP_LOADED\n";
+          register_shutdown_function(static function(){
+              $e=error_get_last();
+              if($e&&in_array($e['type'],[E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR],true))fwrite(STDERR,'RRFR_CLI_LAST_ERROR '.json_encode(['type'=>$e['type'],'file'=>basename($e['file']),'line'=>$e['line']])."\n");
+          });
+          PHP
+          php -l "$RUNNER_TEMP/rrfr-cli-bootstrap.php"
+          rsync -rltz "$RUNNER_TEMP/rrfr-cli-bootstrap.php" "$host:$stage/bootstrap.php"
+          set +e
+          output=$(ssh "$host" "flock --verbose -n \$HOME/.radiorubben-deploy/fotballrobot-scheduler/runner.lock timeout 480 /usr/local/bin/wp --require=\$HOME/$stage/bootstrap.php --path=/run/webroots/r1417157 eval-file \$HOME/$stage/run.php --use-include" 2>&1)
+          result=$?
+          set -e
+          printf '%s\n' "$output"
+          test "$result" -eq 0
+          grep -q '^PREFLIGHT_OK:' <<< "$output"
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
