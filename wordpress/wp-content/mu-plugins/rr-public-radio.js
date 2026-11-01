@@ -1,6 +1,11 @@
 (() => {
   'use strict';
   if (window.RR_ONE?.streamUrl !== 'https://5.249.252.78/radio.mp3') return;
+  // A completed live HTTP response must reconnect, not replay its old buffer.
+  const audio = document.getElementById('rr-audio');
+  for (const button of document.querySelectorAll('.rr-play-toggle')) {
+    button.addEventListener('click', () => { if (audio?.ended) audio.load(); }, true);
+  }
   const cards = [...document.querySelectorAll('.rr-radio-card')];
   const minis = [...document.querySelectorAll('.rr-mini-meta strong')];
   const text = value => typeof value === 'string' ? value.slice(0, 200) : '';
