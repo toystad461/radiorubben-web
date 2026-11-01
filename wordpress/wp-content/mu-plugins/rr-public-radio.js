@@ -1,10 +1,80 @@
 (() => {
   'use strict';
   if (window.RR_ONE?.streamUrl !== 'https://5.249.252.78/radio.mp3') return;
-  // A completed live HTTP response must reconnect, not replay its old buffer.
   const audio = document.getElementById('rr-audio');
-  for (const button of document.querySelectorAll('.rr-play-toggle')) {
-    button.addEventListener('click', () => { if (audio?.ended) audio.load(); }, true);
+  if (audio) {
+    const buttons = [...document.querySelectorAll('.rr-play-toggle')];
+    const messages = [...document.querySelectorAll('.rr-player-message')];
+    let wanted = false, connecting = false, retry = null, deadline = null;
+    let generation = 0, failures = 0, lastTime = 0, lastProgress = Date.now();
+    function show(message) {
+      for (const button of buttons) {
+        button.disabled = false;
+        button.textContent = wanted ? 'Ⅱ' : '▶';
+        button.setAttribute('aria-label', wanted ? 'Pause Radio Rubben' : 'Spill Radio Rubben');
+        button.setAttribute('aria-pressed', String(wanted));
+      }
+      document.body.classList.toggle('rr-is-playing', wanted);
+      for (const el of messages) el.textContent = message;
+    }
+    function cancel() {
+      generation++; clearTimeout(retry); clearTimeout(deadline);
+      retry = deadline = null; connecting = false;
+    }
+    function stop(message = 'Avspilling satt på pause.') {
+      wanted = false; cancel(); audio.pause(); show(message);
+    }
+    function schedule() {
+      if (!wanted || retry !== null) return;
+      cancel();
+      const delay = Math.min(3000 * 2 ** Math.min(failures++, 4), 30000);
+      show('Forbindelsen er brutt. Kobler til igjen …');
+      retry = setTimeout(() => { retry = null; connect(); }, delay);
+    }
+    async function connect() {
+      if (!wanted) return;
+      cancel(); connecting = true;
+      const attempt = generation;
+      lastProgress = Date.now(); lastTime = 0;
+      show('Kobler til sendingen …');
+      deadline = setTimeout(schedule, 15000);
+      try {
+        // Always request the live edge, never replay the previous response.
+        audio.load();
+        await audio.play();
+      } catch (error) {
+        if (attempt !== generation || !wanted) return;
+        if (error?.name === 'NotAllowedError') {
+          stop('Nettleseren krever at du trykker Play for å starte lyden igjen.');
+        } else schedule();
+      }
+    }
+    for (const button of buttons) button.addEventListener('click', event => {
+      // Own playback intent; the theme's handler cannot distinguish retry from Pause.
+      event.preventDefault(); event.stopImmediatePropagation();
+      if (wanted) stop();
+      else { wanted = true; failures = 0; connect(); }
+    }, true);
+    audio.addEventListener('playing', () => {
+      if (!wanted) { audio.pause(); return; }
+      clearTimeout(deadline); deadline = null; connecting = false;
+      lastProgress = Date.now(); lastTime = audio.currentTime;
+      show('Du lytter til Radio Rubben.');
+    });
+    audio.addEventListener('timeupdate', () => {
+      if (audio.currentTime !== lastTime) {
+        lastTime = audio.currentTime; lastProgress = Date.now(); failures = 0;
+      }
+    });
+    for (const event of ['error', 'ended']) audio.addEventListener(event, schedule);
+    audio.addEventListener('pause', () => {
+      if (wanted && !connecting && retry === null && !audio.error && !audio.ended) stop();
+    });
+    setInterval(() => {
+      if (wanted && !connecting && retry === null && Date.now() - lastProgress > 20000) schedule();
+    }, 5000);
+    window.addEventListener('online', () => { if (wanted && retry !== null) connect(); });
+    show('Trykk Play for å høre Radio Rubben.');
   }
   const cards = [...document.querySelectorAll('.rr-radio-card')];
   const minis = [...document.querySelectorAll('.rr-mini-meta strong')];

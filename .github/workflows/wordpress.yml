@@ -46,6 +46,7 @@ jobs:
         run: |
           php --version
           node scripts/test-public-radio.mjs
+          node scripts/test-radio-reconnect.mjs
           find wordpress -name '*.php' -print0 | xargs -0 -n1 php -l
           bash -n scripts/deploy-brand.sh
           bash -n scripts/deploy-brand-remote.sh

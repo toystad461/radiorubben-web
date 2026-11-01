@@ -1,6 +1,6 @@
 <?php
 /** Plugin Name: Radio Rubben public now/next
- * Version: 1.0.1
+ * Version: 1.0.2
  * Description: Public playback metadata for the approved VPS stream, with no Studio access.
  */
 defined('ABSPATH') || exit;
@@ -19,5 +19,5 @@ add_action('after_setup_theme', static function () {
 }, 99);
 add_action('wp_enqueue_scripts', static function () {
     if (!rr_public_radio_enabled()) { return; }
-    wp_enqueue_script('rr-public-radio', plugins_url('rr-public-radio.js', __FILE__), array('rr-next-ui'), '1.0.1', true);
+    wp_enqueue_script('rr-public-radio', plugins_url('rr-public-radio.js', __FILE__), array('rr-next-ui'), '1.0.2', true);
 }, 30);
