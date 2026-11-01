@@ -1,4 +1,4 @@
-name: Approved article share one-file release
+name: Approved article delivery one-file release (#107 + #110)
 on:
   push:
     branches: [release/article-sharing-20261024]
@@ -18,17 +18,20 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - name: Validate pinned candidate
+      - name: Validate integrated source and release safeguards
         run: |
           set -euo pipefail
-          git fetch origin f2fb30db3c25c854fd68236540723e56fa88bac3
-          git show f2fb30db3c25c854fd68236540723e56fa88bac3:theme-next/radio-rubben-next/template-parts/article-share.php > /tmp/article-share.php
-          echo '3452ca0eb3a9cccf2eb703514259e73dc4ad1be613e0e384585011abf9bbd966  /tmp/article-share.php' | sha256sum -c -
-          php -l /tmp/article-share.php
+          echo 'a2fce7798bdc57bb8e895b3cb538d8f5df24fbe4e675ee0fbb50cd07b84212c8  theme-next/radio-rubben-next/template-parts/content/article.php' | sha256sum -c -
+          echo '3452ca0eb3a9cccf2eb703514259e73dc4ad1be613e0e384585011abf9bbd966  theme-next/radio-rubben-next/template-parts/article-share.php' | sha256sum -c -
+          python3 theme-next/scripts/check.py
+          php theme-next/tests/article-template.php
           php theme-next/tests/article-share-render.php > /tmp/rr-share.json
           RR_SHARE_RENDER=/tmp/rr-share.json node --test theme-next/tests/article-share.cjs
+          php -l scripts/article-delivery-state.php
+          php -l scripts/verify-article-delivery.php
           bash -n scripts/deploy-article-share.sh
-      - name: Backup and install single file
+          cp theme-next/radio-rubben-next/template-parts/content/article.php /tmp/article.php
+      - name: Backup and install only article template
         env:
           DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
@@ -42,12 +45,12 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
           host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
-          stage=.radiorubben-deploy/article-share-f2fb30db
+          stage=.radiorubben-deploy/article-template-92a98a69
           ssh "$host" "umask 077; mkdir -p $stage"
           echo SHARE_STAGE_READY
-          rsync -rltz /tmp/article-share.php scripts/deploy-article-share.sh "$host:$stage/"
+          rsync -rltz /tmp/article.php scripts/deploy-article-share.sh scripts/article-delivery-state.php scripts/verify-article-delivery.php "$host:$stage/"
           echo SHARE_TRANSFER_READY
-          ssh "$host" "bash -x $stage/deploy-article-share.sh $stage"
+          ssh "$host" "bash $stage/deploy-article-share.sh $stage"
       - name: Remove runner key
         if: always()
         run: rm -f ~/.ssh/id_ed25519
