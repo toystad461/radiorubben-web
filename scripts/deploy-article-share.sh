@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Continue the existing #107 release: preserve its sharing file, install only #110.
 set -euo pipefail
-stage="$(realpath "$1")"
+stage="$(cd "$1" && pwd -P)"
 root=/run/webroots/r1417157
 theme="$root/wp-content/themes/radio-rubben-next"
 target="$theme/template-parts/content/article.php"

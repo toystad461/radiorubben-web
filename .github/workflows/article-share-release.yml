@@ -1,4 +1,4 @@
-name: Approved article delivery one-file release (#107 + #110)
+name: "Approved article delivery one-file release (#107 + #110)"
 on:
   push:
     branches: [release/article-sharing-20261024]
