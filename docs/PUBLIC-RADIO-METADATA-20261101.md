@@ -4,6 +4,14 @@ Autorisert som neste steg etter at hjemmesidens play-knapp ble koblet til VPS.
 Git-base main559a65c8; installert kilde ea62278b6003fb6991b7ea2c6d28f390ff18972b.
 PR111 i WEB-repoet er draft; den må ikke forveksles med eldre Studio-PR111.
 
+Siste installasjon er 1.0.1 fra caa33acdc7d4b2bdbe3286215864d17ade391ee1:
+Play etter en avsluttet live-HTTP-respons kobler til på nytt, fremfor å kunne
+spille gammel buffer. Node-regresjonstest og begge CI-workflows består.
+JS SHA256 79ae1e0cbffaa2d22d87ebe4ed2917ea649aeef9dfbc5d9926603f4e3a829a87;
+PHP SHA256 376aabf4bbbc8a23cc4186482408ec62e38a63396465e32a4d65cc8d831921ca.
+Den samme private backupmappen har v101-receipt.json og before-v101-kopier.
+Nedenstående første hasher bevares som installasjonshistorikk.
+
 Bare to nye filer er installert i wp-content/mu-plugins:
 - rr-public-radio.php SHA256 abc5cda7e19eb76d64d82ffc96cb9585a760ee774e22e8c6ab848b42908e1e88
 - rr-public-radio.js SHA256 fc635cba91116ec7e08e7582f716888b2fb1c0d158de85f4019737b68f754b72
@@ -36,3 +44,6 @@ Gamle statiske neste-felt vil igjen vises ved tilbakeføring; de er ikke endret 
 Begrensning: tekst følger serverens PCM-status; hver nettlesers lydbuffer kan gi
 noen sekunders forskjell mellom tekstbytte og hørbar overgang. Ingen eksakt
 synkronisering til lytterens lokale lydposisjon påstås.
+Eksisterende lytterfaner må trykke Play igjen etter serveravbrudd; det innføres
+ikke automatisk nettlesergjenoppkobling. Serverens autonome oppstart er testet
+med faktisk VPS-reboot 23:27:32–23:27:58 Oslo; nettsiden fikk fersk status igjen.
