@@ -20,11 +20,11 @@ final class MatchFollowup {
         $deleted=$wpdb->query($wpdb->prepare("DELETE FROM {$wpdb->options} WHERE option_name=%s AND option_value=%s",$key,(string)$stamp));
         wp_cache_delete($key,'options');wp_cache_delete('notoptions','options');return $deleted===1;
     }
-    public static function tick(): void {
-        $config=get_option(MatchJobs::CONFIG,[]);if(empty($config['enabled']))return;
+    public static function tick(): string {
+        $config=get_option(MatchJobs::CONFIG,[]);if(empty($config['enabled']))return 'disabled';
         $key='rrfr_match_followup_lock';$stamp=(int)get_option($key,0);
         if($stamp&&$stamp<time()-self::STALE)self::release($key,$stamp);
-        $stamp=time();if(!add_option($key,$stamp,'',false))return;
+        $stamp=time();if(!add_option($key,$stamp,'',false))return 'locked';
         $previous=get_current_user_id();
         try {
             wp_set_current_user((int)$config['owner']);
@@ -32,14 +32,29 @@ final class MatchFollowup {
             // Recovery also runs when the source is unavailable.
             foreach(self::jobIds() as $id)MatchJobs::recover($id);
             $failure=get_option('rrfr_match_followup_error',[]);
-            if(time()<(int)($failure['retry_at']??0))return;
-            $feed=ClubCoverage::collect();self::ingest($feed,$config);
-            update_option('rrfr_match_followup_last',['at'=>time(),'count'=>count($feed['matches'])],false);
+            if(time()<(int)($failure['retry_at']??0))return 'retry_wait';
+            $feed=ClubCoverage::collect();$result=self::ingest($feed,$config);
+            $last=get_option('rrfr_match_followup_last',[]);
+            $unchanged=($last['fingerprint']??null)===$result['fingerprint'];
+            $noWork=$result['eligible']===0||$unchanged;
+            update_option('rrfr_match_followup_last',['at'=>time(),'count'=>count($feed['matches'])]+$result+[
+                'status'=>$noWork?'no_work':'success',
+                'reason'=>$result['eligible']===0?'no_eligible_matches':($unchanged?'unchanged':'source_updated'),
+            ],false);
             delete_option('rrfr_match_followup_error');
+            return $noWork?'no_work':'success';
         } catch(\Throwable $e) {
             $old=get_option('rrfr_match_followup_error',[]);
             $attempts=(int)($old['attempts']??0)+1;
-            update_option('rrfr_match_followup_error',['at'=>time(),'attempts'=>$attempts,'retry_at'=>time()+min(3600,300*(2**min($attempts-1,4))),'message'=>$e->getMessage()],false);
+            $category=$e instanceof FotballdataError?$e->category:'processing';
+            $delay=min(3600,300*(2**min($attempts-1,4)));
+            // Persistent access/configuration faults need slow rechecks, not a five-minute retry loop.
+            if(in_array($category,['configuration','authentication','access'],true))$delay=86400;
+            if($e instanceof FotballdataError)$delay=max($delay,$e->retryAfter);
+            update_option('rrfr_match_followup_error',['at'=>time(),'attempts'=>$attempts,'retry_at'=>time()+$delay,
+                'category'=>$category,'http_status'=>$e instanceof FotballdataError?$e->httpStatus:0,
+                'message'=>$e instanceof FotballdataError?$e->getMessage():'Kampoppfølgingen kunne ikke behandle grunnlaget. Tidligere data beholdes.'],false);
+            return 'error';
         } finally {wp_set_current_user($previous);self::release($key,$stamp);}
     }
     /** Bounded pagination covers jobs older than the discovery window after an outage. */
@@ -50,14 +65,15 @@ final class MatchFollowup {
         update_option('rrfr_match_followup_cursor',count($keys)===100?end($keys):'',false);
         return array_values(array_filter(array_map(static fn($k)=>preg_match('/^rrfr_match_job_([1-9][0-9]*)$/D',$k,$m)?(int)$m[1]:0,$keys)));
     }
-    public static function ingest(array $feed,array $config): void {
-        $tracked=[];
+    public static function ingest(array $feed,array $config): array {
+        $tracked=[];$eligible=[];
         foreach($feed['matches'] as $id=>$m) {
             $kickoff=strtotime($m['kickoff']);
             $senior=(bool)array_intersect([30365,48835],[$m['home']['id'],$m['away']['id']]);
             $youth=false;foreach(['home','away'] as $side)if(isset($feed['teams'][$m[$side]['id']]['age_class']))$youth=true;
             $since=$senior?(int)$config['since']:(int)get_option('rrfr_club_enabled_at',0);
             if((!$senior&&!$youth)||!$since||$kickoff<$since||$kickoff<time()-self::WINDOW||$kickoff>time())continue;
+            $eligible[$id]=$m;
             $s=MatchJobs::state((int)$id);
             $reason=$m['cancelled']?'Avlyst':($m['postponed']?'Utsatt':($m['interrupted']?'Avbrutt':($m['walkover']?'Walkover – krever redaksjonell vurdering':($m['finished_confirmed']?'Kildens sluttresultat er bekreftet':'Venter på uttrykkelig sluttbekreftelse fra Fotballdata; ny kontroll om fem minutter.'))));
             $tracked[$id]=['match_id'=>(int)$id,'match'=>($m['home']['registered_name']??$m['home']['name']).' – '.($m['away']['registered_name']??$m['away']['name']),'kickoff'=>$m['kickoff'],
@@ -80,6 +96,8 @@ final class MatchFollowup {
             else MatchJobs::waitForSource((int)$id,$reason);
         }
         update_option('rrfr_match_followup_matches',$tracked,false);
+        ksort($eligible);
+        return ['eligible'=>count($eligible),'fingerprint'=>hash('sha256',json_encode($eligible,JSON_THROW_ON_ERROR))];
     }
     /** Recheck fresh source data before preparing or continuing an automatic article. */
     public static function verify(int $id): array {
@@ -110,6 +128,7 @@ final class MatchFollowup {
         $runner=get_option('rrfr_match_followup_runner',[]);
         echo '<p>'.esc_html($runner?'Siste kjøring uten nettsidebesøk: '.wp_date('d.m.Y H:i',$runner['at']):'Ingen bekreftet serverkjøring uten nettsidebesøk registrert.').'</p>';
         if($e=get_option('rrfr_match_followup_error',[]))echo '<p role="alert">'.esc_html($e['message'].' · '.$e['attempts'].' mislykkede kildekontroller').'</p>';
+        elseif(($last['status']??'')==='no_work')echo '<p>Kontrollen var vellykket: ingen aktuelle kamper eller nye kampdata.</p>';
         echo '<div class="rrfr-followup-list">';
         $rows=self::rows();
         if(!$rows)echo '<p>Ingen kamper til oppfølging akkurat nå.</p>';

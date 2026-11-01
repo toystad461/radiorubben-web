@@ -5,35 +5,35 @@ namespace RadioRubben\Fotballrobot;
 final class ClubCoverage {
     public const CLUB=827;
     public static function teams(array $data): array {
-        if (($data['ClubId']??null)!==self::CLUB || !is_array($data['Teams']??null)) throw new \RuntimeException('Ukjent klubbliste fra Fotballdata.');
+        if (($data['ClubId']??null)!==self::CLUB || !is_array($data['Teams']??null) || !array_is_list($data['Teams'])) throw new FotballdataError('schema');
         $teams=[];
         foreach ($data['Teams'] as $r) {
-            if (!is_array($r) || ($r['ClubId']??null)!==self::CLUB || !is_int($r['TeamId']??null) || $r['TeamId']<1 || !is_string($r['TeamName']??null)) throw new \RuntimeException('Ugyldig lagidentitet.');
+            if (!is_array($r) || ($r['ClubId']??null)!==self::CLUB || !is_int($r['TeamId']??null) || $r['TeamId']<1 || !is_string($r['TeamName']??null)) throw new FotballdataError('schema');
             $name=trim($r['TeamName']); $age=null;
             if (preg_match('/^Bremnes\s+([GJ])(\d{1,2})(?=\D|$)/u',$name,$m)) {
                 $age=(int)$m[2]; if ($age<13) continue;
             } elseif (!preg_match('/^Bremnes\s+(Menn|Kvinner)(?:\s|$)/u',$name)) continue;
             $team=['id'=>$r['TeamId'],'name'=>$name,'age_class'=>$age];
-            if (isset($teams[$team['id']]) && $teams[$team['id']]!==$team) throw new \RuntimeException('Motstridende lag-ID.');
+            if (isset($teams[$team['id']]) && $teams[$team['id']]!==$team) throw new FotballdataError('schema');
             $teams[$team['id']]=$team;
         }
-        if (!$teams) throw new \RuntimeException('Ingen lag fra G13/J13 eller senior funnet.');
         ksort($teams); return $teams;
     }
     public static function matches(array $data,array $teams,int $now): array {
-        if (($data['ClubId']??null)!==self::CLUB || !is_array($data['Matches']??null)) throw new \RuntimeException('Ukjent kampliste fra Fotballdata.');
+        if (($data['ClubId']??null)!==self::CLUB || !is_array($data['Matches']??null) || !array_is_list($data['Matches'])) throw new FotballdataError('schema');
         $out=[];
         foreach ($data['Matches'] as $r) {
-            if (!is_array($r)) throw new \RuntimeException('Ugyldig kamprad.');
+            if (!is_array($r)) throw new FotballdataError('schema');
+            foreach(['HomeTeamId','AwayTeamId'] as $field)if(!is_int($r[$field]??null)||$r[$field]<1)throw new FotballdataError('schema');
             if (!isset($teams[$r['HomeTeamId']??0]) && !isset($teams[$r['AwayTeamId']??0])) continue;
             foreach (['Home','Away'] as $side) {
-                if (isset($teams[$r[$side.'TeamId']??0]) && ($r[$side.'TeamClubId']??null)!==self::CLUB) throw new \RuntimeException('Lag og klubb stemmer ikke.');
+                if (isset($teams[$r[$side.'TeamId']??0]) && ($r[$side.'TeamClubId']??null)!==self::CLUB) throw new FotballdataError('schema');
             }
             foreach (['Cancelled','Postponed','Interrupted','WalkOverHome','WalkOverAway','WalkOverBoth','FinalResultApprovedByDistrict','FinalResultApprovedByReferee'] as $key) {
-                if (!is_bool($r[$key]??null)) throw new \RuntimeException('Kampen mangler entydig status.');
+                if (!is_bool($r[$key]??null)) throw new FotballdataError('schema');
             }
             $m=Fotballdata::matchRow($r);
-            if (!is_string($r['TournamentName']??null) || trim($r['TournamentName'])==='') throw new \RuntimeException('Turneringsnavn mangler.');
+            if (!is_string($r['TournamentName']??null) || trim($r['TournamentName'])==='') throw new FotballdataError('schema');
             $m['competition']=['id'=>$m['competition_id'],'name'=>trim($r['TournamentName'])];
             $m['cancelled']=$r['Cancelled']; $m['postponed']=$r['Postponed']; $m['interrupted']=$r['Interrupted'];
             $m['walkover']=$r['WalkOverHome']||$r['WalkOverAway']||$r['WalkOverBoth'];
@@ -41,7 +41,7 @@ final class ClubCoverage {
             if (!$m['finished_confirmed']) $m['score']=null;
             foreach (['home','away'] as $side) if (isset($teams[$m[$side]['id']])) $m[$side]['registered_name']=$teams[$m[$side]['id']]['name'];
             $m['events']=[]; // No invented scorers or substitutions from a result-only feed.
-            if (isset($out[$m['id']]) && $out[$m['id']]!==$m) throw new \RuntimeException('Motstridende kampkopier.');
+            if (isset($out[$m['id']]) && $out[$m['id']]!==$m) throw new FotballdataError('schema');
             $out[$m['id']]=$m;
         }
         uasort($out,static fn($a,$b)=>strcmp($a['kickoff'],$b['kickoff']) ?: $a['id']<=>$b['id']);
@@ -50,7 +50,9 @@ final class ClubCoverage {
     public static function blocked(array $m): bool { return $m['cancelled']||$m['postponed']||$m['interrupted']||$m['walkover']; }
     public static function collect(): array {
         $teams=self::teams(Fotballdata::clubTeams());
-        return ['teams'=>$teams,'matches'=>self::matches(Fotballdata::clubMatches(),$teams,time()),'fetched_at'=>gmdate(DATE_ATOM),'provider'=>'Fotballdata'];
+        // A validated team response proves that no match request is needed for an empty eligible set.
+        return ['teams'=>$teams,'matches'=>$teams?self::matches(Fotballdata::clubMatches(),$teams,time()):[],
+            'fetched_at'=>gmdate(DATE_ATOM),'provider'=>'Fotballdata'];
     }
     /** Result feed and exact NFF match detail must agree before writing. */
     public static function detailFacts(array $match): array {

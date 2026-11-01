@@ -5,7 +5,7 @@ use RadioRubben\Fotballrobot\MatchFollowup;
 use RadioRubben\Fotballrobot\MatchJobs;
 if(!defined('ABSPATH')||!class_exists(MatchFollowup::class))throw new \RuntimeException('Fotballrobot 0.10.6 må være installert før scheduler aktiveres.');
 if(empty(get_option(MatchJobs::CONFIG,[])['enabled']))throw new \RuntimeException('Automatisk referat er deaktivert.');
-MatchFollowup::tick();
+$sourceResult=MatchFollowup::tick();
 $allowed=['rrfr_match_job','rrfr_club_tick','rrfr_club_match','rrfr_club_weekly','rrfr_club_results'];$count=0;$deadline=time()+360;
 foreach(_get_cron_array()?:[] as $at=>$hooks) {
     if($at>time())continue;
@@ -25,4 +25,5 @@ foreach(_get_cron_array()?:[] as $at=>$hooks) {
 update_option('rrfr_match_followup_runner',['at'=>time(),'transport'=>'host-cli','events'=>$count],false);
 $error=get_option('rrfr_match_followup_error',[]);
 if($error)throw new \RuntimeException('Kildefeil i kampoppfølgingen. Se godkjenningsflaten.');
-echo 'OK: Fotballrobot scheduler; events='.$count."\n";
+$status=in_array($sourceResult,['success','no_work','locked'],true)?$sourceResult:'legacy';
+echo 'OK: Fotballrobot scheduler; events='.$count.'; source_status='.$status."\n";

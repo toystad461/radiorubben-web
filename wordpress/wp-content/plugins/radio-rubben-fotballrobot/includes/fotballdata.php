@@ -1,6 +1,13 @@
 <?php
 namespace RadioRubben\Fotballrobot;
 
+/** Only fixed classifications leave the transport boundary; never retain a previous exception. */
+final class FotballdataError extends \RuntimeException {
+    public function __construct(public readonly string $category, public readonly int $httpStatus=0, public readonly int $retryAfter=0) {
+        parent::__construct('Fotballdata: '.$category.($httpStatus?' (HTTP '.$httpStatus.')':'').'. Tidligere grunnlag beholdes.');
+    }
+}
+
 /** Server-only Fotballdata adapter. Never persist raw responses or credential URLs. */
 final class Fotballdata {
     public static function clubTeams(): array { return self::request('clubs/827/teams'); }
@@ -20,33 +27,58 @@ final class Fotballdata {
     private static function request(string $path,array $query=[]): array {
         $cid=self::setting('RRFR_FOTBALLDATA_CID'); $cwd=self::setting('RRFR_FOTBALLDATA_CWD');
         if(!preg_match('/^[1-9][0-9]*$/D',$cid) || !preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/Di',$cwd))
-            throw new \RuntimeException('Fotballdata er ikke konfigurert med gyldig privat tilgang.');
+            throw new FotballdataError('configuration');
         $url='https://api.fotballdata.no/v1/'.$path.'?'.http_build_query($query+['cid'=>$cid,'cwd'=>$cwd,'format'=>'json']);
         // Exceptions may contain the request URL. Never propagate transport messages.
         try {
             $r=wp_safe_remote_get($url,['timeout'=>20,'redirection'=>0,'limit_response_size'=>2500000,'headers'=>['Accept'=>'application/json']]);
-        } catch(\Throwable $e) { throw new \RuntimeException('Fotballdata kunne ikke kontaktes. Tidligere grunnlag beholdes.'); }
-        if(is_wp_error($r) || wp_remote_retrieve_response_code($r)!==200)
-            throw new \RuntimeException('Fotballdata avviste eller kunne ikke besvare forespørselen. Tidligere grunnlag beholdes.');
+        } catch(\Throwable $e) { throw new FotballdataError('network'); }
+        if(is_wp_error($r)) {
+            $timeout=preg_match('/cURL error 28|timed out|timeout/i',$r->get_error_message());
+            throw new FotballdataError($timeout?'timeout':'network');
+        }
+        $status=(int)wp_remote_retrieve_response_code($r);
+        if($status!==200) {
+            $category=match(true) {
+                $status===401=>'authentication', $status===403=>'access', $status===429=>'rate_limit',
+                $status>=500=>'service', default=>'http',
+            };
+            $retry=0;
+            if(in_array($status,[429,503],true)) {
+                $header=wp_remote_retrieve_header($r,'retry-after');
+                if(is_scalar($header)) {
+                    $header=trim((string)$header);
+                    $retry=ctype_digit($header)?(int)$header:max(0,(int)strtotime($header)-time());
+                    $retry=min(86400,$retry);
+                }
+            }
+            throw new FotballdataError($category,$status,$retry);
+        }
         $body=wp_remote_retrieve_body($r);
         if(!is_string($body) || $body==='' || strlen($body)>=2500000)
-            throw new \RuntimeException('Fotballdata returnerte tomme eller avkortede data.');
+            throw new FotballdataError('response_body');
+        $object=json_decode($body,false,64);
+        if(json_last_error()!==JSON_ERROR_NONE)throw new FotballdataError('invalid_json');
+        if(!is_object($object)||property_exists($object,'ResponseStatus'))throw new FotballdataError('schema');
+        // An empty JSON list is valid; missing/null/object collections are not.
+        $collection=str_ends_with($path,'/teams')?'Teams':(str_ends_with($path,'/matches')?'Matches':null);
+        if($collection!==null&&!is_array($object->{$collection}??null))throw new FotballdataError('schema');
         $data=json_decode($body,true,64);
         if(!is_array($data) || json_last_error()!==JSON_ERROR_NONE || isset($data['ResponseStatus']))
-            throw new \RuntimeException('Fotballdata returnerte et ukjent svarformat.');
+            throw new FotballdataError('schema');
         return $data;
     }
     private static function integer($v,int $min=0): int {
-        if(!is_int($v) || $v<$min || $v>999999999) throw new \RuntimeException('Fotballdata: ugyldig tall eller ID.');
+        if(!is_int($v) || $v<$min || $v>999999999) throw new FotballdataError('schema');
         return $v;
     }
     private static function text($v): string {
-        if(!is_string($v) || trim($v)==='') throw new \RuntimeException('Fotballdata: påkrevd tekst mangler.');
+        if(!is_string($v) || trim($v)==='') throw new FotballdataError('schema');
         return trim($v);
     }
     public static function date($v): string {
         if(!is_string($v) || !preg_match('~^/Date\(([0-9]{12,13})([+-][0-9]{4})?\)/$~D',$v,$m))
-            throw new \RuntimeException('Fotballdata: ukjent datoformat.');
+            throw new FotballdataError('schema');
         $date=new \DateTimeImmutable('@'.intdiv((int)$m[1],1000));
         $zone=new \DateTimeZone('Europe/Oslo');
         // Fotballdata serializes Norwegian wall time with the unspecified -0000 marker.
@@ -55,7 +87,7 @@ final class Fotballdata {
             $wall=$date->format('Y-m-d H:i:s');
             $date=new \DateTimeImmutable($wall,$zone);
             if($date->format('Y-m-d H:i:s')!==$wall)
-                throw new \RuntimeException('Fotballdata: ugyldig lokal kamptid.');
+                throw new FotballdataError('schema');
         }
         return $date->setTimezone($zone)->format(DATE_ATOM);
     }
@@ -63,13 +95,13 @@ final class Fotballdata {
         $id=self::integer($r['MatchId']??null,1);
         $home=['id'=>self::integer($r['HomeTeamId']??null,1),'name'=>self::text($r['HomeTeamName']??null)];
         $away=['id'=>self::integer($r['AwayTeamId']??null,1),'name'=>self::text($r['AwayTeamName']??null)];
-        if($home['id']===$away['id']) throw new \RuntimeException('Fotballdata: samme lag på begge sider.');
+        if($home['id']===$away['id']) throw new FotballdataError('schema');
         $score=null;
         if(isset($r['HomeTeamGoals'],$r['AwayTeamGoals']))
             $score=[self::integer($r['HomeTeamGoals']),self::integer($r['AwayTeamGoals'])];
         $kickoff=self::date($r['MatchStartDate']??null);
         foreach(['Cancelled','Postponed','Interrupted'] as $field) {
-            if(isset($r[$field]) && !is_bool($r[$field])) throw new \RuntimeException('Fotballdata: ukjent kampstatus.');
+            if(isset($r[$field]) && !is_bool($r[$field])) throw new FotballdataError('schema');
             if(($r[$field]??false)===true) $score=null;
         }
         // A scheduled match's default 0-0 is never a played result.
@@ -81,15 +113,15 @@ final class Fotballdata {
     }
     public static function historyRows(array $data,int $team): array {
         if(($data['TeamId']??null)!==$team || !isset($data['Matches']) || !is_array($data['Matches']))
-            throw new \RuntimeException('Fotballdata: feil lag eller manglende kampliste.');
+            throw new FotballdataError('schema');
         $rows=[];
         foreach($data['Matches'] as $raw) {
-            if(!is_array($raw)) throw new \RuntimeException('Fotballdata: ugyldig kamprad.');
+            if(!is_array($raw)) throw new FotballdataError('schema');
             $r=self::matchRow($raw);
-            if(!in_array($team,[$r['home']['id'],$r['away']['id']],true)) throw new \RuntimeException('Fotballdata: kamp tilhører et annet lag.');
+            if(!in_array($team,[$r['home']['id'],$r['away']['id']],true)) throw new FotballdataError('schema');
             // Only district-approved history contributes to streaks; unresolved scores stay unknown.
             if(($raw['FinalResultApprovedByDistrict']??false)!==true) $r['score']=null;
-            if(isset($rows[$r['id']]) && $rows[$r['id']]!==$r) throw new \RuntimeException('Fotballdata: motstridende kampkopier.');
+            if(isset($rows[$r['id']]) && $rows[$r['id']]!==$r) throw new FotballdataError('schema');
             $rows[$r['id']]=$r;
         }
         return array_values($rows);
