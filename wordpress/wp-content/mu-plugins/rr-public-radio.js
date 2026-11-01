@@ -78,6 +78,14 @@
   }
   const cards = [...document.querySelectorAll('.rr-radio-card')];
   const minis = [...document.querySelectorAll('.rr-mini-meta strong')];
+  const covers = cards.map(card => card.querySelector('.rr-radio-cover img')).filter(Boolean).map(img => {
+    const fallback = img.getAttribute('src');
+    img.removeAttribute('srcset');
+    img.addEventListener('error', () => {
+      if (img.getAttribute('src') !== fallback) { img.src = fallback; img.alt = 'Radio Rubben'; }
+    });
+    return {img, fallback};
+  });
   const text = value => typeof value === 'string' ? value.slice(0, 200) : '';
   const label = track => track ? [text(track.artist), text(track.title)].filter(Boolean).join(' – ') : '';
   for (const card of cards) {
@@ -89,6 +97,13 @@
     const stamp = Date.parse(data?.generatedAt);
     const fresh = Number.isFinite(stamp) && Math.abs(Date.now() - stamp) < 30000;
     const live = fresh && data?.schemaVersion === 1 && data.playing === true && data.now;
+    const artwork = live && data.now.kind !== 'jingle' && typeof data.now.artworkUrl === 'string'
+      && /^https:\/\/5\.249\.252\.78\/radio-status\.php\?cover=[a-f0-9]{64}$/.test(data.now.artworkUrl) ? data.now.artworkUrl : null;
+    for (const {img, fallback} of covers) {
+      const src = artwork || fallback;
+      if (img.getAttribute('src') !== src) img.src = src;
+      img.alt = artwork ? 'Cover: ' + label(data.now) : 'Radio Rubben';
+    }
     for (const card of cards) {
       const heading = card.querySelector('.rr-radio-track h2');
       const title = card.querySelector('.rr-radio-track div > p:not(.rr-eyebrow)');
