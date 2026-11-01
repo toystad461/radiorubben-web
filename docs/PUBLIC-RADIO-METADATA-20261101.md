@@ -44,6 +44,7 @@ Gamle statiske neste-felt vil igjen vises ved tilbakeføring; de er ikke endret 
 Begrensning: tekst følger serverens PCM-status; hver nettlesers lydbuffer kan gi
 noen sekunders forskjell mellom tekstbytte og hørbar overgang. Ingen eksakt
 synkronisering til lytterens lokale lydposisjon påstås.
-Eksisterende lytterfaner må trykke Play igjen etter serveravbrudd; det innføres
-ikke automatisk nettlesergjenoppkobling. Serverens autonome oppstart er testet
+Ved denne første installasjonen måtte eksisterende lytterfaner trykke Play igjen
+etter serveravbrudd. Dette er senere erstattet av 1.0.2, dokumentert i
+PUBLIC-RADIO-RECONNECT-20261101.md. Serverens autonome oppstart er testet
 med faktisk VPS-reboot 23:27:32–23:27:58 Oslo; nettsiden fikk fersk status igjen.
