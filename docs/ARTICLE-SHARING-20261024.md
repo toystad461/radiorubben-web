@@ -1,106 +1,121 @@
-# Artikkeldeling – 24.10.2026
+# Artikkeldeling og felles artikkelmal – gjeldende kontroll 01.11.2026
 
 Arbeidsområder: IT & Utstyr / Sosiale Medier / System & Kvalitet.
+Hovedspor: PR #107, avstemt mot allerede merget PR #110.
 
-## Problem og avgrensning
+## Bekreftet i produksjon
 
-Thomas melder at Facebook åpnes uten artikkelen i et nytt innlegg. Aktivt
-tema er Radio Rubben Next 2.0.0-rc.5, verifisert gjennom WPVibe 24.10.2026.
-Den eksisterende Facebook-knappen er en vanlig lenke til sharer.php, uten
-håndtering av overgangen til en installert app. Dette er en mulig forklaring
-på den rapporterte mobilfeilen; feilen er ikke reprodusert på fysisk iPhone.
+Selektiv utrulling og etterkontroll fullført **01.11.2026 kl. 16.34 norsk tid (15.34 UTC)**.
+[Utrullingskvittering](https://github.com/toystad461/radiorubben-web/actions/runs/41321891298).
 
-Tre publiserte artikler ble kontrollert: sesongoppsummeringen (1466),
-influensasaken (1463) og ukeoversikten (1398). Alle har riktig artikkel-URL i
-Facebook, WhatsApp og e-post. Sesongoppsummeringen har canonical, og:url,
-og:title, og:description og og:image. Det er ikke funnet en manglende URL
-eller en generell kanalfeil i disse sidene.
+- Delingen fra #107 var allerede installert. Den er bevart uendret.
+- Kun `wp-content/themes/radio-rubben-next/template-parts/content/article.php` ble installert fra #110.
+- Begge publiserte artikler, 1594 og 1601, viser én felles KI-merknad rett etter ingressen.
+- Hovedbilder, kilder, bildekrediteringer og eksisterende delingsparametere er kontrollert.
+- WP-Optimize-sidecache og objektcache er tømt med pluginens eksisterende API.
+- Ferske og ordinære offentlige adresser ga samme funksjonelle resultat, HTTP 200 og Age: 0.
+- Alle 129 øvrige temafiler, inkludert article-share.php, var uendret.
+- Privat før/etter-kontroll av poster og samtlige metadata for 1594, 1601, 1576 og 1603 besto.
+  Ingen endring i lagret tekst, redaksjonell godkjenning, tilknyttede medier eller disse medienes metadata.
+- WPVibe-utkastet er ikke publisert eller endret. Ingen ny artikkel, melding eller sosial publisering.
+- PR #107 er avstemt med main og testet, men ikke merget. #110 var allerede merget.
 
-Direkte nettleserkontroll på sesongartikkelen:
+## Forklaring på avviket 01.11
 
-| Kanal | Bekreftet | Begrensning |
+Forrige kontroll brukte WPVibes standard temalesing mens et utkast eksisterte.
+Dette returnerte **utkastets** filer, ikke aktive produksjonsfiler.
+Det ga et omvendt bilde av statusen:
+
+| Komponent | Aktivt tema før denne utrullingen | WPVibe-utkast |
 | --- | --- | --- |
-| Facebook | Knappen åpner sharer.php med korrekt URL | Facebook krever innlogging i testnettleseren. Innleggsskjermen og iPhone-overgangen er ikke verifisert. |
-| WhatsApp | Lenken inneholder korrekt tittel og URL | Overgangen krever appprotokoll som testnettleseren ikke tillater. Ingen sluttkontroll i app. |
-| E-post | Emne, tekst og URL er korrekt kodet | Ingen sending eller kontroll i en installert e-postapp. |
-| Kopier | Klikk viser «Lenken er kopiert!» | Eksakt utklippstavleinnhold er testet med isolert API; systemutklippstavlen ga ikke lesbart innhold i nettleserverktøyet. |
-| Enhetens delingsmeny | Eksisterende kode sender tittel og URL | Ikke tilgjengelig i denne desktop-testnettleseren. |
+| article-share.php | #107, ny Web Share-flyt | Eldre direkte Facebook-deling |
+| content/article.php | Eldre mal | #110 med felles KI-merknad |
 
-Det finnes ikke egne artikkelknapper for Instagram, Snapchat, LinkedIn eller
-X i den kontrollerte delingsmodulen. Enhetens delingsmeny kan tilby installerte
-apper som tar imot lenker; tilgjengelighet og mottatt forhåndsvisning avgjøres
-av enheten og appen. Vi lover ikke opprettelse av Instagram Story eller annen
-automatisk kanalpublisering.
+Direkte lesing med `scope=wp-content` og eksplisitt `themes/radio-rubben-next/...`
+samsvarte med serverens SHA-256-kontroll via SSH. Offentlig nettleser og cookie-frie
+serverkall bekreftet ny deling og gammel artikkelmal før utrulling.
+Cache forklarte derfor ikke hovedavviket.
 
-## Endring
+WPVibes HTML-verktøy viste dessuten utkastets kombinasjon selv ved angitt artikkeladresse.
+Det ble ikke brukt som bevis for offentlig drift. Fremtidige kontroller må skille
+utkast, aktiv kildefil, cache og ordinær offentlig nettleservisning.
 
-Kun én fil skal eventuelt installeres:
-`themes/radio-rubben-next/template-parts/article-share.php` under wp-content.
+## Kode, hash og tilbakeføring
 
-- Synlig tekst på «Del artikkelen» når enhetens delingsmeny støttes.
-- Facebook-klikk åpner samme delingsmeny med tittel og artikkel-URL. Brukeren
-  velger Facebook. Knappens tilgjengelighetsnavn forklarer dette.
-- Egen Facebook-nettlenke beholdes når menyen brukes. Uten støtte/JavaScript
-  fungerer den opprinnelige Facebook-knappen som før.
-- Deling kalles direkte fra klikket for å bevare brukeraktivering.
-- Avbryt lukker uten automatisk navigasjon, kopiering eller påstått publisering.
-- Feil viser en markerbar artikkellenke. Doble klikk åpner ikke flere menyer.
-- HTML-entiteter i overskriften dekodes før kanalenes URL-koding.
-- WhatsApp og e-post beholder sine eksisterende delingsadresser.
+Integrert testet kilde: `92a98a697bdfab0a1584b644c4c10e5f3fe267b8` i eksisterende PR #107.
+Denne bevarer artikkelmalen byte for byte fra #110/main
+`a1f41bd7a211604aaa6e7c271205bce5a50a4dff`.
+Releasecommit: `5dc5e49cd298c2a17867b942419d2d99f37f6d65`,
+eksisterende gren `release/article-sharing-20261024`.
 
-Inaktivt eldre tema, quizdeling, robot, artikler, metadata, medier, Studio og
-publiseringsinnstillinger endres ikke.
+| Fil | SHA-256 |
+| --- | --- |
+| article.php før | d3e9a51519b767f76275cd41cbcb30868563ac2835cfede6b946d2755ccd8c85 |
+| article.php etter | a2fce7798bdc57bb8e895b3cb538d8f5df24fbe4e675ee0fbb50cd07b84212c8 |
+| article-share.php uendret | 3452ca0eb3a9cccf2eb703514259e73dc4ad1be613e0e384585011abf9bbd966 |
 
-## Kilde og kontroller
+Privat backup utenfor webrot:
+`~/.radiorubben-deploy/backups/article-share-template-20261101T153438Z/article.php`.
+Backupens hash og prøve på tilbakeføring i privat staging er kontrollert.
+Skriptet stopper ved ukjent serverkode, bruker deploylås, atomisk filbytte og
+automatisk tilbakeføring ved feil etter installasjon. Det tilbakefører aldri databasen
+og nekter å overskrive en fil som noen andre har endret etter utrulling.
 
-Base: main `5169765446b75f5c983695940241985beda2f7ad`.
-Lesbar live-kilde for denne malen samsvarte med main. WPVibe advarer om
-redigering/maskering i kildevisningen; dette er ikke et bytebevis for deploy.
+Ved manuell rollback: kontroller at dagens article.php fortsatt har forventet etter-hash,
+gjenopprett bare denne filen atomisk fra backup, tøm samme cache og kontroller begge artikler.
+Bevar article-share.php og all annen kode/data.
 
-SHA-256 for Git-baseline:
-`ecaef0c3db0738760c4f69a687447955f0341a63a947163a080ae3b05ce2f3e1`.
-SHA-256 for kandidaten:
-`3452ca0eb3a9cccf2eb703514259e73dc4ad1be613e0e384585011abf9bbd966`.
+Første forsøk [41321806242](https://github.com/toystad461/radiorubben-web/actions/runs/41321806242)
+stoppet før installasjon fordi webhotellet mangler realpath. Bash-basert stioppløsning rettet dette;
+andre forsøk besto. Ingen aktiv kode ble endret i første forsøk.
 
-20 isolerte tester består lokalt: delingsdata, kanalkoding og norske tegn,
-synkron brukeraktivering, ingen støtte, canShare-avvisning, avbrudd, feil,
-dobbeltklikk, nye faner, kopieringsfeil og flere malinstanser. PHP-rendering
-kjøres med PHP-WASM 8.5.10. De samme testene inngår i Next-workflowen med
-runnerens native PHP. Dette er API-/maltester, ikke bevis på Facebook-appen.
+## Tester
 
-Kjør fra repoets rot:
+[CI på integrert kilde](https://github.com/toystad461/radiorubben-web/actions/runs/41321512856):
+fem grønne kontroller totalt; Next-jobben kontrollerte 138 PHP-filer,
+JS/JSON/presentasjonsgrenser, 20 delingstester, sju integrasjonsscenarier for artikkelmalen,
+eksisterende Vipps-/avstemningsprøver, 15 lesekontrolltester og pakking.
+Releasejobben lintet også de tre avgrensede leveranseskriptene.
 
-```sh
-php theme-next/tests/article-share-render.php > /tmp/rr-article-share.json
-RR_SHARE_RENDER=/tmp/rr-article-share.json node --test theme-next/tests/article-share.cjs
-python3 theme-next/scripts/check.py
-```
+Integrasjonsscenariene dekker gammel toppmerking, Gutenberg-ingress og kjent bunntekst,
+sitat/bilde først, ukjent redaksjonell bunntekst, passordbeskyttet innlegg og vanlig side.
+Innhold, kildehenvisninger, bildekreditering og paginering bevares.
 
-Referanser kontrollert 24.10.2026:
-- [W3C Web Share](https://www.w3.org/TR/web-share/): chooser, title/url,
-  brukeraktivering og plattformbestemte mål.
-- [WhatsApp click to chat](https://faq.whatsapp.com/425247423114725):
-  `https://wa.me/?text=` med URL-kodet tekst.
-- [Meta Share Dialog](https://developers.facebook.com/documentation/sharing/reference/share-dialog).
-  Søkeresultat tilgjengelig; full dokumentasjon lot seg ikke hente.
+| Kontroll | 1594 | 1601 |
+| --- | --- | --- |
+| Én KI-merknad etter ingress | Bestått | Bestått |
+| Hovedbilde lastet og dekodet | 1086 × 502 | 1266 × 900 |
+| Kildelenker og bildekreditering | Bevart | Bevart |
+| Canonical, Facebook, WhatsApp, e-post, kopierverdi | Bestått | Bestått |
+| Offentlig nettleser: ny delingskode initialisert | Bestått | Bestått |
+| Klikk Kopier lenke | Viser «Lenken er kopiert!» | Viser «Lenken er kopiert!» |
+| Horisontal overflyt i testet desktopvisning | Ingen | Ingen |
 
-## Utrulling og etterkontroll – ikke utført
+Facebook-klikk åpnet korrekt sharer.php med artikkel-URL, men testnettleseren krever Facebook-innlogging.
+WhatsApp-klikk gikk til en app-protokoll testnettleseren ikke tillater.
+E-postens emne/tekst/URL er kontrollert, men installert e-postapp er ikke testet.
+Eksakt kopiert tekst er bekreftet i isolert API-test; testnettleserens separate utklippstavlelesing
+returnerte tomt, så den fysiske utklippstavlen er ikke sluttverifisert.
+Native deling på fysisk iPhone og appenes forhåndsvisning er fortsatt uprøvd.
 
-Separate produksjonssteg følger AGENTS.md. Ikke last opp hele theme-next eller
-main: andre aktive temafiler kan avvike fra main.
+#110 legger KI-merknaden til alle vanlige, ubeskyttede innlegg. Denne leveransen
+endrer ikke det tidligere vedtatte omfanget eller innfører et nytt artikkelbasert KI-skille.
 
-1. Frys eksakt testet kildecommit. Kontroller fortsatt aktivt Next og fersk
-   serverhash for den ene filen mot Git-baseline. Stopp ved avvik.
-2. Ta privat backup av filen utenfor webrot. Verifiser backuphash og at
-   tilbakeføring bare berører denne filen; ingen databasegjenoppretting.
-3. Installer atomisk fra eksakt kandidat. Kontroller filhash, tøm relevant
-   WordPress-sidecache, hent de tre artiklene på nytt og kontroller metadata
-   og delingsparametere. Bevar øvrige filhasher.
-4. Prøv fysisk iPhone/Safari med Facebook installert: Facebook-knapp → velg
-   Facebook → innleggsskjerm med riktig artikkellenke. Avbryt før publisering.
-   Prøv også vanlig nettleser uten Web Share, Android, WhatsApp, e-post,
-   kopiering og 320/390 px layout. Ikke publiser/sende noe som test.
-5. Ved regresjon: tilbakefør kun filen fra privat backup hvis serverens fil
-   fortsatt matcher kandidaten, tøm sidecache og kontroller gamle knapper.
+## iPhone – gjenstående brukertest
 
-Ingen merge, produksjonsutrulling eller sosial publisering er utført her.
+Åpne disse i Safari, og last siden på nytt:
+- [1594 – ferge](https://www.radiorubben.no/b-ruten-arsvagen-mortavika-innstilt-30-oktober-2026/)
+- [1601 – volleyball](https://www.radiorubben.no/bomlo-ungdom-gratis-volleyballkveld/)
+
+1. Trykk Facebook eller «Del artikkelen», velg Facebook og se at riktig artikkellenke følger med.
+   Avbryt før publisering.
+2. Trykk WhatsApp og se at riktig tittel/lenke følger med. Avbryt før sending.
+3. Trykk E-post og kontroller emne og lenke. Avbryt.
+4. Trykk Kopier lenke, lim inn i Notater, og kontroller at lenken er identisk med artikkeladressen.
+5. Kontroller hovedbildet, én KI-boks etter ingressen og lesbar layout uten sideveis scrolling.
+
+## Historisk leveranse
+
+#107s opprinnelige delingskilde `f2fb30db3c25c854fd68236540723e56fa88bac3`
+ble installert 24.10.2026. [Kvittering](https://github.com/toystad461/radiorubben-web/actions/runs/40072280818).
+Den leveransen er ikke tilbakeført; dens filhash ble bekreftet på nytt 01.11.
