@@ -1,6 +1,6 @@
 <?php
 /** Plugin Name: Radio Rubben public now/next
- * Version: 1.0.3
+ * Version: 1.0.4
  * Description: Public playback metadata for the approved VPS stream, with no Studio access.
  */
 defined('ABSPATH') || exit;
@@ -19,5 +19,12 @@ add_action('after_setup_theme', static function () {
 }, 99);
 add_action('wp_enqueue_scripts', static function () {
     if (!rr_public_radio_enabled()) { return; }
-    wp_enqueue_script('rr-public-radio', plugins_url('rr-public-radio.js', __FILE__), array('rr-next-ui'), '1.0.3', true);
+    wp_enqueue_script('rr-public-radio', plugins_url('rr-public-radio.js', __FILE__), array('rr-next-ui'), '1.0.4', true);
+    if (function_exists('rr_one_logo_url')) {
+        wp_localize_script('rr-public-radio', 'RR_PUBLIC_RADIO', array('logoUrl' => esc_url_raw(rr_one_logo_url())));
+    }
 }, 30);
+add_action('wp_head', static function () {
+    if (!rr_public_radio_enabled()) { return; }
+    echo '<style id="rr-public-radio-cover">.rr-mini-player .rr-mini-cover{display:block;width:48px;height:48px;flex:0 0 48px;object-fit:contain;border-radius:6px;background:#08090c}.rr-mini-player .rr-mini-meta{min-width:0}@media(max-width:720px){.rr-news-first .rr-radio-card .rr-radio-cover{display:grid;min-height:80px;margin:12px 0;padding:16px}.rr-news-first .rr-radio-card .rr-radio-cover img{max-width:180px;max-height:140px;object-fit:contain}.rr-mini-player .rr-u-mini-label{display:none}.rr-mini-player .rr-mini-cover{width:44px;height:44px;flex-basis:44px}.rr-front:has(.rr-universes) .rr-mini-player{left:14px;right:14px;width:auto;max-width:none}.rr-mini-player .rr-broadcast{display:none}}</style>';
+}, 99);

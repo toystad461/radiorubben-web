@@ -78,7 +78,20 @@
   }
   const cards = [...document.querySelectorAll('.rr-radio-card')];
   const minis = [...document.querySelectorAll('.rr-mini-meta strong')];
-  const covers = cards.map(card => card.querySelector('.rr-radio-cover img')).filter(Boolean).map(img => {
+  const images = cards.map(card => card.querySelector('.rr-radio-cover img')).filter(Boolean);
+  const logo = window.RR_PUBLIC_RADIO?.logoUrl || images[0]?.getAttribute('src');
+  if (logo) {
+    for (const player of document.querySelectorAll('.rr-mini-player')) {
+      let img = player.querySelector('.rr-mini-cover');
+      if (!img) {
+        img = document.createElement('img'); img.className = 'rr-mini-cover';
+        img.src = logo; img.alt = 'Radio Rubben'; img.width = 48; img.height = 48;
+        player.prepend(img);
+      }
+      images.push(img);
+    }
+  }
+  const covers = images.map(img => {
     const fallback = img.getAttribute('src');
     img.removeAttribute('srcset');
     img.addEventListener('error', () => {
