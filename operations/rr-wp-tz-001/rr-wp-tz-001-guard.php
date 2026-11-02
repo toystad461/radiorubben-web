@@ -54,4 +54,3 @@ add_filter('pre_schedule_event', function ($pre, $event) {
     }
     return $pre;
 }, 10, 2);
-
