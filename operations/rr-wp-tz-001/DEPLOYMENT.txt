@@ -1,0 +1,69 @@
+RR-WP-TZ-001 – fullført tidssonerettelse
+2. november 2026, endring kl. 11.26.50 norsk tid.
+
+RESULTAT: I drift, etterkontroll bestått.
+WordPress på https://www.radiorubben.no bruker Europe/Oslo og effektiv UTC+1.
+Denne kvitteringen erstatter tidligere status om tilbakeført retting og manglende SSH-tilgang.
+
+BEHOV OG AVGRENSNING
+Rett fast UTC+2 til norsk tid med sommertid/vintertid uten å endre historiske
+publiseringsdatoer eller flytte eksisterende planlagte Site Kit-jobber.
+Brukerens eksplisitte autorisasjon gjaldt denne rettingen via eksisterende servertilgang.
+Ingen artikkelpublisering, manuell cronkjøring, endring av fotballfunksjoner eller Studio L02.
+
+ÅRSAK OG ENDRING
+Faktisk installert Site Kit kaller Email_Reporting_Scheduler::schedule_initiator_events
+ved vanlig oppstart. schedule_initiator_once erstatter fremtidige jobber som ikke samsvarer
+med den beregnede lokale tiden. Engangsjustering av cron ville derfor ikke vært varig.
+
+Installert mu-plugin rr-wp-tz-001-preserve-sitekit.php, versjon 1.0.0.
+Den avgrenser WordPress-filtrene pre_unschedule_event og pre_schedule_event til
+Site Kits automatiske schedule_initiator_once og de tre eksisterende jobbidentitetene.
+Manifestet ligger i option rr_wp_tz_001_preserved_events (ikke autoload).
+Ingen øvrig cronhistorikk eller cronlager ble skrevet tilbake fra et øyeblikksbilde.
+Filen ble opprettet eksklusivt; ingen eksisterende kodefil ble erstattet.
+
+Bevarte UTC-tidspunkter og argumenter:
+- weekly: 1794207600, 2026-11-09 07:00 UTC = 08:00 Europe/Oslo.
+- monthly: 1796108400, 2026-12-01 07:00 UTC = 08:00 Europe/Oslo.
+- quarterly: 1798786800, 2027-01-01 07:00 UTC = 08:00 Europe/Oslo.
+Beskyttelsen opphører for hver jobb når tidspunktet nås eller jobben ikke lenger finnes.
+Nye påfølgende rapporter følger Site Kits ordinære planlegging i Europe/Oslo.
+Manuell avbestilling og ordinær cronutførelse er ikke blokkert.
+
+KONTROLLER
+- Ni lokale funksjonskontroller bestått: automatisk flytting, duplikater, manuell
+  avbestilling/planlegging, andre hooks, andre filterresultater, manglende originaljobb,
+  utløpt beskyttelse og forfalt jobb.
+- PHP 8.2 syntakskontroll bestått for overgangsbeskyttelse og endringsskript.
+- Fersk før/etterkontroll av 1095 databaseposter, alle posttyper inklusive revisjoner:
+  ID, post_type, post_status, post_date, post_date_gmt, post_modified, post_modified_gmt.
+  Identisk SHA256: 9d7028f208a6f493f1f1f2f5398001482853cff292860819e20845101803ba33.
+- Tre Site Kit-jobbers UTC-tidspunkter og argumenter identiske før/etter.
+- Ny separat WordPress-oppstart bekrefter at beskyttelsen lastes og tidene beholdes.
+- Separat autentisert WPVibe-webkontroll bekrefter Europe/Oslo, alle tre opprinnelige
+  Site Kit-tidspunkter og fortsatt 43 cronregistreringer. Periodiske jobber går videre.
+- Ingen manuell kjøring av planlagte rapporter; faktisk fremtidig levering er ikke testet.
+
+SPORBARHET
+Serverfil: /customers/9/3/1/cptk37ymg/webroots/r1417157/wp-content/mu-plugins/rr-wp-tz-001-preserve-sitekit.php
+SHA256: fc7f7dd710463e25fabf63af89a39ef33ac980bb5b09734c81db53fe1517529a
+Lokalt kildegrunnlag: rr-wp-tz-001-guard.php og rr-wp-tz-001-test.php i denne mappen.
+Kvitteringer: rr-wp-tz-001-server-before.json, rr-wp-tz-001-server-applied.json,
+rr-wp-tz-001-server-after.json, rr-wp-tz-001-web-verification.json.
+Ingen GitHub-commit eller PR er opprettet. Endringen må tas med i repositoryets
+driftsoversikt slik at senere utrulling kjenner overgangsbeskyttelsen.
+
+TILBAKEFØRING OG VEDLIKEHOLD
+Tidligere timezone_string var tom, lagret gmt_offset var 2; ingen datoer er omskrevet.
+Ved nødvendig tilbakeføring: sett timezone_string til tom via WordPress, kontroller
+jobbplanen, og fjern kun den nye filen/manifestet etter hashkontroll.
+Ikke fjern beskyttelsen mens de tre jobbene fortsatt skal beholde sine opprinnelige tider.
+Etter 1. januar 2027 kl. 08.00 norsk tid påvirker den ikke lenger noen av disse jobbene;
+fil og manifest kan da ryddes bort etter kontroll. Ingen automatisk opprydding er opprettet.
+Site Kit-oppdateringer som endrer planleggingsmetoden bør etterkontrolleres.
+
+NESTE ANBEFALTE ARBEID
+Kontroll av nye artikkelutkast mot originalkilder og godkjenningsflyten,
+som angitt i prioriteringen. Det arbeidet er ikke utført i denne tidssonerettelsen.
+
