@@ -1,5 +1,35 @@
 # Fotballdata: tomme svar og kildefeil, 01.11.2026
 
+## Oppdatert produksjonsdiagnose 03.11.2026
+
+**Bekreftet: HTTP 403 på `clubs/827/teams`.** Den aktive adapteren blir avvist
+før kampforespørselen. Ingen kamper eller tom JSON-liste er ikke årsaken til
+det observerte avslaget. Dette fastslår dagens feilklasse; det beviser ikke
+at hvert historisk feilforsøk hadde samme HTTP-status.
+
+- Lesekontroll 02.11 viste 62 feilforsøk.
+- [Første diagnose](https://github.com/toystad461/radiorubben-web/actions/runs/41595781850),
+  03.11 kl. 08:21:45 Europe/Oslo: HTTP 403, kategori access, endepunkt club_teams.
+- [Oppfølgingsdiagnose](https://github.com/toystad461/radiorubben-web/actions/runs/41595912552),
+  kl. 08:22:52: samme 403, JSON med ResponseStatus, serverfamilie IIS,
+  access-denied-markør. Ingen cf-mitigated-challenge-markør. Dette peker på et
+  API-tilgangsavslag; kontroller eksakt kundetilgang/endepunktrettighet hos
+  Fotballdata før endring av legitimasjon eller produksjonskode. Diagnosen
+  fastslår ikke om kunden er deaktivert, tilgangen er utløpt eller en rettighet mangler.
+- Begge diagnoser brukte den eksisterende Actions/SSH-forbindelsen. Lokal SSH
+  var ikke nødvendig. En eksplisitt manuell `diagnose`-modus er lagt til i
+  samme workflow på PR-grenen; normal tick ble skipped i begge diagnosekjøringer.
+  Ingen ny scheduler, plugin-installasjon, artikkeljobb eller sletting av feilstatus.
+- Ferske serverhasher er **identiske** med de tre filene i importcommit c1a11c5:
+  fotballdata.php `1e64f04174dd1d16b36c6b866d0dff3eb2da13b89510eba2fe823e3e3e4c8196`,
+  club-coverage.php `80e405f29a2985172f2738f26fd5e9d8012ae9d433efc4e775a2da48e0d528a3`,
+  match-followup.php `9816f0a2172a7f64a8f1b3f46742ff3d51f3fc0fc501215ea799626cb075f873`.
+
+Rettelsen er fortsatt ikke merget eller installert. Den forbedrer normal
+tomkjøring og feilhåndtering, men gir ikke tilgang til et endepunkt som avviser
+kunden. Opplysningene nedenfor beskriver opprinnelig arbeid 01.11; tidligere
+tilgangsbegrensning og ukjent HTTP-status er nå avklart som beskrevet over.
+
 ## Bekreftet årsakskjede
 
 GitHub-run [41282316294](https://github.com/toystad461/radiorubben-web/actions/runs/41282316294)
