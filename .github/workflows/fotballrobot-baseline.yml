@@ -78,6 +78,7 @@ jobs:
           cp -R "$GITHUB_WORKSPACE/wordpress/wp-content/plugins/radio-rubben-fotballrobot" wp-content/plugins/
           php "$RUNNER_TEMP/wp-cli.phar" plugin activate radio-rubben-fotballrobot
           php "$RUNNER_TEMP/wp-cli.phar" eval-file "$GITHUB_WORKSPACE/scripts/test-match-stories-wordpress.php"
+          php "$RUNNER_TEMP/wp-cli.phar" eval-file "$GITHUB_WORKSPACE/operations/player-source-collection/test_wordpress.php"
       - name: Mobile reading and approval states
         env:
           RRFR_RENDER_DIR: ${{ runner.temp }}/rrfr-render

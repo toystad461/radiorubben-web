@@ -1,0 +1,19 @@
+[Unit]
+Description=Enqueue the six-hour Radio Rubben source collection
+Requires=rrfr-source-collection.service
+After=rrfr-source-collection.service
+
+[Service]
+Type=oneshot
+User=rrfr-collector
+Group=rrfr-collector
+WorkingDirectory=/opt/radiorubben/player-source-collection
+EnvironmentFile=/etc/radiorubben/player-source-collection.env
+ExecStart=/usr/bin/python3 worker.py enqueue
+StateDirectory=rrfr-source-collection
+StateDirectoryMode=0700
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+UMask=0077

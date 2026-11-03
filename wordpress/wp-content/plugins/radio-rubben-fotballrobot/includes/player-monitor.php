@@ -4,6 +4,7 @@ require_once __DIR__.'/media-sources.php';
 
 /** Private source inbox. Research collects public facts; this plugin owns drafting and approval. */
 final class PlayerMonitor {
+    public static function collectionAllowed(): bool {return Robot::allowed() || (class_exists(SourceCollection::class) && SourceCollection::allowed());}
     public static function sources(int $id): array {
         Players::state($id);
         return get_option('rrfr_player_sources_'.$id,[]);
@@ -38,7 +39,7 @@ final class PlayerMonitor {
         return $date;
     }
     public static function ingest(int $id,array $input): array {
-        if(!Robot::allowed())throw new \RuntimeException('Ingen tilgang.');
+        if(!self::collectionAllowed())throw new \RuntimeException('Ingen tilgang.');
         $player=Players::state($id);
         if(!$player['enabled']||(int)($input['fiks_id']??0)!==$player['fiks_id'])throw new \RuntimeException('Spilleren er pauset eller FIKS-ID stemmer ikke.');
         if(($input['public_read']??false)!==true)throw new \RuntimeException('Kilden må være lest og kontrollert offentlig. Søketreff alene er ikke nok.');
@@ -96,10 +97,10 @@ final class PlayerMonitor {
         return ['version'=>'0.10.4','engine'=>'radio-rubben-fotballrobot','features'=>['candidate_approval','verified_video','supporting_sources','player_news_filter','unified_newsroom','digest_notifications'],'automatic_proposals'=>(bool)get_option('rrfr_player_review_enabled_at',0),'publication'=>'manual_approval_required','next_check'=>$next?gmdate(DATE_ATOM,$next):null,'queue_error'=>get_option('rrfr_review_queue_error',null),'players'=>$players];
     }
     public static function routes(): void {
-        register_rest_route('rr-fotballrobot/v1','/player-monitor',['methods'=>'GET','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn()=>Robot::response(static fn()=>self::status())]);
+        register_rest_route('rr-fotballrobot/v1','/player-monitor',['methods'=>'GET','permission_callback'=>[self::class,'collectionAllowed'],'callback'=>static fn()=>Robot::response(static fn()=>self::status())]);
         register_rest_route('rr-fotballrobot/v1','/players/(?P<id>[0-9]+)/sources',[
-            ['methods'=>'GET','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn($r)=>Robot::response(static fn()=>array_values(self::sources((int)$r['id'])))],
-            ['methods'=>'POST','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn($r)=>Robot::response(static fn()=>self::ingest((int)$r['id'],(array)$r->get_json_params()))]
+            ['methods'=>'GET','permission_callback'=>[self::class,'collectionAllowed'],'callback'=>static fn($r)=>Robot::response(static fn()=>array_values(self::sources((int)$r['id'])))],
+            ['methods'=>'POST','permission_callback'=>[self::class,'collectionAllowed'],'callback'=>static fn($r)=>Robot::response(static fn()=>self::ingest((int)$r['id'],(array)$r->get_json_params()))]
         ]);
     }
     public static function panel(): void {

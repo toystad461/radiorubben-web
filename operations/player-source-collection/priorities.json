@@ -1,0 +1,11 @@
+{
+  "always": ["https://sportskollektivet.no/kategori/hordalandsfotball"],
+  "notes": "Search priorities only. Follow every enabled WP profile; verify current club and follow documented transfers.",
+  "preferences": [
+    {"name_contains": "Lasse", "publishers": ["BT", "BA", "Åsane Tidende", "TV 2", "Åsane Fotball"]},
+    {"name_contains": "Troy", "publishers": ["Nordlys", "iTromsø", "Tromsø IL"]},
+    {"name_contains": "Sander", "publishers": ["Nordlys", "iTromsø", "Tromsø IL"]},
+    {"name_contains": "Tiril", "publishers": ["Brann", "relevante lokale sportsmedier"]}
+  ],
+  "other_enabled_profiles": "Last documented current club and relevant local sports media"
+}

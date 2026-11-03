@@ -1,0 +1,23 @@
+name: Player source collection isolated checks
+on:
+  pull_request:
+    paths:
+      - 'operations/player-source-collection/**'
+      - 'wordpress/wp-content/plugins/radio-rubben-fotballrobot/**'
+      - '.github/workflows/player-source-collection.yml'
+  push:
+    branches: ['feat/player-source-vps-20261103']
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - run: python3 -m unittest discover -s operations/player-source-collection -p 'test_*.py' -v
+      - run: python3 scripts/test-fotballrobot.py
+      - run: git diff --check HEAD^ HEAD
