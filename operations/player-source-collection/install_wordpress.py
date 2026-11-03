@@ -29,6 +29,7 @@ def main():
     p.add_argument('--backup-dir', type=Path, required=True, help='New private directory outside the web root')
     p.add_argument('--apply', action='store_true')
     p.add_argument('--php', default='php')
+    p.add_argument('--verify-wp-cli', help='Run read-only installed WordPress verification; failure rolls back these files')
     a = p.parse_args()
     repo = Path(__file__).resolve().parents[2]
     source = repo / 'wordpress/wp-content/plugins/radio-rubben-fotballrobot'
@@ -74,6 +75,10 @@ def main():
                     os.unlink(tmp)
             if digest(path) != receipt['files'][name]['after']:
                 raise RuntimeError('Readback mismatch')
+        if a.verify_wp_cli:
+            subprocess.run([a.verify_wp_cli, '--path=' + str(root), 'eval-file',
+                            str(Path(__file__).with_name('verify_installed_wordpress.php')),
+                            '--use-include'], check=True, timeout=60)
     except BaseException:
         # Only revert our own bytes, never concurrent edits or any WordPress data.
         for name in reversed(changed):

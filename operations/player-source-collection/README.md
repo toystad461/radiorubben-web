@@ -15,6 +15,9 @@ Leveranse 3. november 2026. **Kode og isolerte tester; ikke installert eller ver
   `10e9684d6061deccc9bdd5ac39d3cf8251f4bfc4` på eksisterende
   `feature/weekly-match-stories-20261024`. Sammenligningen ignorerer avsluttende
   linjeskift fra leseverktøyet; dette er **ikke en byteeksakt serverhash-attest**.
+- Etterfølgende read-only SSH-preflight gjennom eksisterende GitHub-deploy bekreftet
+  byteeksakte SHA256-hasher for de fire berørte eksisterende filene mot baseline,
+  aktiv plugin 0.10.8 og riktig home-adresse. Workflow: 41682019922.
 - Main `559a65c8e85004b7365af4f2a7d2fa5269172e23` mangler komplett Fotballrobot.
   Derfor avgrenses PR-en mot eksisterende plugin-gren. Ikke merge/deploy hele kjeden.
 - NFF-kontroll: Players::collect/tick og MatchFollowup i WordPress. Observerte
@@ -130,13 +133,16 @@ python3 -m unittest discover -s operations/player-source-collection -p 'test_*.p
 python3 scripts/test-fotballrobot.py
 ```
 
-26 Python-tester består, inkludert faktisk lokal HTTP-kølegging under to sekunder,
+30 Python-tester består, inkludert faktisk lokal HTTP-kølegging under to sekunder,
 HMAC/replay, pauset profil før levering, semantisk duplikatavvisning, timeout etter POST,
 uavklart levering uten dobbel POST, sjekkpunktbevaring, kandidatbevis og 20 rotasjonsbøtter.
 71 PHP-filer består syntakskontroll; alle 31 PHP-suiter består. Eksisterende
 kandidat-/kildetester prøver faktisk native validering med innsamlingsrettigheten og
-avviser kandidatgodkjenning. Ingen ekte modell-/kildekall, installert adminside,
-WordPress HTTP-integrasjon eller reell VPS-kjøring er testet.
+avviser kandidatgodkjenning. GitHub CI har i tillegg bestått 17 native REST-/admin-
+integrasjonskontroller i en separat WordPress 7.1.3 med syntetiske data. Installasjonstester
+kontrollerer plan uten writes, baselineavvik, privat backup/readback og tilbakeføring ved
+feilet WordPress-kontroll. Ingen ekte modell-/kildekall, installert adminside,
+autentisert WordPress HTTP-integrasjon eller reell VPS-kjøring er testet.
 
 ## Tilbakeføring
 
