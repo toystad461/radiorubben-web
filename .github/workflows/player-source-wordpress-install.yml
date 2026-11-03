@@ -1,0 +1,45 @@
+name: Player source collection selective WordPress release
+on:
+  push:
+    branches: ['ops/player-source-wp-install-20261103']
+    paths: ['.github/workflows/player-source-wordpress-install.yml']
+permissions:
+  contents: read
+concurrency:
+  group: radiorubben-wordpress-deploy
+  cancel-in-progress: false
+jobs:
+  preflight:
+    if: github.ref == 'refs/heads/ops/player-source-wp-install-20261103'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Read existing WordPress deployment target and exact baseline
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          ssh "$host" 'set -eu
+            cd /run/webroots/r1417157
+            test "$(/usr/local/bin/wp option get home)" = "https://www.radiorubben.no"
+            /usr/local/bin/wp plugin is-active radio-rubben-fotballrobot
+            /usr/local/bin/wp plugin get radio-rubben-fotballrobot --field=version
+            python3 --version
+            php -r "echo PHP_VERSION, PHP_EOL;"
+            cd wp-content/plugins/radio-rubben-fotballrobot
+            sha256sum radio-rubben-fotballrobot.php includes/player-monitor.php includes/player-candidates.php includes/players.php
+            test ! -e includes/source-collection.php
+            printf "RRFR_SOURCE_PREFLIGHT_OK\n"
+          '
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
