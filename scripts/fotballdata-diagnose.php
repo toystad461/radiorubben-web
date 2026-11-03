@@ -12,6 +12,18 @@ $observer=static function($response,$context,$transport,$args,$url)use(&$receipt
         $status=(int)wp_remote_retrieve_response_code($response);
         $receipt['http_status']=$status;
         $receipt['category']=match(true){$status===200=>'http_ok',$status===401=>'authentication',$status===403=>'access',$status===429=>'rate_limit',$status>=500=>'service',default=>'http'};
+        if($status!==200) {
+            // Fixed booleans/enums only: distinguish edge challenges from API errors without exposing bodies.
+            $body=(string)wp_remote_retrieve_body($response);
+            $decoded=json_decode($body);
+            $receipt['response_format']=json_last_error()===JSON_ERROR_NONE?'json':(preg_match('/<!doctype html|<html/i',$body)?'html':'other');
+            $receipt['api_error_envelope']=is_object($decoded)&&property_exists($decoded,'ResponseStatus');
+            $server=strtolower((string)wp_remote_retrieve_header($response,'server'));
+            $receipt['server_family']=str_contains($server,'cloudflare')?'cloudflare':(str_contains($server,'nginx')?'nginx':(str_contains($server,'iis')?'iis':'other'));
+            $receipt['edge_challenge']=strtolower((string)wp_remote_retrieve_header($response,'cf-mitigated'))==='challenge';
+            $receipt['mentions_access_denied']=(bool)preg_match('/access denied|forbidden|unauthorized/i',$body);
+            $receipt['mentions_invalid_credentials']=(bool)preg_match('/invalid (credentials|api key|client)|expired (credentials|api key)|authentication failed/i',$body);
+        }
     }
     $receipts[]=$receipt;
 };
