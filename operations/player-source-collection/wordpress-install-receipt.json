@@ -1,0 +1,47 @@
+{
+  "installed_at_utc": "2026-11-03T17:16:43Z",
+  "source_commit": "bd19349985cccc78cbf6f480204c40822cc6f1ed",
+  "deployment_commit": "0711696da67b59cd11aff8151eec9314cf7a5370",
+  "workflow_run_id": 41682603229,
+  "wordpress_plugin_version": "0.10.9",
+  "player_monitor_api_version": "0.10.4",
+  "collection_protocol_version": "1.0.0",
+  "admin_url": "https://www.radiorubben.no/wp-admin/admin.php?page=rrfr-source-collection",
+  "checks": {
+    "baseline_sha256": true,
+    "backup_private": true,
+    "after_sha256": true,
+    "native_wordpress_loaded": true,
+    "admin_rendered_on_server": true,
+    "authenticated_rest_readback": true,
+    "browser_verified": false,
+    "profile_count": 12,
+    "manual_approval_required": true
+  },
+  "vps": {
+    "installed": false,
+    "real_run_verified": false,
+    "state": "unavailable",
+    "blocker": "No configured administrative VPS connection in this session; rubben-test alias unresolved. VPS inventory, service identity, private config, model access and real trial remain."
+  },
+  "old_chatgpt_collection": {
+    "id": "6aac6cc9f4e88191a79aa38a966df0c2",
+    "enabled": true,
+    "changed": false
+  },
+  "backup": "~/.radiorubben-deploy/backups/player-source-collection-bd19349985cccc78",
+  "after_sha256": {
+    "includes/source-collection.php": "021a6bf12a6fdd049a2ba2e4f6c22f1b0007f08adcfc16a81b3bda664eeb15b3",
+    "includes/player-monitor.php": "1be68018339fd5ffefb2d36a47d106ea57397149da677c25e9124b900ad0d520",
+    "includes/player-candidates.php": "e6228f978270156f302b59dec171a1181915b94ce1ac9027f104e1b4ffa71c7b",
+    "includes/players.php": "ebdd9afedf1087d2db8c9894f72e58adabf845cf7e31f921f033d1fb06899693",
+    "radio-rubben-fotballrobot.php": "99d81f219ebc9f7667b8032f0e6c3b6e184f0ae5bab850cd62bf5d4b0172d4ab"
+  },
+  "tests": {
+    "python_tests": 30,
+    "php_suites": 31,
+    "php_lint_files": 71,
+    "native_wordpress_collection_checks": 17,
+    "real_source_model_calls": false
+  }
+}

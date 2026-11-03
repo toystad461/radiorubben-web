@@ -1,7 +1,8 @@
 # Spilleroppfølging – kildeinnsamling på VPS
 
 Arbeidsområder: System & Kvalitet, Teknisk Produksjon og Lokalt Engasjement.
-Leveranse 3. november 2026. **Kode og isolerte tester; ikke installert eller verifisert i drift.**
+Leveranse 3. november 2026. **WordPress-delen er installert og server-/REST-verifisert.
+VPS-komponenten er implementert og isolert testet, men ikke installert eller verifisert i drift.**
 
 ## Avstemt eksisterende løsning
 
@@ -9,7 +10,7 @@ Leveranse 3. november 2026. **Kode og isolerte tester; ikke installert eller ver
   `radio-rubben-fotballrobot`, API-versjon 0.10.4, automatic_proposals=true,
   publication=manual_approval_required, alle tre nødvendige features og planlagt
   next_check. Alle tolv profiler var enabled. Ingen uttømmende spillerliste i koden.
-- Aktiv pluginhovedfil oppgir **0.10.8**. API-versjon og pluginversjon er forskjellige.
+- Aktiv pluginhovedfil oppga **0.10.8** før endringen; installert versjon er nå **0.10.9**. API-versjon og pluginversjon er forskjellige.
 - Hovedfil, players.php, player-monitor.php, player-candidates.php og media-sources.php
   er lest gjennom WPVibe og innholdssammenlignet med
   `10e9684d6061deccc9bdd5ac39d3cf8251f4bfc4` på eksisterende
@@ -38,12 +39,14 @@ Leveranse 3. november 2026. **Kode og isolerte tester; ikke installert eller ver
 
 ## Implementasjon
 
-Pluginversjon i kode: **0.10.9**. Innsamlingsprotokoll: **1.0.0**.
+Pluginversjon i kode og produksjon: **0.10.9**. Innsamlingsprotokoll: **1.0.0**.
 
 - Eksisterende plugin får «Spilleroppfølging – kildeinnsamling» under Fotballrobot.
-  Måladresse etter installasjon:
+  Registrert adminadresse, bekreftet gjennom installert REST-rute:
   `https://www.radiorubben.no/wp-admin/admin.php?page=rrfr-source-collection`.
-  **Denne siden er ikke installert og lenken er ikke verifisert som fungerende.**
+  Siden er installert og faktisk PHP-rendering på produksjonsserveren er kontrollert.
+  Den viser Utilgjengelig fordi VPS-tilkobling ikke er konfigurert. Innlogget
+  nettleserkontroll ble ikke fullført; nettleseren viste innlogging.
 - Siden henter faktisk VPS-status med tre sekunders tidsgrense. Den skiller
   utilgjengelig, pauset og kjørende, bevarer siste kontakt og viser sist start,
   siste vellykkede runde, norsk neste kjøretid, profiler/klubber, tellinger/logg,
@@ -105,22 +108,19 @@ Før produksjonsbruk gjenstår:
 1. Ferskt VPS-inventar: tjenester/timere, fil-/brukerrettigheter, ledig lokal port,
    TLS-vert og tillatt utgang til WordPress, OpenAI og offentlige kilder. Bekreft at
    annen spillerinnsamling ikke allerede kjører. Gjenbruk egnet eksisterende scheduler.
-2. Installer de fem avgrensede WordPress-filene med ekte før-/etterhasher og privat
-   backup. `install_wordpress.py` nekter avvik fra baseline og støtter plan uten writes.
-   Kontroller på isolert WordPress før produksjon; ingen syntetiske produksjonskilder.
-3. Konfigurer en autentisert innsamlingsidentitet med `read` og
+2. Konfigurer en autentisert innsamlingsidentitet med `read` og
    `rrfr_collect_sources`, uten manage_options/edit_posts/publish_posts. Bruk eksisterende
    godkjente serviceidentitet dersom egnet og WordPress Application Password over HTTPS.
    WP-konstanter: `RRFR_COLLECTION_URL` (bekreftet VPS-TLS-URL med stien
    `/rrfr-source-collection/v1`) og `RRFR_COLLECTION_CONTROL_SECRET` (minst 32 tegn).
    Verdiene må legges inn privat på serveren; ikke i Git, nettleser eller logger.
-4. Installer VPS-filene i valgt, dokumentert driftsmappe, egen systembruker med kun
+3. Installer VPS-filene i valgt, dokumentert driftsmappe, egen systembruker med kun
    tilhørende state-katalog, og private miljøverdier etter `config.env.example`.
    Modell og API-tilgang/budsjett må kontrolleres. Start pauset og i dry-run.
-5. Prøv ekte innlogget WP-side, scoped API, HMAC/nonce, utilgjengelig-status,
+4. Prøv ekte innlogget WP-side, scoped API, HMAC/nonce, utilgjengelig-status,
    start/pause/gjenoppta og en VPS-runde uten innlegging. Kontroller faktisk dekning,
    datotolkning, kandidater og faktakontroll med ekte, tilgjengelige kilder.
-6. Sett avgrenset leveringsmodus etter bestått prøve. Verifiser første reelle runde,
+5. Sett avgrenset leveringsmodus etter bestått prøve. Verifiser første reelle runde,
    WordPress-kvitteringer, UI og at manuell tekstgodkjenning fortsatt kreves.
    Først da deaktiveres kun ChatGPT-oppgave `6aac6cc9f4e88191a79aa38a966df0c2`.
 
@@ -141,8 +141,28 @@ kandidat-/kildetester prøver faktisk native validering med innsamlingsrettighet
 avviser kandidatgodkjenning. GitHub CI har i tillegg bestått 17 native REST-/admin-
 integrasjonskontroller i en separat WordPress 7.1.3 med syntetiske data. Installasjonstester
 kontrollerer plan uten writes, baselineavvik, privat backup/readback og tilbakeføring ved
-feilet WordPress-kontroll. Ingen ekte modell-/kildekall, installert adminside,
-autentisert WordPress HTTP-integrasjon eller reell VPS-kjøring er testet.
+feilet WordPress-kontroll. Produksjonens nye REST-rute og player-monitor er i tillegg
+lest tilbake via autentisert WPVibe etter installasjon. Ingen ekte modell-/kildekall,
+innlogget visuell adminprøve, dedikert serviceidentitet eller reell VPS-kjøring er testet.
+
+## Faktisk WordPress-installasjon
+
+- Installert kildecommit: `bd19349985cccc78cbf6f480204c40822cc6f1ed`.
+- Selektiv deploy: [GitHub Actions 41682603229](https://github.com/toystad461/radiorubben-web/actions/runs/41682603229),
+  fullført 03.11.2026 kl. 17:16:43 UTC. Deployworkflow på egen operasjonsgren,
+  commit `0711696da67b59cd11aff8151eec9314cf7a5370`, peker på fast kildecommit.
+- Bare fem pluginfiler er installert. Eksakt baselinekontroll, lås mot annen deploy,
+  PHP-kontroll, atomisk filbytte og etterhash er gjennomført. Backup ligger privat
+  i `~/.radiorubben-deploy/backups/player-source-collection-bd19349985cccc78`.
+- Native WordPress-kontroll bekreftet aktiv plugin 0.10.9, protokoll 1.0.0,
+  REST-rute, registrert adminmeny, faktisk adminrendering og 12 profiler.
+  Tilstand var `unavailable`, `reachable=false`; ingen VPS-status ble oppdiktet.
+- Etterfølgende autentisert HTTP-lesing bekreftet ny REST-rute og fortsatt
+  `automatic_proposals=true`, `publication=manual_approval_required`, nødvendige
+  features og planlagt `next_check`. API-versjonen for player-monitor er fortsatt 0.10.4.
+- Ingen innlegg, kilder, kandidater, brukere, roller, nøkler, WordPress-innstillinger
+  eller cron-planer ble endret av installasjonen. Den gamle ChatGPT-innsamlingen er aktiv.
+- Maskinlesbar kvittering: [wordpress-install-receipt.json](wordpress-install-receipt.json).
 
 ## Tilbakeføring
 
