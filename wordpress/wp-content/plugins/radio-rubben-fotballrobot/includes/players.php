@@ -194,7 +194,7 @@ final class Players {
     }
     public static function routes(): void {
         register_rest_route('rr-fotballrobot/v1','/players',['methods'=>'GET','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn()=>Robot::response(static fn()=>array_map(static fn($id)=>['id'=>(int)$id]+self::state((int)$id),self::ids()))]);
-        register_rest_route('rr-fotballrobot/v1','/players/(?P<id>[0-9]+)',['methods'=>'GET','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn($r)=>Robot::response(static fn()=>self::state((int)$r['id']))]);
+        register_rest_route('rr-fotballrobot/v1','/players/(?P<id>[0-9]+)',['methods'=>'GET','permission_callback'=>[PlayerMonitor::class,'collectionAllowed'],'callback'=>static fn($r)=>Robot::response(static fn()=>self::state((int)$r['id']))]);
     }
     public static function action(): void {
         if(!Robot::allowed()) wp_die('Ingen tilgang.',403);

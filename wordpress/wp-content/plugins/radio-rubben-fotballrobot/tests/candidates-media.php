@@ -59,4 +59,13 @@ $body=R::body($a,$facts);check(str_contains($body,'Se hele videointervjuet hos L
 check(!str_contains($body,'iframe')&&!str_contains($body,'<video'),'No republished third-party video');
 $saved=$a;$saved['paragraphs']=[strip_tags($body)];$saved['inline_sources']=I::fromHtml($body);I::validate($saved,$facts);check(true,'Saved video article can be rechecked');
 $wrong=$a;$wrong['inline_sources'][0]['source_url']='https://unrelated.example.org/story';rejects(fn()=>I::validate($wrong,$facts),'Unverified inline URL rejected');
+require __DIR__.'/../includes/source-collection.php';
+$permissions=['read','rrfr_collect_sources'];
+$scoped=$input;$scoped['fiks_id']=424242;$before=count(P::ids());
+$created=C::ingest($scoped);check($created['candidate']['status']==='pending'&&count(P::ids())===$before,'Scoped collector creates only pending candidate');
+rejects(fn()=>C::decide(424242,1,'approve'),'Collector cannot approve candidate or create profile');
+$scopedNews=$news;$scopedNews['url']='https://medium.example.org/sport/scoped';$scopedNews['video']['url']=$scopedNews['url'];
+check(M::ingest($pid,$scopedNews)['created'],'Scoped collector uses existing source validation and inbox');
+$permissions=[];rejects(fn()=>M::ingest($pid,$scopedNews),'Anonymous source ingest denied with new module loaded');
+$permissions=['manage_options','edit_posts'];
 echo "$count candidate and media checks passed\n";

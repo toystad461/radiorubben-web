@@ -103,7 +103,14 @@ $GLOBALS['posts'][$newsId]->post_content='Human edit';$GLOBALS['posts'][$newsId]
 $again=$monitor::ingest(1011,$input);R::tick();check(!$again['created']&&$writes===$n+2&&get_post($newsId)->post_content==='Human edit'&&get_post($newsId)->post_status==='trash','Retry preserves human edits and trash');
 $write_fail=true;$monitor::ingest(1011,array_replace($input,['url'=>'https://www.brann.no/nyheter/second']));R::tick();$write_fail=false;R::tick();check($writes===$n+3,'Failed news generation is not retried automatically');
 $status=$monitor::status();check($status['engine']==='radio-rubben-fotballrobot'&&count($status['players'])===1&&count($status['players'][0]['news'])===2,'Combined status retains source receipts and reviews');
-$monitor::routes();foreach($routes as $route){foreach(isset($route['methods'])?[$route]:$route as $r)check($r['permission_callback']===[RadioRubben\Fotballrobot\Robot::class,'allowed'],'Every monitor route requires admin access');}
+$monitor::routes();foreach($routes as $path=>$route){
+    foreach(isset($route['methods'])?[$route]:$route as $r){
+        $collection=$path==='/player-monitor'||str_ends_with($path,'/sources');
+        $expected=$collection?[RadioRubben\Fotballrobot\PlayerMonitor::class,'collectionAllowed']:[RadioRubben\Fotballrobot\Robot::class,'allowed'];
+        check($r['permission_callback']===$expected,'Only collection routes accept scoped collector access');
+        $allowed=false;check(!call_user_func($r['permission_callback']),'Anonymous route access denied');$allowed=true;
+    }
+}
 function wp_get_current_user(){return (object)['display_name'=>'Testredaktør'];}
 $editId=R::create('editor-facts-test',$f,false,false);$s=R::state($editId);$hash=R::hash(get_post($editId));
 $notes='Spilleren har trent regelmessig og fått nye oppgaver på laget.';

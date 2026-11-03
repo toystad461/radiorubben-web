@@ -5,6 +5,7 @@ namespace RadioRubben\Fotballrobot;
 final class PlayerCandidates {
     const OPTION='rrfr_player_candidates';
     const CLUBS=['Bremnes','Moster','Finnås','Bømlo','Rubbestadneset'];
+    public static function collectionAllowed(): bool {return Robot::allowed() || (class_exists(SourceCollection::class) && SourceCollection::allowed());}
     public static function all(): array {return get_option(self::OPTION,[]);}
     public static function url(): string {return admin_url('admin.php?page=rrfr-player-candidates');}
     public static function followed(int $fiks): int {
@@ -28,7 +29,7 @@ final class PlayerCandidates {
         return false;
     }
     public static function ingest(array $input): array {
-        if(!Robot::allowed())throw new \RuntimeException('Ingen tilgang.');
+        if(!self::collectionAllowed())throw new \RuntimeException('Ingen tilgang.');
         $fiks=PlayerFacts::id((string)($input['fiks_id']??''));
         return self::locked(static function()use($input,$fiks){
             $all=self::all();
@@ -89,8 +90,8 @@ final class PlayerCandidates {
     }
     public static function routes(): void {
         register_rest_route('rr-fotballrobot/v1','/player-candidates',[
-            ['methods'=>'GET','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn()=>Robot::response(static fn()=>self::status())],
-            ['methods'=>'POST','permission_callback'=>[Robot::class,'allowed'],'callback'=>static fn($r)=>Robot::response(static fn()=>self::ingest((array)$r->get_json_params()))]
+            ['methods'=>'GET','permission_callback'=>[self::class,'collectionAllowed'],'callback'=>static fn()=>Robot::response(static fn()=>self::status())],
+            ['methods'=>'POST','permission_callback'=>[self::class,'collectionAllowed'],'callback'=>static fn($r)=>Robot::response(static fn()=>self::ingest((array)$r->get_json_params()))]
         ]);
     }
     public static function action(): void {

@@ -1,0 +1,36 @@
+[Unit]
+Description=Radio Rubben Fotballrobot source collection and control
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rrfr-collector
+Group=rrfr-collector
+WorkingDirectory=/opt/radiorubben/player-source-collection
+EnvironmentFile=/etc/radiorubben/player-source-collection.env
+ExecStart=/usr/bin/python3 worker.py serve
+Restart=on-failure
+RestartSec=30
+StateDirectory=rrfr-source-collection
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+MemoryMax=384M
+CPUQuota=40%
+TasksMax=32
+TimeoutStopSec=20
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target
