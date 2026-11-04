@@ -3,6 +3,13 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
+    inputs:
+      operation:
+        description: Existing scheduler or read-only source diagnosis (no jobs or installation)
+        type: choice
+        options: [scheduler, diagnose]
+        default: scheduler
+        required: true
 permissions:
   contents: read
 concurrency:
@@ -11,7 +18,7 @@ concurrency:
 jobs:
   tick:
     # Explicit operational activation after a separate, verified selective release.
-    if: github.ref == 'refs/heads/main' && vars.RRFR_SCHEDULER_ENABLED == 'true' && vars.RRFR_SCHEDULER_REF != ''
+    if: github.ref == 'refs/heads/main' && vars.RRFR_SCHEDULER_ENABLED == 'true' && vars.RRFR_SCHEDULER_REF != '' && inputs.operation != 'diagnose'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -59,6 +66,38 @@ jobs:
           printf '%s\n' "$output"
           test "$result" -eq 0
           grep -q '^OK: Fotballrobot scheduler; events=' <<< "$output"
+      - name: Remove runner key
+        if: always()
+        run: rm -f ~/.ssh/id_ed25519
+  diagnose:
+    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'diagnose'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Validate bounded read-only probe
+        run: php -l scripts/fotballdata-diagnose.php
+      - name: Read source status through the existing host connection
+        env:
+          DEPLOY_KEY: ${{ secrets.WP_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WP_DEPLOY_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test -n "$DEPLOY_KEY"
+          test -n "$KNOWN_HOSTS"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host *\n  BatchMode yes\n  StrictHostKeyChecking yes\n  IdentitiesOnly yes\n  ConnectTimeout 15\n' > ~/.ssh/config
+          host=cptk37ymg_w1417156@ssh.cptk37ymg.service.one
+          stage=".radiorubben-deploy/fotballdata-diagnosis/$(git rev-parse HEAD)"
+          ssh "$host" "umask 077; mkdir -p $stage"
+          rsync -rltz scripts/fotballdata-diagnose.php "$host:$stage/probe.php"
+          ssh "$host" "flock -n \$HOME/.radiorubben-deploy/fotballrobot-scheduler/runner.lock timeout 90 /usr/local/bin/wp --path=/run/webroots/r1417157 eval-file \$HOME/$stage/probe.php --use-include"
       - name: Remove runner key
         if: always()
         run: rm -f ~/.ssh/id_ed25519
