@@ -4,7 +4,12 @@ namespace RadioRubben\Fotballrobot;
 use RadioRubben\Fotballrobot\MatchFollowup;
 use RadioRubben\Fotballrobot\MatchJobs;
 if(!defined('ABSPATH')||!class_exists(MatchFollowup::class))throw new \RuntimeException('Fotballrobot 0.10.6 må være installert før scheduler aktiveres.');
-if(empty(get_option(MatchJobs::CONFIG,[])['enabled']))throw new \RuntimeException('Automatisk referat er deaktivert.');
+if(empty(get_option(MatchJobs::CONFIG,[])['enabled'])) {
+    // An intentional seasonal pause is not a source, cron or runner failure.
+    // Do not consume queued work or write a misleading processing heartbeat.
+    echo 'OK: Fotballrobot scheduler; events=0; source_status=paused'."\n";
+    return;
+}
 $sourceResult=MatchFollowup::tick();
 $allowed=['rrfr_match_job','rrfr_club_tick','rrfr_club_match','rrfr_club_weekly','rrfr_club_results'];$count=0;$deadline=time()+360;
 foreach(_get_cron_array()?:[] as $at=>$hooks) {
