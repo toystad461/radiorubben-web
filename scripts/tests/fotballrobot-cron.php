@@ -99,12 +99,14 @@ $tests['missing installed callback preserves queued event and fails visibly'] = 
         check(get_option('rrfr_match_followup_runner') === false, 'False success heartbeat');
     }
 };
-$tests['disabled automation does not touch jobs'] = static function (): void {
+$tests['disabled automation is a normal paused no-work run'] = static function (): void {
     queue(time() - 60, 'rrfr_club_results');
     $GLOBALS['fixture']['options'][MatchJobs::CONFIG]['enabled'] = 0;
     $before = _get_cron_array();
-    runScheduler('deaktivert');
-    check(_get_cron_array() === $before && $GLOBALS['fixture']['ticks'] === 0, 'Disabled automation ran');
+    $output = runScheduler();
+    check(str_contains($output, 'events=0; source_status=paused'), 'Paused state must return a successful, explicit receipt');
+    check(_get_cron_array() === $before && $GLOBALS['fixture']['ticks'] === 0 && !$GLOBALS['fixture']['calls'], 'Disabled automation ran');
+    check(get_option('rrfr_match_followup_runner') === false, 'Paused runner must not pretend to have processed work');
 };
 $tests['failed reservation never invokes callback'] = static function (): void {
     queue(time() - 60, 'rrfr_club_results');
