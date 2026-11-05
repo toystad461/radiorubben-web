@@ -1,6 +1,6 @@
 <?php
 /** Plugin Name: Radio Rubben public now/next
- * Version: 1.0.5
+ * Version: 1.0.6
  * Description: Public playback metadata for the approved VPS stream, with no Studio access.
  */
 defined('ABSPATH') || exit;
@@ -19,7 +19,7 @@ add_action('after_setup_theme', static function () {
 }, 99);
 add_action('wp_enqueue_scripts', static function () {
     if (!rr_public_radio_enabled()) { return; }
-    wp_enqueue_script('rr-public-radio', plugins_url('rr-public-radio.js', __FILE__), array('rr-next-ui'), '1.0.5', true);
+    wp_enqueue_script('rr-public-radio', plugins_url('rr-public-radio.js', __FILE__), array('rr-next-ui'), '1.0.6', true);
     if (function_exists('rr_one_logo_url')) {
         wp_localize_script('rr-public-radio', 'RR_PUBLIC_RADIO', array('logoUrl' => esc_url_raw(rr_one_logo_url())));
     }
@@ -34,3 +34,4 @@ add_action('wp_head', static function () {
 @media(max-width:720px){.rr-news-first .rr-radio-card .rr-radio-cover{display:block;width:min(100%,180px);height:auto;min-height:0;aspect-ratio:1/1;margin:12px auto;padding:0}.rr-mini-player .rr-u-mini-label{display:none}.rr-mini-player .rr-mini-cover{width:44px;height:44px;flex-basis:44px}.rr-front:has(.rr-universes) .rr-mini-player{left:14px;right:14px;width:auto;max-width:none}.rr-mini-player .rr-broadcast{display:none}}
 </style>';
 }, 99);
+

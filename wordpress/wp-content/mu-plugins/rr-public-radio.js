@@ -107,9 +107,8 @@
     next.dataset.rrNext = 'true'; next.textContent = 'Henter sendestatus …';
   }
   function render(data) {
-    const stamp = Date.parse(data?.generatedAt);
-    const fresh = Number.isFinite(stamp) && Math.abs(Date.now() - stamp) < 30000;
-    const live = fresh && data?.schemaVersion === 1 && data.playing === true && data.now;
+    // refresh validates a request-bound reply; the server validates its heartbeat.
+    const live = data?.schemaVersion === 1 && data.playing === true && data.now;
     const artwork = live && data.now.kind !== 'jingle' && typeof data.now.artworkUrl === 'string'
       && /^https:\/\/5\.249\.252\.78\/radio-status\.php\?cover=[a-f0-9]{64}$/.test(data.now.artworkUrl) ? data.now.artworkUrl : null;
     for (const {img, fallback} of covers) {
@@ -127,20 +126,28 @@
     }
     for (const el of minis) el.textContent = live ? label(data.now) : 'Radio Rubben';
   }
-  let pending = false;
+  let pending = false, lastStatus = null, visibilityGeneration = 0;
   async function refresh() {
     if (pending || document.hidden) return;
     pending = true;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 6000);
     try {
-      const response = await fetch('https://5.249.252.78/radio-status.php', {credentials:'omit',cache:'no-store',signal:controller.signal});
+      const requestId = Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+      const started = performance.now();
+      const generation = visibilityGeneration;
+      const response = await fetch('https://5.249.252.78/radio-status.php?requestId=' + requestId, {credentials:'omit',cache:'no-store',signal:controller.signal});
       if (!response.ok) throw new Error('Status unavailable');
-      render(await response.json());
-    } catch (_) { render(null); }
+      const data = await response.json();
+      if (document.hidden || generation !== visibilityGeneration || data?.schemaVersion !== 1 || data.requestId !== requestId || !Number.isFinite(Date.parse(data.generatedAt)) || performance.now() - started >= 6000) throw new Error('Status unavailable');
+      lastStatus = performance.now();
+      render(data);
+    } catch (_) { lastStatus = null; render(null); }
     finally { clearTimeout(timeout); pending = false; }
   }
   refresh();
   setInterval(refresh, 10000);
-  document.addEventListener('visibilitychange', refresh);
+  setInterval(() => { if (lastStatus !== null && performance.now() - lastStatus > 30000) { lastStatus = null; render(null); } }, 1000);
+  document.addEventListener('visibilitychange', () => { visibilityGeneration++; lastStatus = null; render(null); refresh(); });
 })();
+
