@@ -1,5 +1,6 @@
 <?php
 if (!defined('ABSPATH')) exit;
+require_once __DIR__.'/bremnes-poll-journey.php';
 require_once __DIR__.'/bremnes-poll-fotballdata.php';
 if (!function_exists('rr_poll_parse_match_id')) {
 function rr_poll_parse_match_id($input) {
@@ -150,6 +151,8 @@ $rr_match=get_option('rr_poll_match_'.$rr_match_id, $rr_match_id===8985476?$rr_s
 if (!$rr_match) wp_die('Kampen er ikke hentet ennå. Åpne kampoppsettet for å hente den.', '', ['response'=>404]);
 $rr_match_error='';
 $rr_url=add_query_arg('rr_match',$rr_match_id,home_url('/dagenskamp/'));
+$rr_flow=rr_poll_flow_id($_GET['rr_flow']??'');
+if ($rr_flow) $rr_url=add_query_arg('rr_flow',$rr_flow,$rr_url);
 if (isset($_GET['wpvibe_preview']) && is_string($_GET['wpvibe_preview'])) $rr_url=add_query_arg('wpvibe_preview',sanitize_text_field(wp_unslash($_GET['wpvibe_preview'])),$rr_url);
 if ($_SERVER['REQUEST_METHOD']==='POST' && (isset($_POST['rr_select_match']) || isset($_POST['rr_auto_match']))) {
     if (!$rr_control || !$rr_admin) wp_die('Ingen tilgang til kampoppsett.', '', ['response'=>403]);

@@ -55,7 +55,9 @@ check(command('event',type='sub',player=12,out=2,side='home')[0]==200,'Speaker r
 state=js(admin,api)[1];candidates=state['candidates']
 check('2' in candidates and '12' in candidates,'Substituted starter and reserve remain voting candidates')
 check(js(admin,api,{'action':'vote','player':2,'token':state['token']})[0]==200,'Eligible administrator test vote accepted')
-check(js(admin,api,{'action':'vote','player':12,'token':state['token']})[0]==409,'Duplicate vote rejected')
+duplicate=js(admin,api,{'action':'vote','player':12,'token':state['token']})
+after_duplicate=js(admin,api)[1]
+check(duplicate[0]==200 and duplicate[1].get('voted') and after_duplicate['results'][0]['number']==2 and after_duplicate['results'][0]['total']==1,'Duplicate vote confirms the original without replacing it')
 check(command('half')[0]==200,'Pause at halftime')
 check(command('second')[0]==200,'Start second half')
 check(command('correct',seconds=5100)[0]==200,'Set synthetic clock to 85 minutes')

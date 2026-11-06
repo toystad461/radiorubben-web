@@ -2,7 +2,19 @@
 if (!defined('ABSPATH')) exit;
 
 require_once __DIR__.'/bremnes-poll-rules.php';
+require_once __DIR__.'/bremnes-poll-journey.php';
 require_once __DIR__.'/bremnes-poll-performance.php';
+
+// Match forms/API use home_url(). First put public visitors on that same host,
+// so cookies and credentials:'same-origin' stay in the original browser context.
+add_action('template_redirect',function() {
+    $target=rr_poll_canonical_vote_url($_SERVER['HTTP_HOST']??'',$_SERVER['REQUEST_URI']??'');
+    if (!$target) return;
+    nocache_headers();
+    if (($_SERVER['REQUEST_METHOD']??'GET')!=='GET') rr_poll_login_problem($target,'Åpne avstemmingen på riktig adresse før du fortsetter.');
+    wp_safe_redirect($target,302);
+    exit;
+},-1);
 
 function rr_poll_selected_match_data() {
     $match_id=(int)get_option('rr_poll_selected_match',0);
@@ -260,9 +272,11 @@ function rr_poll_vipps_return($session) {
     $dashboard_path=rtrim(wp_parse_url(home_url('/dashboard/'),PHP_URL_PATH),'/');
     parse_str($origin['query'] ?? '', $args);
 
+    $is_vote_return=false;
     if ($path===$dashboard_path || str_starts_with($path,$dashboard_path.'/')) {
         $target=home_url('/dashboard/');
     } elseif ($path===$vote_path || isset($args['rr_bremnes_test'],$args['rr_vote'])) {
+        $is_vote_return=true;
         $target=home_url('/dagenskamp/');
         if (isset($args['rr_match']) && is_string($args['rr_match']) && ctype_digit($args['rr_match'])) $target=add_query_arg('rr_match',absint($args['rr_match']),$target);
     } else {
@@ -272,17 +286,26 @@ function rr_poll_vipps_return($session) {
     if (isset($args['wpvibe_preview']) && is_string($args['wpvibe_preview'])) {
         $target=add_query_arg('wpvibe_preview',sanitize_text_field($args['wpvibe_preview']),$target);
     }
-    return $target;
+    $flow=rr_poll_flow_id($args['rr_flow']??'');
+    if ($flow) $target=add_query_arg('rr_flow',$flow,$target);
+    return $target.($is_vote_return ? '#poll-live' : '');
 }
 add_action('continue_with_vipps_before_wordpress_login_redirect', function($user,$session) {
     $target = rr_poll_vipps_return($session);
     if (!$target) return;
+    if ($user instanceof WP_User) rr_poll_journey_log_url('login_return',$target);
     add_filter('login_redirect',function($redirect,$requested,$logged_in_user) use ($target) {
         return $logged_in_user instanceof WP_User ? $target : $redirect;
     },1000,3);
 },20,2);
 add_filter('continue_with_vipps_wordpress_confirm_redirect',function($redirect,$user_id,$session) {
     return rr_poll_vipps_return($session) ?: $redirect;
+},1000,3);
+add_filter('continue_with_vipps_error_login_redirect',function($redirect,$error,$session) {
+    $target=rr_poll_vipps_return($session);
+    if (!$target || !str_ends_with($target,'#poll-live')) return $redirect;
+    rr_poll_journey_log_url('login_error',$target);
+    return add_query_arg('rr_login','retry',$target);
 },1000,3);
 /* Isolated manual match trial. No fixture feed or scheduled publication. */
 add_action('template_redirect', function () {
