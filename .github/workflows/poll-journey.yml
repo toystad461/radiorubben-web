@@ -1,0 +1,35 @@
+name: Dagens Bremnesing — innlogging og stemmekvittering
+on:
+  pull_request:
+    paths: ['theme-next/rr-site-functions/**', 'theme-next/tests/poll-*', '.github/workflows/poll-journey.yml']
+permissions:
+  contents: read
+jobs:
+  journey:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: rr_poll_test
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping --silent" --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Retur, dublettvern og eksisterende regler (syntetiske data)
+        env:
+          RR_POLL_TEST_MYSQL_DSN: mysql:host=127.0.0.1;port=3306;dbname=rr_poll_test
+        run: |
+          php theme-next/tests/poll-journey.php
+          php theme-next/tests/poll-performance.php
+          php theme-next/tests/poll-fotballdata.php
+          php theme-next/tests/poll-simulation.php
+          for scenario in vote duplicate duplicate-closed before-open closed cutoff bench substitute nonce array-token unauthorized other-match database-failure status login-existing login-nonce login-unavailable; do
+            php theme-next/tests/poll-journey-handler.php "$scenario"
+          done
+          node --test theme-next/tests/poll-journey.cjs
+          python3 theme-next/scripts/check.py

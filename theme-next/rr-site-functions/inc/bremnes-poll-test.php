@@ -237,16 +237,27 @@ if (isset($_GET['rr_poll_api'])) {
         $action = isset($_POST['action']) ? sanitize_key(wp_unslash($_POST['action'])) : '';
         if ($action === 'vote') {
             if (!$rr_eligible) $rr_error('Logg inn med en Vipps-tilknyttet konto for å stemme.',403);
-            if (!isset($_POST['token']) || !hash_equals($rr_token, (string)wp_unslash($_POST['token']))) $rr_error('Last siden på nytt før du stemmer.',403);
+            if (!isset($_POST['token']) || !is_string($_POST['token']) || !hash_equals($rr_token, (string)wp_unslash($_POST['token']))) $rr_error('Last siden på nytt før du stemmer.',403);
+            $vote_key = $rr_key.'_vote_'.$rr_state['session'].'_'.$rr_voter;
+            if (rr_poll_saved_vote($vote_key)!==null) {
+                if (!rr_poll_insert_once($rr_key.'_entrant_'.$rr_state['session'].'_'.$rr_voter,get_current_user_id())) rr_poll_journey_log('vote_error',$rr_match_id,$rr_flow);
+                rr_poll_journey_log('vote_existing',$rr_match_id,$rr_flow);
+                wp_send_json(['ok'=>true,'voted'=>true,'message'=>'Stemmen din er allerede registrert. Du trenger ikke stemme på nytt.']);
+            }
             if (!$rr_state['opened'] || $rr_closed($rr_state)) $rr_error('Avstemningen er stengt.',409);
             $player = isset($_POST['player']) ? absint($_POST['player']) : 0;
             if (!isset(rr_poll_allowed_players($rr_match,$rr_state)[$player])) $rr_error('Spilleren har ikke startet eller blitt markert som byttet inn.',409);
-            $vote_key = $rr_key.'_vote_'.$rr_state['session'].'_'.$rr_voter;
-            if (!add_option($vote_key, $player, '', false)) $rr_error('Du har allerede stemt i denne avstemningen.',409);
+            if (!rr_poll_insert_once($vote_key,$player) || rr_poll_saved_vote($vote_key)===null) {
+                rr_poll_journey_log('vote_error',$rr_match_id,$rr_flow);
+                $rr_error('Kunne ikke bekrefte stemmen. Sjekk status før du prøver igjen.',503);
+            }
             // Store the account ID separately so a randomly chosen voter can be contacted.
             // Every accepted voter participates, regardless of their chosen player.
-            if ($rr_eligible) add_option($rr_key.'_entrant_'.$rr_state['session'].'_'.$rr_voter,get_current_user_id(),'',false);
-            wp_send_json(['ok'=>true,'message'=>'Takk! Stemmen din er registrert.']);
+            if ($rr_eligible && !rr_poll_insert_once($rr_key.'_entrant_'.$rr_state['session'].'_'.$rr_voter,get_current_user_id())) {
+                rr_poll_journey_log('vote_error',$rr_match_id,$rr_flow);
+            }
+            rr_poll_journey_log('vote_recorded',$rr_match_id,$rr_flow);
+            wp_send_json(['ok'=>true,'voted'=>true,'message'=>'Takk! Stemmen din er registrert.']);
         }
         if (!$rr_admin || !isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'rr_poll_admin')) $rr_error('Logg inn som redaktør for å styre avstemningen.',403);
         if ($action==='refresh_nff_events') {
@@ -319,7 +330,7 @@ if (isset($_GET['rr_poll_api'])) {
     }
     $rr_api_admin_view=$rr_admin && isset($_GET['rr_admin_view']) && $_GET['rr_admin_view']==='1';
     $rr_api_now=microtime(true);
-    $payload = ['ok'=>true,'match_events'=>$rr_api_admin_view?$rr_dashboard_events:$rr_public_events,'elapsed'=>$rr_seconds($rr_state,(int)$rr_api_now),'server_now_ms'=>(int)round($rr_api_now*1000),'session'=>$rr_state['session'],'clock_revision'=>$rr_state['clock_revision']??'','started'=>(int)$rr_state['started'],'period'=>$rr_state['period'],'running'=>$rr_state['running'],
+    $payload = ['ok'=>true,'match_id'=>$rr_match_id,'journey_version'=>rr_poll_journey_version(),'match_events'=>$rr_api_admin_view?$rr_dashboard_events:$rr_public_events,'elapsed'=>$rr_seconds($rr_state,(int)$rr_api_now),'server_now_ms'=>(int)round($rr_api_now*1000),'session'=>$rr_state['session'],'clock_revision'=>$rr_state['clock_revision']??'','started'=>(int)$rr_state['started'],'period'=>$rr_state['period'],'running'=>$rr_state['running'],
         'finished'=>!empty($rr_state['finished']),'opened'=>$rr_state['opened'],'closed'=>(bool)$rr_closed($rr_state),'token'=>$rr_token,
         'event_credit'=>$rr_event_credit,'score'=>$rr_display_score,'eligible'=>$rr_eligible,'roster_ready'=>rr_poll_lineup_ready($rr_match),'candidates'=>rr_poll_allowed_players($rr_match,$rr_state),'entered'=>$rr_state['entered']??[],
         'authenticated'=>is_user_logged_in(),
@@ -352,12 +363,18 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['rr_poll_logout'])) {
     exit;
 }
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['rr_vipps_begin'])) {
-    check_admin_referer('rr_poll_vipps_'.$rr_match_id,'rr_vipps_nonce');
-    if (!is_callable(['VippsLogin','instance'])) wp_die('Vipps er ikke tilgjengelig. Prøv igjen senere.');
+    if ($rr_eligible) { wp_safe_redirect($rr_url.'#poll-live',303); exit; }
+    $login_nonce=$_POST['rr_vipps_nonce']??'';
+    if (!is_string($login_nonce) || !wp_verify_nonce(wp_unslash($login_nonce),'rr_poll_vipps_'.$rr_match_id)) rr_poll_login_problem($rr_url,'Siden har vært åpen en stund. Åpne avstemmingen på nytt og prøv igjen.');
+    if (!is_callable(['VippsLogin','instance'])) rr_poll_login_problem($rr_url,'Vipps er ikke tilgjengelig. Prøv igjen senere.');
     $login=VippsLogin::instance();
-    if (!is_callable([$login,'get_vipps_login_link'])) wp_die('Vipps er ikke tilgjengelig. Prøv igjen senere.');
-    $target=$login->get_vipps_login_link('wordpress',['referer'=>$rr_url]);
-    if (!is_string($target) || wp_parse_url($target,PHP_URL_SCHEME)!=='https') wp_die('Kunne ikke starte Vipps-innlogging. Prøv igjen senere.');
+    if (!is_callable([$login,'get_vipps_login_link'])) rr_poll_login_problem($rr_url,'Vipps er ikke tilgjengelig. Prøv igjen senere.');
+    $rr_flow=str_replace('-','',wp_generate_uuid4());
+    $login_return=add_query_arg('rr_flow',$rr_flow,$rr_url);
+    try { $target=$login->get_vipps_login_link('wordpress',['referer'=>$login_return]); }
+    catch (Throwable $error) { rr_poll_journey_log('login_error',$rr_match_id,$rr_flow); rr_poll_login_problem($rr_url,'Kunne ikke starte Vipps-innlogging. Prøv igjen senere.'); }
+    if (!is_string($target) || wp_parse_url($target,PHP_URL_SCHEME)!=='https') rr_poll_login_problem($rr_url,'Kunne ikke starte Vipps-innlogging. Prøv igjen senere.');
+    rr_poll_journey_log('login_start',$rr_match_id,$rr_flow);
     // The installed Vipps plugin creates the OAuth state, browser cookie and trusted provider URL.
     wp_redirect($target,303);
     exit;
@@ -452,6 +469,7 @@ if (empty($rr_embedded)) get_header();
 .rr-poll .poll-vote-card .poll-login-title{font-size:17px;font-weight:750;margin:0 0 5px}
 .rr-poll .poll-vote-card .poll-login-note{font-size:14px;color:#b9c6d8;margin:0 0 16px}
 .rr-poll .poll-vote-card #poll-login button{width:100%;border:0;border-radius:12px;min-height:52px;font-size:16px}
+.rr-poll #poll-form[hidden],.rr-poll #poll-login[hidden],.rr-poll #poll-recover[hidden]{display:none!important}
 .poll-vote-card #poll-form{display:flex;flex-direction:column}
 .poll-vote-card #poll-form label{order:0;font-size:15px;font-weight:700}
 .rr-poll .poll-vote-card .poll-player-hint{order:1;font-size:12px;line-height:1.5;margin:6px 0 10px;color:#b9c6d8}
@@ -648,8 +666,8 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 
 <?php endif; ?>
 <?php if (!$rr_control || ($rr_admin && $rr_live_section)): ?>
-<section class="card<?php echo !$rr_control?' poll-vote-card':''; ?>" id="poll-live">
-<?php if (!$rr_control): ?><header class="poll-vote-heading"><span class="poll-vote-eyebrow">Din stemme teller</span><h2>Dagens Bremnesing</h2><p>Hvem fortjener din stemme i dag?</p></header><p class="poll-steps"><?php echo $rr_eligible ? '1. Velg spiller · 2. Send stemmen' : '1. Logg inn med Vipps · 2. Velg spiller · 3. Send stemmen'; ?></p><?php endif; ?>
+<section class="card<?php echo !$rr_control?' poll-vote-card':''; ?>" id="poll-live" style="scroll-margin-top:90px">
+<?php if (!$rr_control): ?><header class="poll-vote-heading"><span class="poll-vote-eyebrow">Din stemme teller</span><h2>Dagens Bremnesing</h2><p><?php echo esc_html($rr_match['home'].' – '.$rr_match['away'].' · '.$rr_match['date_label']); ?></p></header><p class="poll-steps"><?php echo $rr_eligible ? '1. Velg spiller · 2. Send stemmen' : '1. Logg inn med Vipps · 2. Velg spiller · 3. Send stemmen'; ?></p><?php endif; ?>
 <?php if ($rr_control): ?><h2>Kampstyring</h2><?php endif; ?>
 
 <style>
@@ -665,12 +683,14 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <input type="hidden" name="rr_poll_logout" value="1"><button type="submit" disabled>Logg ut</button>
 </form>
 </div>
-<p id="poll-status" role="status">Henter avstemningen …</p>
+<p id="poll-status" role="status" aria-live="polite">Henter avstemmingen …</p>
+<?php if (!$rr_control): ?><p><a id="poll-recover" href="<?php echo esc_url($rr_url); ?>#poll-live" hidden>Åpne avstemmingen på nytt</a></p><?php endif; ?>
 <p class="muted poll-vote-deadline">Stenger ved <strong>85:00</strong> · pausen teller ikke med.</p>
 <?php if (!$rr_control): ?>
 <div id="poll-login" hidden>
+<?php if (($_GET['rr_login']??'')==='retry'): ?><p role="status">Innloggingen ble ikke fullført. Prøv igjen nedenfor. Du kommer tilbake til denne kampen.</p><?php endif; ?>
 <p class="poll-login-title">Logg inn for å stemme</p>
-<p class="poll-login-note">Bruk en Vipps-tilknyttet konto, og velg din favoritt.</p>
+<p class="poll-login-note">Godkjenn i Vipps. Du kommer tilbake hit for å velge spiller.</p>
 <?php if (is_callable(['VippsLogin','instance'])): ?>
 <form method="post" action="<?php echo esc_url($rr_url); ?>">
 <?php wp_nonce_field('rr_poll_vipps_'.$rr_match_id,'rr_vipps_nonce'); ?>
@@ -681,7 +701,7 @@ $rr_initial_clock=$rr_waiting ? ($rr_remaining>0 ? (intdiv($rr_remaining,86400)?
 <p>Vipps-innlogging er ikke tilgjengelig akkurat nå. Prøv igjen senere.</p>
 <?php endif; ?>
 </div>
-<form id="poll-form">
+<form id="poll-form" hidden>
 <p class="muted poll-player-hint" id="poll-player-hint">Startspillere og innbyttere som har kommet på banen.</p>
 <label for="poll-player">Velg en spiller</label>
 <select id="poll-player" aria-describedby="poll-player-hint" required disabled><option value="">Velg draktnummer og navn</option>
@@ -952,7 +972,10 @@ const kickoff=Date.parse(<?php echo wp_json_encode($rr_match['kickoff']); ?>);
 const pad=n=>String(n).padStart(2,'0');
 let candidateSignature='';
 let eventSignature='';
-let state=null, busy=false, healthy=false;
+let state=null, busy=false, healthy=false, voteConfirmed=false, votePending=false, loginBusy=false;
+const expectedMatch=<?php echo (int)$rr_match_id; ?>;
+const isControl=<?php echo $rr_control?'true':'false'; ?>;
+let initialEligible=<?php echo $rr_eligible?'true':'false'; ?>;
 let clockAnchor=null, countdownAnchor=null, refreshSerial=0, refreshPending=false, refreshController=null;
 function syncClock(next,at,force=false){
  const key=[next.session,next.clock_revision,next.period,next.started,next.running,next.finished].join('|');
@@ -983,9 +1006,11 @@ async function request(body,controller=new AbortController()){
   const response=await fetch(url,{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',signal:controller.signal,...(body?{headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(body)}:{})});
   const data=await response.json();
   if(!response.ok||!data.ok)throw new Error(data.message||'Kunne ikke kontakte avstemningen.');
+  if(!body && Number(data.match_id)!==expectedMatch)throw new Error('Kampen kunne ikke bekreftes. Åpne avstemmingen på nytt.');
   return data;
  }catch(error){
-  if(error.name==='AbortError')throw new Error('Kontrollen tok for lang tid. Prøver igjen.');
+  if(error.name==='AbortError')throw new Error('Det tar lengre tid enn vanlig. Sjekker status på nytt …');
+  if(error instanceof SyntaxError)throw new Error('Kunne ikke lese svaret. Åpne avstemmingen på nytt.');
   throw error;
  }finally{clearTimeout(timer);}
 }
@@ -994,12 +1019,12 @@ function renderAccount(){
  if(account)account.hidden=!state?.authenticated;
  if(el('poll-account-status'))el('poll-account-status').textContent=!healthy?'Kontrollerer innloggingen …':
   state?.authenticated?'Logget inn'+(state.account_name?' som '+state.account_name:'')+'.':'';
- if(login)login.hidden=!healthy||!!state?.eligible;
+ if(login)login.hidden=!healthy||!!state?.eligible||!state?.opened||!!state?.closed||voteConfirmed;
  for(const [name,key,container] of [['rr_logout_nonce','logout_nonce',account],['rr_vipps_nonce','login_nonce',login]]){
   const input=container?.querySelector('[name="'+name+'"]');
   if(input)input.value=healthy?(state?.[key]||''):'';
   const button=container?.querySelector('button[type="submit"]');
-  if(button)button.disabled=!healthy||!state?.[key];
+  if(button)button.disabled=!healthy||!state?.[key]||(container===login&&loginBusy);
  }
 }
 function updatePlayers(id,players){
@@ -1169,7 +1194,7 @@ function updateLiveStatus(elapsed,closed){
 }
 function render(){
  renderAccount();
- if(!state)return;
+ if(!state){if(el('poll-status'))el('poll-status').textContent='Henter avstemmingen. Ved treg forbindelse prøver vi igjen.';if(el('poll-recover'))el('poll-recover').hidden=false;return;}
  el('poll-score').hidden=!state.opened;
  el('poll-score').parentElement.classList.toggle('is-pregame',!state.opened);
  el('poll-score').textContent=state.opened?state.score.home+' – '+state.score.away:'';
@@ -1200,10 +1225,16 @@ function render(){
  el('poll-clock-note').textContent=state.finished?'Kampklokken er stoppet.':closed?'Avstemningen er stengt. Kampføringen fortsetter.':state.period===1&&!state.running?'Pausen teller ikke med i spilletiden.':state.period===2?'2. omgang · avstemningen stenger ved 85:00.':'1. omgang · avstemningen stenger ved 85:00.';
  }
  if(el('poll-status')){
-  el('poll-status').textContent=!healthy?'Forbindelsen er brutt. Prøver igjen …':closed?'Avstemningen er stengt':!state.opened?'Avstemningen er ikke åpnet':state.voted?'Takk! Du har stemt.':!state.authenticated?'Logg inn med Vipps for å stemme.':!state.eligible?'Kontoen er innlogget, men mangler Vipps-tilknytning.':!state.roster_ready?'Venter på startoppstillingen.':state.period===1&&!state.running?'Pause · avstemningen er åpen':'Avstemningen er åpen';
-  el('poll-status').dataset.status=!healthy?'offline':closed?'closed':!state.opened?'waiting':state.voted?'voted':'open';
+  el('poll-status').textContent=voteConfirmed?'Takk! Stemmen din er registrert.':busy?(isControl?'Lagrer …':'Sender stemmen …'):votePending?'Sjekker om stemmen er registrert …':!healthy?'Forbindelsen er brutt. Prøver igjen …':closed?'Avstemningen er stengt':!state.opened?'Avstemningen åpner ved kampstart':!state.authenticated?'Logg inn med Vipps for å stemme':!state.eligible?'Kontoen mangler Vipps-tilknytning. Logg inn med Vipps nedenfor.':!state.roster_ready?'Venter på startoppstillingen.':'Velg spiller og send stemmen din';
+  el('poll-status').dataset.status=voteConfirmed?'voted':!healthy?'offline':closed?'closed':!state.opened?'waiting':'open';
  }
- for(const id of ['poll-player','poll-submit'])if(el(id))el(id).disabled=busy||!healthy||!state.eligible||!state.roster_ready||closed||!state.opened||state.voted;
+ for(const id of ['poll-player','poll-submit'])if(el(id))el(id).disabled=busy||votePending||!healthy||!state.eligible||!state.roster_ready||closed||!state.opened||voteConfirmed;
+ if(!isControl){
+  if(el('poll-form'))el('poll-form').hidden=!state.eligible||!state.opened||closed||voteConfirmed;
+  if(el('poll-login'))el('poll-login').hidden=!healthy||state.eligible||!state.opened||closed||voteConfirmed;
+  if(el('poll-recover'))el('poll-recover').hidden=voteConfirmed||(!votePending&&healthy&&(state.eligible===initialEligible));
+  if(el('poll-submit'))el('poll-submit').textContent=busy?'Sender stemmen …':'Send inn stemmen din';
+ }
  document.querySelectorAll('[data-sub-in]').forEach(b=>{
  const entered=Object.prototype.hasOwnProperty.call(state.entered||{},b.dataset.subIn);
  b.disabled=busy||!healthy||closed||!state.opened||entered;
@@ -1252,7 +1283,10 @@ async function refresh(forceClock=false){
  try{
  const next=await request(undefined,controller);
  if(serial!==refreshSerial)return;
- state=next;syncClock(next,performance.now(),forceClock);healthy=true;
+ if(state && (state.session!==next.session || state.token!==next.token)){voteConfirmed=false;votePending=false;if(el('poll-player'))el('poll-player').value='';if(el('poll-feedback'))el('poll-feedback').textContent='';}
+ state=next;voteConfirmed=voteConfirmed||!!next.voted;votePending=false;
+ if(!isControl&&voteConfirmed&&el('poll-feedback'))el('poll-feedback').textContent='Takk! Stemmen din er registrert.';
+ syncClock(next,performance.now(),forceClock);healthy=true;
  updateSpeaker();
  updateMatchEvents(state.match_events);
  updateRecentEvents(state.match_events);
@@ -1287,24 +1321,28 @@ async function refresh(forceClock=false){
  const leaders=rows.length?rows.filter(r=>r.total===rows[0].total):[];
  el('poll-winner').textContent=state.closed?(leaders.length>1?'Delt førsteplass: '+leaders.map(r=>r.player).join(', '):leaders.length?'Flest stemmer: '+leaders[0].player:'Ingen stemmer registrert.'):'Resultatet oppdateres mens avstemningen er åpen.';
  }
- }catch(e){if(serial!==refreshSerial)return;healthy=false;if(el('poll-feedback'))el('poll-feedback').textContent=e.message;}
+ }catch(e){if(serial!==refreshSerial)return;healthy=false;if(!voteConfirmed&&el('poll-feedback'))el('poll-feedback').textContent=e.message;}
  finally{if(serial===refreshSerial){refreshPending=false;refreshController=null;}}
  render();
 }
 async function command(body){
- ++refreshSerial;busy=true;render();
+ if(busy)return false;
+ ++refreshSerial;busy=true;if(body.action==='vote')votePending=true;render();
  try{
   const data=await request(body);
+  if(body.action==='vote'&&data.voted){voteConfirmed=true;votePending=false;if(state)state.voted=true;}
   if(el('poll-feedback'))el('poll-feedback').textContent=data.message||'Oppdatert.';
   return true;
  }catch(e){
   if(el('poll-feedback'))el('poll-feedback').textContent=e.message;
   return false;
  }finally{
-  await refresh(true);busy=false;render();
+  try{await refresh(true);}finally{busy=false;render();}
  }
 }
-if(el('poll-form'))el('poll-form').onsubmit=e=>{e.preventDefault();if(state&&!busy&&healthy&&!el('poll-submit').disabled)command({action:'vote',player:el('poll-player').value,token:state.token});};
+if(el('poll-form'))el('poll-form').onsubmit=e=>{e.preventDefault();if(state&&!busy&&!votePending&&!voteConfirmed&&healthy&&state.eligible&&state.opened&&!state.closed&&!el('poll-submit').disabled)command({action:'vote',player:el('poll-player').value,token:state.token});};
+const loginForm=el('poll-login')?.querySelector('form');
+if(loginForm){loginForm.addEventListener('submit',event=>{const button=loginForm.querySelector('button');if(button.disabled){event.preventDefault();return;}loginBusy=true;button.disabled=true;button.textContent='Åpner Vipps …';});}
 for(const id of ['speaker-player','speaker-in'])if(el(id))el(id).onchange=render;
 if(el('speaker-team'))el('speaker-team').onchange=()=>{for(const id of ['speaker-player','speaker-in']){el(id).value='';delete el(id).dataset.players;}updateSpeaker();render();};
 
@@ -1384,7 +1422,7 @@ function revalidate(){
  refresh(true);
 }
 revalidate();setInterval(()=>{if(!busy&&!document.hidden)refresh();},<?php echo $rr_control ? 5000 : 10000; ?>);setInterval(render,500);
-window.addEventListener('pageshow',revalidate);
+window.addEventListener('pageshow',()=>{loginBusy=false;if(loginForm)loginForm.querySelector('button').textContent='Logg inn med Vipps';revalidate();});
 window.addEventListener('focus',revalidate);
 window.addEventListener('online',revalidate);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)revalidate();});
